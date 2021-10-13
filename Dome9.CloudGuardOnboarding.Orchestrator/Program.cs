@@ -9,24 +9,24 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     class Program
     {
         static async Task Main(string[] args)
-        {            
+        {
             var onboardingRequest =
                 new OnboardingRequest
                 {
-                    PostureStackName = $"YoavTestOnboardingStack-V6-{DateTime.Now.ToFileTimeUtc()}",
+                    PostureStackName = $"TestOnboardingStack-{DateTime.Now.ToFileTimeUtc()}",
                     PostureTemplateS3Url= "https://unified-onboarding.s3.us-east-2.amazonaws.com/cft/posture_readonly_cft.yml",
-                    OnboardingId = "1e744ee9-c597-4173-bf28-a6f56f7c00be",
-                    CloudGuardAwsAccountId = "370030827932",     //AWS account which the dome9 website is running under
-                    ApiBaseUrl = "https://api.370030827932.dev.falconetix.com",
+                    OnboardingId = "a88252fa-bd17-42d6-96a6-e850611c9f82",
+                    CloudGuardAwsAccountId = "1234567890",  
+                    ApiBaseUrl = "https://api.1234567890.dev.falconetix.com",
                     RoleExternalTrustSecret = "d9ExtTrusSecret123",
-                    ServerlessProtectionEnabled = "False",
-                    CloudGuardApiKeyId = "<api key id of dome9 website>",
-                    CloudGuardApiKeySecret = "<api key secret of dome9 website>"
+                    ServerlessProtectionEnabled = "True",
+                    CloudGuardApiKeyId = "******",
+                    CloudGuardApiKeySecret = "******"
                 };
 
-            var api = new CloudGuardApiWrapper();// CloudGuardApProviderMock();
-
-            await new OnboardingWorkflow(api).RunAsync(onboardingRequest, null);
+            var api = new CloudGuardApiWrapper();
+            var retry = new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider());
+            await new OnboardingWorkflow(api, retry).RunAsync(onboardingRequest, null);
         }
     }
 }   

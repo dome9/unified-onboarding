@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -9,11 +9,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     public class CloudGuardApiWrapper : ICloudGuardApiWrapper, IDisposable
     {        
         private HttpClient _httpClient;
-        
-        // TODO: route may change after PR on controller - update the route
+
         private const string CONTROLLER_ROUTE = "/v2/UnifiedOnboarding";
+        private const string SERVERLESS_ADD_ACCOUNT_ROUTE = "/v2/serverless/accounts";
         private string _baseUrl;
         private bool disposedValue;
+        private static StatusModel _lastStatus = new StatusModel();
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public void SetLocalCredentials(ServiceAccount cloudGuardServiceAccount)
         {
@@ -56,7 +58,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] {nameof(ReplaceServiceAccount)} failed. Error={ex}");
-                throw;
+                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
             }
         }
         public async Task DeleteServiceAccount(CredentialsModel model)
@@ -75,15 +77,23 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] {nameof(DeleteServiceAccount)} failed. Error={ex}");
-                throw;
+                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
             }
         }
 
         public async Task UpdateOnboardingStatus(StatusModel model)
         {
-            string methodRoute = "UpdateStatus";
+            await _semaphore.WaitAsync();
+            
             try
             {
+                string methodRoute = "UpdateStatus";
+                if (_lastStatus.Equals(model))
+                {
+                    Console.WriteLine($"[INFO] [{nameof(UpdateOnboardingStatus)}] Status is same as previous, hence will not be post update to server.");
+                    return;
+                }
+
                 Console.WriteLine($"[INFO] [{nameof(UpdateOnboardingStatus)}] POST method:{methodRoute}, model:{model}");
 
                 var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/{methodRoute}", HttpClientUtils.GetContent(model, HttpClientUtils.SerializationOptionsType.CamelCase));
@@ -96,6 +106,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 Console.WriteLine($"[Error] [{nameof(UpdateOnboardingStatus)} failed. Error={ex}]");
                 throw;
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -116,7 +130,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(UpdateOnboardingStatus)} failed. Error={ex}]");
-                throw;
+                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
             }
         }
 
@@ -125,17 +139,63 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             try
             {
                 var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}", HttpClientUtils.GetContent(model, HttpClientUtils.SerializationOptionsType.CamelCase));
-                if (response == null || !response.IsSuccessStatusCode)
+                if (response == null)
                 {
-                    throw new Exception($"OnboardAccount failed. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}', Response:{response}");
+                    if (response == null)
+                    {
+                        throw new Exception("OnboardAccount failed. Response is null.");
+                    }
+                }                
+
+                if (!response.IsSuccessStatusCode) 
+                {
+                    var responseContent = await response.Content?.ReadAsStringAsync();
+                    throw new OnboardAccountException($"OnboardAccount failed. Reponse StatusCode:{response.StatusCode}, ReasonPhrase:'{response.ReasonPhrase}', Content:'{responseContent}'")
+                    {
+                        ReasonPhrase = response?.ReasonPhrase,
+                        HttpStatusCode = response.StatusCode,
+                        Content = responseContent
+                    };
                 }
             }
-            catch (Exception ex)
+            catch (OnboardAccountException ex)
             {
                 Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
                 throw;
             }
-        }        
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
+                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
+            }
+        }
+
+        public async Task ServerlessAddAccount(ServelessAddAccountModel model)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"{SERVERLESS_ADD_ACCOUNT_ROUTE}", HttpClientUtils.GetContent(model, HttpClientUtils.SerializationOptionsType.CamelCase));
+                if (response == null)
+                {
+                    if (response == null)
+                    {
+                        throw new Exception("Serverless add account failed. Response is null.");
+                    }
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content?.ReadAsStringAsync();
+
+                    throw new Exception($"Serverless add account failed failed. Reponse StatusCode:{response.StatusCode}, ReasonPhrase:'{response.ReasonPhrase}', Content:'{responseContent}'");                   
+                }
+            }            
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
+                throw new OnboardingException(ex.Message, Enums.Feature.ServerlessProtection);
+            }
+        }
 
         protected virtual void Dispose(bool disposing)
         {

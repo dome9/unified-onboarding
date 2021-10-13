@@ -7,33 +7,43 @@ using Amazon.CloudFormation.Model;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public class StackWrapper : IStackWrapper, IDisposable
+    /// <summary>
+    /// Singleton that executes operations on an AWS CloudFormation client
+    /// </summary>
+    public class CloudFormationWrapper : ICloudFormationWrapper, IDisposable
     {
-        private static IStackWrapper _cftWrapper = null;
-        private bool _disposed = false;
-        private static readonly object padlock = new object();
         private readonly AmazonCloudFormationClient _client;
+        private static ICloudFormationWrapper _cfnWrapper = null;
+        private static readonly object _instanceLock = new object();
+        private const int STATUS_POLLING_INTERVAL_MILLISECONDS = 500;
+        private bool _disposed = false;
 
-        private StackWrapper()
+        private CloudFormationWrapper()
         {
             _client = new AmazonCloudFormationClient();
         }
         
-        public static IStackWrapper Get()
+        public static ICloudFormationWrapper Get()
         {
-            lock (padlock)
+            lock (_instanceLock)
             {
-                return _cftWrapper ??= new StackWrapper();
+                return _cfnWrapper ??= new CloudFormationWrapper();
             }
         }
         
-        public async Task<string> CreateStackAsync(string stackTemplateS3Url, string stackName,
-            List<string> capabilities, Dictionary<string, string> parameters, int executionTimeoutMinutes = 5)
-        {
-            int statusPollingIntervalMilliseconds = 500;
+        public async Task<string> CreateStackAsync(
+            Enums.Feature feature, 
+            string stackTemplateS3Url, 
+            string stackName,
+            List<string> capabilities, 
+            Dictionary<string, string> parameters, 
+            Action<string> statusUpdate,
+            int executionTimeoutMinutes)
+        {           
+
             int statusPollCount = 0;
 
-            var requestParameters = parameters.Select(p => new Parameter
+            var requestParameters = parameters?.Select(p => new Parameter
                 {
                     ParameterKey = p.Key,
                     ParameterValue = p.Value
@@ -54,14 +64,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var response = await _client.CreateStackAsync(request);
                 do
                 {
-                    stackSummary = await GetStackSummaryAsync(stackName);
+                    stackSummary = await GetStackSummaryAsync(feature, stackName);
                     if (!stackSummary.StackStatus.IsFinal())
                     {
-                        Console.WriteLine($"[INFO] Waiting 500ms to poll stack status again, {stackSummary.ToDetailedString()}");
-                        await Task.Delay(statusPollingIntervalMilliseconds);
+                        Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll stack status again, {stackSummary.ToDetailedString()}");
+                        statusUpdate($"{stackSummary.StackStatus}");
+                        await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
                     }
 
-                    if(statusPollingIntervalMilliseconds * ++statusPollCount > executionTimeoutMinutes * 60 * 1000)
+                    if(STATUS_POLLING_INTERVAL_MILLISECONDS * ++statusPollCount > executionTimeoutMinutes * 60 * 1000)
                     {
                         Console.WriteLine("[WARNING] Execution timeout exceeded");
                         break;
@@ -73,19 +84,23 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 {
                     throw new Exception(stackSummary?.ToDetailedString() ?? "Unable to get stack summary");
                 }
+
                 Console.WriteLine($"[INFO] Success, {stackSummary.ToDetailedString()}");
                 return response.StackId;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] [{nameof(CreateStackAsync)}] Failed to create stack. StackName:'{stackName}', StackTemplateS3Url:'{stackTemplateS3Url}', Error={ex}");
-                throw;
+                throw new OnboardingException(ex.Message, feature);
             }
         }
 
-        // TODO: was TimeoutInMinutes omitted on purpose? should it be included with a longer duration default value?
-        public async Task<string> UpdateStackAsync(string stackTemplateS3Url, string stackName,
-            List<string> capabilities, Dictionary<string, string> parameters)
+        public async Task<string> UpdateStackAsync(
+            Enums.Feature feature, 
+            string stackTemplateS3Url, 
+            string stackName,
+            List<string> capabilities, 
+            Dictionary<string, string> parameters)
         {
             var requestParameters = parameters.Select(p => new Parameter
             {
@@ -98,7 +113,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 StackName = stackName,
                 TemplateURL = stackTemplateS3Url,
                 Parameters = requestParameters,
-                Capabilities = capabilities
+                Capabilities = capabilities,
             };
             
             try
@@ -106,14 +121,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var response = await _client.UpdateStackAsync(request);
                 return response.StackId;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Failed to update stack. Error={e}");
-                throw;
+                Console.WriteLine($"[ERROR] [{nameof(UpdateStackAsync)}] Failed to update stack '{stackName}'. Error={ex}");
+                throw new OnboardingException(ex.Message, feature);
             }
         }
 
-        public async Task<string> GetStackTemplateAsync(string stackName)
+        public async Task<string> GetStackTemplateAsync(Enums.Feature feature, string stackName)
         {
             var request = new GetTemplateRequest
             {
@@ -125,14 +140,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var response = await _client.GetTemplateAsync(request);
                 return response.TemplateBody;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Failed to get stack. Error={e}");
-                throw;
+                Console.WriteLine($"[ERROR] [{nameof(GetStackTemplateAsync)}] Failed to get stack template for stack '{stackName}'. Error={ex}");
+                throw new OnboardingException(ex.Message, feature);
             }
         }
         
-        public async Task<StackSummary> GetStackSummaryAsync(string stackName)
+        public async Task<StackSummary> GetStackSummaryAsync(Enums.Feature feature, string stackName)
         {
             try
             {
@@ -148,14 +163,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 return stack;
 
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] [{nameof(GetStackSummaryAsync)}]Failed to get StackSummary. Error={e}");
-                throw;
+                Console.WriteLine($"[ERROR] [{nameof(GetStackSummaryAsync)}] Failed to get StackSummary for stack '{stackName}'. Error={ex}");
+                throw new OnboardingException(ex.Message, feature); ;
             }
         }
 
-        public async Task DeleteStackAsync(string stackName)
+        public async Task DeleteStackAsync(Enums.Feature feature, string stackName)
         {
             var request = new DeleteStackRequest
             {
@@ -166,10 +181,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 await _client.DeleteStackAsync(request);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete stack. Error={e}");
-                throw;
+                Console.WriteLine($"Failed to delete stack '{stackName}'. Error={ex}");
+                throw new OnboardingException(ex.Message, feature); ;
             }
         }
 

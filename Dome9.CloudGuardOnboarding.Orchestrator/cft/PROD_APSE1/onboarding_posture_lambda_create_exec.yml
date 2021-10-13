@@ -93,7 +93,7 @@ Resources:
       Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900
       Code:
-        S3Bucket: 'cloudbuard-unified-onboarding-370030827932'
+        S3Bucket: 'cloudbuard-unified-onboarding-597850136722'
         S3Key: 'lambda/orchestrator/publish.zip'     
       Description: Invoke a function during stack creation.      
   CloudGuardOnboardingOrchestratorInvoke:

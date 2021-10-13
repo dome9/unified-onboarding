@@ -1,8 +1,7 @@
-﻿using Amazon.CloudFormation;
-using Amazon.CloudFormation.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Amazon.CloudFormation;
+using Amazon.CloudFormation.Model;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {

@@ -10,7 +10,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public List<string> Capabilities { get; set; }
         public int ExecutionTimeoutMinutes { get; set; }
 
-        public StackConfig(string templateS3Url, string stackName, List<string> capabilities, int executionTimeoutMinutes = 5)
+        public StackConfig(string templateS3Url, string stackName, List<string> capabilities, int executionTimeoutMinutes)
         {
             TemplateS3Url = templateS3Url;
             StackName = stackName;

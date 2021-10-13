@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 
@@ -76,19 +73,18 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
                 Console.WriteLine($"[INFO] Successful S3 response: {response}");
             }       
-        }
-        
+        }        
     }
 
     public class CloudFormationResponseBody 
     {
-        public string Status { get; set; } //responseStatus,
-        public string Reason { get; set; }  // "See the details in CloudWatch Log Stream: " + context.logStreamName,
-        public string PhysicalResourceId  { get; set; }  //physicalResourceId || context.logStreamName,
-        public string StackId { get; set; }  // event.StackId,
-        public string RequestId { get; set; }  // event.RequestId,
-        public string LogicalResourceId  { get; set; }  //event.LogicalResourceId,
-        public bool NoEcho  { get; set; }  //noEcho || false,
-        public string Data { get; set; } // responseData
+        public string Status { get; set; }
+        public string Reason { get; set; }
+        public string PhysicalResourceId  { get; set; }
+        public string StackId { get; set; }
+        public string RequestId { get; set; }
+        public string LogicalResourceId  { get; set; }
+        public bool NoEcho  { get; set; }
+        public string Data { get; set; }
     }
 }

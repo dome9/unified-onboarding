@@ -6,72 +6,80 @@ using System.Threading.Tasks;
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class OnboardingWorkflow
-    {        
-        private static ICloudGuardApiWrapper _apiProvider;
+    {
+        private readonly ICloudGuardApiWrapper _apiProvider;
+        private readonly IRetryAndBackoffService _retryAndBackoffService;
         private static readonly ConcurrentStack<IStep> Steps = new ConcurrentStack<IStep>();
-        private static string _lastError = null;
 
-        public OnboardingWorkflow(ICloudGuardApiWrapper apiProvider)
+        public OnboardingWorkflow(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService)
         {
             _apiProvider = apiProvider;
+            _retryAndBackoffService = retryAndBackoffService;
         }
 
         public async Task RunAsync(OnboardingRequest request, LambdaCustomResourceResponseHandler customResourceResponseHandler)
         {
             try
             {
-                Console.WriteLine($"[INFO] Starting onboarding workflow - OnboardingId: {request?.OnboardingId}");
+                if(request == null)
+                {
+                    throw new ArgumentNullException($"{nameof(OnboardingRequest)} {nameof(request)} is null");
+                }
 
+                if (string.IsNullOrWhiteSpace(request.OnboardingId))
+                {
+                    throw new ArgumentException($"{nameof(request.OnboardingId)} is null or whitespace");
+                }
+
+                var initialServiceAccount = new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl);
+                _apiProvider.SetLocalCredentials(initialServiceAccount);
+
+                Console.WriteLine($"[INFO] Executing onboarding process - OnboardingId: {request?.OnboardingId}");
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.PENDING, "Starting onboarding workflow", Enums.Feature.None)));
+
+                //await RetryAndBackoff.RunAsync(() => _apiWrapper.UpdateOnboardingStatus(statusModel), _retryIntervalProvider);
                 // 1. create new service account and delete initial service account with exposed credentials (stack url containing the credentials could be passed around)               
-                var replaceServiceAccountStep = new ReplaceServiceAccountStep(_apiProvider, new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl), request.OnboardingId);
-                Steps.Push(replaceServiceAccountStep);
-                await replaceServiceAccountStep.Execute();
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Replaced service account successfully", Status.PENDING));
-                Console.WriteLine($"[INFO] Replaced service account successfully");
+                await ExecuteStep(new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, initialServiceAccount, request.OnboardingId));
 
                 // 2.  validate onboarding id
-                Console.WriteLine($"[INFO] About to validate onboarding id");
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Validating onboarding id", Status.PENDING));
-                await _apiProvider.ValidateOnboardingId(request.OnboardingId);
-                Console.WriteLine($"[INFO] Validated onboarding id successfully");
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Validated onboarding id successfully", Status.PENDING));
+                await ExecuteStep(new ValidateOnboardingStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));                
 
                 // 3. run the Posture stack (create cross account role for Cloud Guard)
-                Console.WriteLine($"[INFO] About to create posture stack");
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Creating posture stack", Status.PENDING, Feature.ContinuousCompliance));
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Feature.ContinuousCompliance, "Creating posture stack"));
-                var stackCreateStep = new PostureStackCreationStep(_apiProvider, request.PostureStackName, request.PostureTemplateS3Url, request.CloudGuardAwsAccountId, request.RoleExternalTrustSecret, request.OnboardingId);
-                Steps.Push(stackCreateStep);
-                await stackCreateStep.Execute();                
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Feature.ContinuousCompliance, "Posture stack created successfully"));
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Posture stack created successfully", Status.PENDING));
-                Console.WriteLine($"[INFO] Posture stack created successfully");
+                await ExecuteStep(new PostureStackCreationStep(_apiProvider, _retryAndBackoffService, request.PostureStackName, request.PostureTemplateS3Url, request.CloudGuardAwsAccountId, request.RoleExternalTrustSecret, request.OnboardingId));
 
-                // 4. complete onboarding to dome9 - create cloud account
-                Console.WriteLine($"[INFO] About to post onboarding request to create cloud account");
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Creating cloud account", Status.PENDING, Feature.ContinuousCompliance));
-                string accountName = await AwsCredentialUtils.GetAwsAccountNameAsync(request.AwsAccountId);
-                await _apiProvider.OnboardAccount(new AccountModel(request.OnboardingId, request.AwsAccountId, accountName));
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Cloud account created successfully", Status.ACTIVE, Feature.ContinuousCompliance));
-                Console.WriteLine($"[INFO] Successfully posted onboarding request. Cloud account created successfully");
+                // 4. complete onboarding - create cloud account, rulesets, serverless account if selected
+                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
 
-                // 5. TODO: create Serverless protection account if enabled
-                // The below line is a stub, should be according to config if enabled
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Serverless protection disabled", Status.INACTIVE, Feature.ServerlessProtection));
+                // serverless - do not fail workflow on exceptions
+                try
+                {
+                    if (bool.TryParse(request.ServerlessProtectionEnabled, out bool serverlessEnabled) && serverlessEnabled)
+                    {
+                        //// 5. add serverless protection account
+                        await ExecuteStep(new ServerlessAddAccountStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
-                // 6. Delete the service account
-                Console.WriteLine($"[INFO] About to delete service account");
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, "Deleting service account", Status.ACTIVE));
-                await _apiProvider.DeleteServiceAccount(new CredentialsModel { OnboardingId = request.OnboardingId });
-                // can't write to dynamo anymore since we just deleted the service account 
-                Console.WriteLine($"[INFO] Deleted service account");
+                        // 6. create serverless protection stack if enabled
+                        await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, request.ServerlessTemplateS3Url, request.ServerlessStackName));
+                    }
+                    else
+                    {
+                        await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.INACTIVE, "Serverless protection disabled", Enums.Feature.ServerlessProtection)));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Failed handling Serverless protection. Error={ex}"); ;
+                }
 
-                // 7. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
+                // 7. Delete the service account
+                await ExecuteStep(new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));               
+
+                // 8. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
                 Console.WriteLine($"[INFO] About to postback custom resource response success");
-                await customResourceResponseHandler?.PostbackSuccess();
+                await _retryAndBackoffService.RunAsync(() => customResourceResponseHandler?.PostbackSuccess(), 3);
                 Console.WriteLine($"[INFO] Custom resource response successful");
-                
+
                 Console.WriteLine($"[INFO] Finished onboarding workflow successfully - OnboardingId: {request?.OnboardingId}");
             }
             catch (Exception ex)
@@ -88,31 +96,35 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
+        private async Task<IStep> ExecuteStep(IStep step)
+        {
+            Steps.Push(step);
+            await step.Execute();
+            return step;
+        }
+
         private async Task TryPostCustomResourceFailureResultToS3(LambdaCustomResourceResponseHandler customResourceResponseHandler, string error)
         {
             try
             {
-                await customResourceResponseHandler.PostbackFailure(error);
+                await _retryAndBackoffService.RunAsync(() => customResourceResponseHandler.PostbackFailure(error), 3);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] during {nameof(TryPostCustomResourceFailureResultToS3)}. Error={ex}");
             }
-            
+
         }
 
         private async Task TryUpdateStatusFailureInDynamo(string onboardingId, string error)
         {
             try
             {
-                await _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, $"Onboarding failed with following error: '{error}'", Status.ERROR));
-                // TODO: add something like
-                // await _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Status.ERROR.ToString(), Feature.ContinuousCompliance, false));
-                // after we pass the Feature that failed to this method 
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, Enums.Status.ERROR, error)));                
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] during {nameof(TryPostCustomResourceFailureResultToS3)}. Error={ex}");
+                Console.WriteLine($"[ERROR] during {nameof(TryUpdateStatusFailureInDynamo)}. Error={ex}");
             }
 
         }
@@ -133,9 +145,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[ERROR] during resource cleanup. Error={ex}");                    
+                    Console.WriteLine($"[ERROR] during resource cleanup. Error={ex}");
                 }
-            }
+            }            
         }
 
         private void TryRollback()

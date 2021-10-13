@@ -10,5 +10,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         Task ValidateOnboardingId(string onboardingId);
         Task OnboardAccount(AccountModel model);
         Task UpdateOnboardingStatus(StatusModel model);
+        Task ServerlessAddAccount(ServelessAddAccountModel model);
     }
 }
