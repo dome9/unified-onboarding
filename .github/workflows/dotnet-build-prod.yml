@@ -1,0 +1,63 @@
+name: .NET PROD master build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${{ github.head_ref }})"
+      id: extract_branch
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build -c release --no-restore
+      
+    - name: Make Temp Dir
+      run: | 
+        temp_dir=$(mktemp -d)
+        mkdir -p $temp_dir/lambda/orchestrator/
+        mkdir -p $temp_dir/templates
+        echo "Working with Temp Dir: $temp_dir"
+        tree $temp_dir
+        echo "TEMP_DIR=$temp_dir" >> $GITHUB_ENV
+      
+    - name: Install zip
+      uses: montudor/action-zip@v1
+      
+    - name: Zip output
+      run: zip -qq -r ${{ env.TEMP_DIR }}/lambda/orchestrator/publish.zip Dome9.CloudGuardOnboarding.Orchestrator/bin/Release/netcoreapp3.1
+      
+      # Optional, to display how the File system looks like
+    - name: Display File Systems (Tree)
+      run: tree .
+      
+    - name: Copy CFT files
+      run: |
+        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/PROD_US/* ${{ env.TEMP_DIR }}/templates/
+        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/posture_readonly_cft.yml ${{ env.TEMP_DIR }}/templates/posture_readonly_cft.yml
+        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/posture_readwrite_cft.yml ${{ env.TEMP_DIR }}/templates/posture_readwrite_cft.yml
+    
+    - name: Upload files to PROD S3
+      run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET_PROD }} --acl public-read
