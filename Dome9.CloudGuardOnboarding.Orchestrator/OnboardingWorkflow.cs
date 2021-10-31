@@ -37,30 +37,41 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 Console.WriteLine($"[INFO] Executing onboarding process - OnboardingId: {request?.OnboardingId}");
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.PENDING, "Starting onboarding workflow", Enums.Feature.None)));
 
-                //await RetryAndBackoff.RunAsync(() => _apiWrapper.UpdateOnboardingStatus(statusModel), _retryIntervalProvider);
                 // 1. create new service account and delete initial service account with exposed credentials (stack url containing the credentials could be passed around)               
                 await ExecuteStep(new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, initialServiceAccount, request.OnboardingId));
 
                 // 2.  validate onboarding id
-                await ExecuteStep(new ValidateOnboardingStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));                
+                await ExecuteStep(new ValidateOnboardingStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
 
-                // 3. run the Posture stack (create cross account role for Cloud Guard)
-                await ExecuteStep(new PostureStackCreationStep(_apiProvider, _retryAndBackoffService, request.PostureStackName, request.PostureTemplateS3Url, request.CloudGuardAwsAccountId, request.RoleExternalTrustSecret, request.OnboardingId));
+                // 3. getting configurations
+                var configurationStep = await ExecuteStep(new GetConfigurationsStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
+                var configurations = (configurationStep as GetConfigurationsStep).Configurations;
 
-                // 4. complete onboarding - create cloud account, rulesets, serverless account if selected
+                // 4. run the Posture stack (create cross account role for Cloud Guard)
+                await ExecuteStep(new PostureStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configurations.PostureStackName, configurations.PostureTemplateS3Path, configurations.CloudGuardAwsAccountId, configurations.RoleExternalTrustSecret, request.OnboardingId));
+
+                // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
                 await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
 
                 // serverless - do not fail workflow on exceptions
                 try
                 {
-                    if (bool.TryParse(request.ServerlessProtectionEnabled, out bool serverlessEnabled) && serverlessEnabled)
+                    if (configurations.ServerlessProtectionEnabled)
                     {
-                        //// 5. add serverless protection account
-                        await ExecuteStep(new ServerlessAddAccountStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
+                        if (configurations.ServerlessCftRegion != request.AwsAccountRegion)
+                        {
+                            Console.WriteLine($"[ERROR] Failed handling Serverless protection - can not run Serverless protection CFT in the {request.AwsAccountRegion} region, Serverless protection CFT must run in {configurations.ServerlessCftRegion} region.");
+                            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, $"Can not run Serverless protection CFT in the {request.AwsAccountRegion} region, Serverless protection CFT must run in {configurations.ServerlessCftRegion} region.", Enums.Feature.ServerlessProtection)));
+                        }
+                        else
+                        {
+                            // 6. add serverless protection account
+                            await ExecuteStep(new ServerlessAddAccountStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
-                        // 6. create serverless protection stack if enabled
-                        await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, request.ServerlessTemplateS3Url, request.ServerlessStackName));
+                            // 7. create serverless protection stack if enabled
+                            await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, configurations.ServerlessTemplateS3Path, configurations.ServerlessStackName));
+                        }
                     }
                     else
                     {
@@ -69,13 +80,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[ERROR] Failed handling Serverless protection. Error={ex}"); ;
+                    Console.WriteLine($"[ERROR] Failed handling Serverless protection. Error={ex}");
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, "Failed to Acivate Serverless protection", Enums.Feature.ServerlessProtection)));
                 }
 
-                // 7. Delete the service account
+                // 8. Delete the service account
                 await ExecuteStep(new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));               
 
-                // 8. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
+                // 9. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
                 Console.WriteLine($"[INFO] About to postback custom resource response success");
                 await _retryAndBackoffService.RunAsync(() => customResourceResponseHandler?.PostbackSuccess(), 3);
                 Console.WriteLine($"[INFO] Custom resource response successful");

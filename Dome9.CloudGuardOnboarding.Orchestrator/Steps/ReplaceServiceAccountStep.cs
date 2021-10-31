@@ -24,7 +24,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 _apiProvider.SetLocalCredentials(_serviceAccount);
 
                 Console.WriteLine($"[INFO] About to replace service account");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replacing service account", Enums.Feature.ContinuousCompliance)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replacing service account")));
 
                 // get new service account
                 try
@@ -32,7 +32,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                     ServiceAccount newServiceAccount = await _apiProvider.ReplaceServiceAccount(new CredentialsModel { OnboardingId = _onboardingId });
                     if (!IsServiceAccountValid(newServiceAccount))
                     {
-                        throw new OnboardingException("Created new service account is invalid", Enums.Feature.ContinuousCompliance);
+                        throw new OnboardingException("Created new service account is invalid", Enums.Feature.None);
                     }
 
                     _serviceAccount = newServiceAccount;
@@ -43,26 +43,26 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 }
                 catch (Exception ex)
                 {
-                    throw new OnboardingException($"Failed to create new service account: {ex.Message}", Enums.Feature.ContinuousCompliance);
+                    throw new OnboardingException($"Failed to create new service account: {ex.Message}", Enums.Feature.None);
                 }
 
                 // set provider to use new account 
                 _apiProvider.SetLocalCredentials(_serviceAccount);
 
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replaced service account successfully", Enums.Feature.ContinuousCompliance)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replaced service account successfully")));
                 Console.WriteLine($"[INFO] Replaced service account successfully");
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] Failed to execute {nameof(ReplaceServiceAccountStep)} step. Error={ex}");
-                await TryUpdateStatusError(_onboardingId, "Failed to replace service account", Enums.Feature.ContinuousCompliance);
+                await TryUpdateStatusError(_onboardingId, "Failed to replace service account", Enums.Feature.None);
                 if(ex is OnboardingException)
                 {
                     throw;
                 }
                
-                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);                                                
+                throw new OnboardingException(ex.Message, Enums.Feature.None);                                                
             }
         }        
 

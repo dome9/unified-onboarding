@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Response;
+using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -58,7 +60,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] {nameof(ReplaceServiceAccount)} failed. Error={ex}");
-                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
         public async Task DeleteServiceAccount(CredentialsModel model)
@@ -77,7 +79,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] {nameof(DeleteServiceAccount)} failed. Error={ex}");
-                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
 
@@ -130,7 +132,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(UpdateOnboardingStatus)} failed. Error={ex}]");
-                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
 
@@ -166,7 +168,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
-                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
 
@@ -194,6 +196,27 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
                 throw new OnboardingException(ex.Message, Enums.Feature.ServerlessProtection);
+            }
+        }
+
+        public async Task<ConfigurationsResponseModel> GetConfigurations(ConfigurationsRequestModel model)
+        {
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"{CONTROLLER_ROUTE}/Configuration/{model.OnboardingId}");
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Failed to get configorations from CloudGuard. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'");
+                }
+
+                var jsonString = await response.Content?.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<ConfigurationsResponseModel>(jsonString, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(GetConfigurations)} failed. Error={ex}]");
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
 

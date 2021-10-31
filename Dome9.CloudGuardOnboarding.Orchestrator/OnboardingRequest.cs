@@ -7,22 +7,18 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     public class OnboardingRequest
     {
         public string ServiceToken { get; set; }
+        public string OnboardingId { get; set; }
         public string ApiBaseUrl { get; set; }
-        public string PostureStackName { get; set; }
-        public string ServerlessStackName { get; set; }
         public string CloudGuardApiKeyId { get; set; }
         public string CloudGuardApiKeySecret { get; set; }
-        public string CloudGuardAwsAccountId { get; set; }
-        public string ServerlessProtectionEnabled { get; set; }
-        public string RoleExternalTrustSecret { get; set; }
-        public string OnboardingId { get; set; }
-        public string PostureTemplateS3Url { get; set; }
-        public string ServerlessTemplateS3Url { get; set; }
         public string AwsAccountId { get; set; }
+        public string S3BucketName { get; set; }
+        public string AwsAccountRegion {  get; set; }
         
         public override string ToString()
         {
-            return $"OnboardingRequest: [OnboardingId={OnboardingId}], [StackName={PostureStackName}], [StackTemplateS3Url={PostureTemplateS3Url}], [AwsAccountId={AwsAccountId}], [CloudGuardAwsAccountId={CloudGuardAwsAccountId}], [ApiBaseUrl={ApiBaseUrl}], [CloudGuardApiKeyId={CloudGuardApiKeyId}],[CloudGuardApiKeySecret={CloudGuardApiKeySecret}], [RoleExternalTrustSecret={RoleExternalTrustSecret}], [ServerlessProtectionEnabled={ServerlessProtectionEnabled}], [ServerlessStackName={ServerlessStackName}], [ServerlessTemplateS3Url={ServerlessTemplateS3Url}]";
+            return $"OnboardingRequest: [OnboardingId={OnboardingId}], [AwsAccountId={AwsAccountId}], [ApiBaseUrl={ApiBaseUrl}], " +
+                $"[CloudGuardApiKeyId={CloudGuardApiKeyId}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret}], [S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}]";
         }
     }
 

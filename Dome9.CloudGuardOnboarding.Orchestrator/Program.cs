@@ -13,15 +13,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             var onboardingRequest =
                 new OnboardingRequest
                 {
-                    PostureStackName = $"TestOnboardingStack-{DateTime.Now.ToFileTimeUtc()}",
-                    PostureTemplateS3Url= "https://unified-onboarding.s3.us-east-2.amazonaws.com/cft/posture_readonly_cft.yml",
-                    OnboardingId = "a88252fa-bd17-42d6-96a6-e850611c9f82",
-                    CloudGuardAwsAccountId = "1234567890",  
-                    ApiBaseUrl = "https://api.1234567890.dev.falconetix.com",
-                    RoleExternalTrustSecret = "d9ExtTrusSecret123",
-                    ServerlessProtectionEnabled = "True",
-                    CloudGuardApiKeyId = "******",
-                    CloudGuardApiKeySecret = "******"
+                    OnboardingId = "",
+                    ApiBaseUrl = "",
+                    CloudGuardApiKeyId = "",
+                    CloudGuardApiKeySecret = "",
+                    AwsAccountId = "",
+                    S3BucketName = "CftS3Bucket",
+                    AwsAccountRegion = "AwsAccountRegion"
                 };
 
             var api = new CloudGuardApiWrapper();

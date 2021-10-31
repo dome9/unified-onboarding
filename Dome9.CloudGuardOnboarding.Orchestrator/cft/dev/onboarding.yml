@@ -4,21 +4,8 @@ Metadata:
   Version: 0.0.1
 
 Parameters:
-  PostureTemplateS3Url:
-    Description: The S3 url of CloudFormation Posture template that will be executed by the Lambda
-    Type: String
-  PostureStackName:
-    AllowedPattern: '^[a-zA-Z]+[a-zA-Z0-9-]*$'
-    ConstraintDescription: Can contain only up to 128 alphanumeric characters (case sensitive) and hyphens and must start with an alphabetic character
-    Description: The CloudGuard Posture stack name that will be executed and saved on the customer AWS account
-    MaxLength: '128'
-    MinLength: '1'
-    Type: String
-  CloudGuardAwsAccountId:
-    Description: CloudGuard instance AWS AccountId that is requiring external trust
-    Type: String
-  RoleExternalTrustSecret:
-    Description: CloudGuard generated unique id for assuming external trust
+  S3BucketName:
+    Description: The S3 Bucket
     Type: String
   OnboardingId:
     Description: The id of the onboarding process
@@ -32,25 +19,8 @@ Parameters:
   CloudGuardApiKeySecret:
     Description: The CloudGuard service account API Key secret
     Type: String
-  ServerlessProtectionEnabled:
-    AllowedValues:
-      - true
-      - false
-    ConstraintDescription:  True or False TODO make this a boolean
-    Default: false
-    Description: CloudGuard Serverles protection enabled if True
-    MaxLength: '5'
-    MinLength: '4'
-    Type: String
-  ServerlessTemplateS3Url:
-    Description: The S3 url of CloudFormation Serverless template that will be executed by the Lambda
-    Type: String
-  ServerlessStackName:
-    AllowedPattern: '^[a-zA-Z]+[a-zA-Z0-9-]*$'
-    ConstraintDescription: Can contain only up to 128 alphanumeric characters (case sensitive) and hyphens and must start with an alphabetic character
-    Description: The CloudGuard Serverless stack name that will be executed and saved on the customer AWS account
-    MaxLength: '128'
-    MinLength: '1'
+  LambdaPkgPath:
+    Description: The lambda code path
     Type: String
 
 Resources:
@@ -93,23 +63,18 @@ Resources:
       Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900
       Code:
-        S3Bucket: 'cloudbuard-unified-onboarding-597850136722'
-        S3Key: 'lambda/orchestrator/publish.zip'     
+        S3Bucket: !Sub '${S3BucketName}-${AWS::Region}-dev'
+        S3Key: !Sub '${LambdaPkgPath}'     
       Description: Invoke a function during stack creation.      
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
     Version: "1.0"
     Properties:
       ServiceToken: !GetAtt CloudGuardOnboardingOrchestrator.Arn
-      PostureTemplateS3Url: !Ref PostureTemplateS3Url
-      PostureStackName: !Ref PostureStackName
-      CloudGuardAwsAccountId: !Ref CloudGuardAwsAccountId
-      RoleExternalTrustSecret: !Ref RoleExternalTrustSecret
       OnboardingId: !Ref OnboardingId
       ApiBaseUrl: !Ref ApiBaseUrl
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
-      ServerlessProtectionEnabled: !Ref ServerlessProtectionEnabled
       AwsAccountId: !Sub '${AWS::AccountId}'
-      ServerlessTemplateS3Url: !Ref ServerlessTemplateS3Url
-      ServerlessStackName: !Ref ServerlessStackName
+      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}-dev'
+      AwsAccountRegion: !Sub '${AWS::Region}'

@@ -1,4 +1,4 @@
-name: .NET PROD master build
+name: .NET master build
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build -c release --no-restore
+      run: dotnet build -c release -o build_result --no-restore
       
     - name: Make Temp Dir
       run: | 
@@ -47,7 +47,10 @@ jobs:
       uses: montudor/action-zip@v1
       
     - name: Zip output
-      run: zip -qq -r ${{ env.TEMP_DIR }}/lambda/orchestrator/publish.zip Dome9.CloudGuardOnboarding.Orchestrator/bin/Release/netcoreapp3.1
+      run: |
+        cd build_result
+        zip -qq -r ${{ env.TEMP_DIR }}/lambda/orchestrator/publish.zip *
+        cd ..
       
       # Optional, to display how the File system looks like
     - name: Display File Systems (Tree)
@@ -55,9 +58,9 @@ jobs:
       
     - name: Copy CFT files
       run: |
-        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/PROD_US/* ${{ env.TEMP_DIR }}/templates/
+        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/onboarding.yml ${{ env.TEMP_DIR }}/templates/
         cp Dome9.CloudGuardOnboarding.Orchestrator/cft/posture_readonly_cft.yml ${{ env.TEMP_DIR }}/templates/posture_readonly_cft.yml
         cp Dome9.CloudGuardOnboarding.Orchestrator/cft/posture_readwrite_cft.yml ${{ env.TEMP_DIR }}/templates/posture_readwrite_cft.yml
     
-    - name: Upload files to PROD S3
-      run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET_PROD }} --acl public-read
+    - name: Upload files to S3
+      run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET }}/${{ steps.extract_branch.outputs.branch }} --acl public-read

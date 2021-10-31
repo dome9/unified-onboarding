@@ -12,18 +12,19 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public PostureStackCreationStep(
             ICloudGuardApiWrapper apiProvider,
             IRetryAndBackoffService retryAndBackoffService,
+            string cftS3Buckets,
+            string region,
             string stackName,
-            string templateS3Url,
+            string templateS3Path,
             string cloudGuardAwsAccountId,
             string cloudGuardExternalTrustId,
             string onboardingId,
             int stackExecutionTimeoutMinutes = 35)
         {
-            // TODO: if there are capablilities that are not unique to the Posture stack, this dictionary should be initialized at PostureConfig base, and only Posture-specific entries added
-            // e.g. Capablilitis.Add("WHATEVER_IAM");
             var capabilities = new List<string> { "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND" };
             _awsStackWrapper  = new PostureStackWrapper(apiProvider, retryAndBackoffService);
-            _stackConfig = new PostureStackConfig(templateS3Url, stackName, capabilities, onboardingId, cloudGuardAwsAccountId, cloudGuardExternalTrustId, stackExecutionTimeoutMinutes);
+            var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
+            _stackConfig = new PostureStackConfig(s3Url, stackName, capabilities, onboardingId, cloudGuardAwsAccountId, cloudGuardExternalTrustId, stackExecutionTimeoutMinutes);
         }
 
         public override async Task Execute()

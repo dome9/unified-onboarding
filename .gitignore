@@ -2,3 +2,9 @@
 Microservices/Dome9.CloudGuardOnboarding.Orchestrator/obj/
 
 .idea/
+
+.vs/
+
+Dome9.CloudGuardOnboarding.Orchestrator/bin/
+
+Dome9.CloudGuardOnboarding.Orchestrator/obj/
