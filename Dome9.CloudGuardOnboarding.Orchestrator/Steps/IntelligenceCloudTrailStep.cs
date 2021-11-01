@@ -187,6 +187,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public async override Task Execute()
         {
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Adding Intelligence", Enums.Feature.Intelligence)));            
+
             // find all account cloud trails and get bucket name to subscribe
             var chosenCloudTrail = await ChooseCloudTrailToOnboaredIntelligence();
 
@@ -196,12 +198,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
             // create Intelligence policy and attached to dome9 role                                   
             _stackConfig.CloudtrailS3BucketName = chosenCloudTrail.S3BucketName;
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Creating Intelligence stack", Enums.Feature.Intelligence)));
             await _awsStackWrapper.RunStackAsync(_stackConfig);           
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Created Intelligence stack successfully", Enums.Feature.Intelligence)));           
 
             // enable Intelligence account in Dome9
             await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new MagellanOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true }));
 
             Console.WriteLine($"[INFO] finish LIntelligence step..");
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Added Intelligence successfully", Enums.Feature.Intelligence)));
 
         }
 
