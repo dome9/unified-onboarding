@@ -143,13 +143,22 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                                 trail.BucketIsAccessible = true;
                             }                           
                         }
-                        catch (UnauthorizedAccessException AccessDeniedException)
+                        catch (AmazonS3Exception ex)
                         {
-                            Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Missing access permissions to S3 Bucket with CloudTrail: {trail.S3BucketName}. error: {AccessDeniedException}]");                        
+                            if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                            {
+                                Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Missing access permissions to S3 Bucket with CloudTrail: {trail.S3BucketName}. error: {ex}]");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={ex}");
+                                throw new Exception($"Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={ex}");
+                            }
                         }                         
                         catch (Exception e)
                         {
-                            throw new Exception($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={e}");
+                            Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={e}");
+                            throw new Exception($"Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={e}");
                         }
                         finally
                         {
