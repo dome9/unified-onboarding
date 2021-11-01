@@ -84,10 +84,32 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, "Failed to Acivate Serverless protection", Enums.Feature.ServerlessProtection)));
                 }
 
-                // 8. Delete the service account
+                // 8. Intelligence step - do not fail workflow on exceptions
+                try
+                {
+                    if (configurations.IntelligenceEnabled)
+                    {
+                        await ExecuteStep(new IntelligenceCloudTrailStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion,
+                        request.AwsAccountId, request.OnboardingId, configurations.PostureTemplateS3Path, configurations.CloudGuardAwsAccountId, 
+                        configurations.IntelligenceTemplateS3Path, configurations.IntelligenceStackName, configurations.IntelligenceSnsTopicArn));
+                    }
+                    else
+                    {                        
+                        await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.INACTIVE, "Intelligence disabled", Enums.Feature.Intelligence)));
+
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Failed handling Intelligence. Error={ex}");
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, ex.Message, Enums.Feature.Intelligence)));
+                }
+
+                // 9. Delete the service account
                 await ExecuteStep(new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));               
 
-                // 9. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
+                // 10. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
                 Console.WriteLine($"[INFO] About to postback custom resource response success");
                 await _retryAndBackoffService.RunAsync(() => customResourceResponseHandler?.PostbackSuccess(), 3);
                 Console.WriteLine($"[INFO] Custom resource response successful");

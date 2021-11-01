@@ -34,5 +34,18 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 Console.WriteLine($"[ERROR] [{this.GetType().Name}.{nameof(TryUpdateStatusError)}]Could not update error status. Error={ex}");
             }
         }
+
+        public async Task TryUpdateStatus(string onboardingId, string msg, Enums.Feature feature = Enums.Feature.None)
+        {
+            // try to report status msg
+            try
+            {
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, Enums.Status.WARNING, msg, feature)));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] [{this.GetType().Name}.{nameof(TryUpdateStatusError)}] Could not update msg status. Error={ex}");
+            }
+        }
     }
 }

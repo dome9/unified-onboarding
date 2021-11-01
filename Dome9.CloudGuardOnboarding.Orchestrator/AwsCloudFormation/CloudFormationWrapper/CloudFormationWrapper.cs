@@ -85,7 +85,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     throw new Exception(stackSummary?.ToDetailedString() ?? "Unable to get stack summary");
                 }
 
-                Console.WriteLine($"[INFO] Success, {stackSummary.ToDetailedString()}");
+                Console.WriteLine($"[INFO] Success, {stackSummary.ToDetailedString()}. StackTemplateS3Url:'{stackTemplateS3Url}'");
                 return response.StackId;
             }
             catch (Exception ex)

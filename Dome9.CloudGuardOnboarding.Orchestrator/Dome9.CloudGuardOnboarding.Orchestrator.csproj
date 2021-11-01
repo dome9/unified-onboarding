@@ -12,6 +12,8 @@
 		<PackageReference Include="Amazon.Lambda.Core" Version="1.2.0" />
 		<PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.1.0" />
 		<PackageReference Include="AWSSDK.CloudFormation" Version="3.7.4.8" />
+		<PackageReference Include="AWSSDK.CloudTrail" Version="3.7.0.87" />
 		<PackageReference Include="AWSSDK.IdentityManagement" Version="3.7.2.37" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.3.19" />
 	</ItemGroup>
 </Project>

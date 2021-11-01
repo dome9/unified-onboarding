@@ -9,6 +9,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             ACTIVE,
             PENDING,
             ERROR,
+            WARNING
         }
 
         public enum Feature
@@ -16,7 +17,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             None,
             Inventory,
             ContinuousCompliance,
-            ServerlessProtection
+            ServerlessProtection,
+            Intelligence
         }
     }
 }

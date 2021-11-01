@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.CloudFormation;
+using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
@@ -63,7 +64,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         protected virtual Dictionary<string, string> GetParameters(OnboardingStackConfig onboardingStackConfig) => null;        
 
-        public async Task DeleteStackAsync(PostureStackConfig stackConfig)
+        public async Task DeleteStackAsync(OnboardingStackConfig stackConfig)
         {
             await TryUpdateStatus(stackConfig.OnboardingId, "Deleting Stack", Enums.Status.ERROR);
             await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName);
