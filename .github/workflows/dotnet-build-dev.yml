@@ -62,6 +62,7 @@ jobs:
         cp Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/onboarding.yml ${{ env.TEMP_DIR }}/templates/
         cp Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/posture_readonly_cft.yml ${{ env.TEMP_DIR }}/templates/posture_readonly_cft.yml
         cp Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/posture_readwrite_cft.yml ${{ env.TEMP_DIR }}/templates/posture_readwrite_cft.yml
+        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/intelligence_cft.yml ${{ env.TEMP_DIR }}/templates/intelligence_cft.yml
 
 
     - name: Upload files to DEV S3 (by branch)
