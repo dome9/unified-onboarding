@@ -101,7 +101,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                         }
                         catch (Exception ex)
                         {                                                        
-                            Console.WriteLine($"[Error] [{nameof(FindAccountCloudTrails)} failed for region: {region}. Error={ex}]");
+                            Console.WriteLine($"[Error] [{nameof(FindAccountCloudTrails)} failed to get cloudtrail for region {region}. Error={ex}]");
                         }
                         finally
                         {
@@ -116,8 +116,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             trails = trails.GroupBy(x => x.TrailArn).Select(x => x.First()).ToList();
             if (!trails.Any())
             {
-                await TryUpdateStatus(_stackConfig.OnboardingId, "CloudTrail is not enabled", Enums.Feature.Intelligence);
-                throw new Exception("CloudTrail is not enabled");
+                throw new Exception("CloudTrail bucket not found. Please enable CloudTrail on any bucket and onboard Intelligence Cloud Activity from the environment manually");
             }
             return trails;
         }
@@ -141,7 +140,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                                 using var bucketClientWithRegion = new AmazonS3Client(RegionEndpoint.GetBySystemName(s3Region.Location.Value));
                                 var s3Subscriptions = await bucketClientWithRegion.GetBucketNotificationAsync(new GetBucketNotificationRequest() { BucketName = trail.S3BucketName });
                                 trail.BuckethasSubscribtions = s3Subscriptions?.TopicConfigurations?.Count > 0 ? true : false;
+                                trail.BucketIsAccessible = true;
                             }                           
+                        }
+                        catch (UnauthorizedAccessException AccessDeniedException)
+                        {
+                            Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Missing access permissions to S3 Bucket with CloudTrail: {trail.S3BucketName}. error: {AccessDeniedException}]");                        
+                        }                         
+                        catch (Exception e)
+                        {
+                            throw new Exception($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={e}");
                         }
                         finally
                         {
@@ -150,7 +158,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                     }));
                 }
                 await Task.WhenAll(tasks);
-            }            
+            }
+            
+            trails = trails.Where(c => c.BucketIsAccessible == true).ToList();
+            if (trails.Count == 0)
+            {
+                await TryUpdateStatus(_stackConfig.OnboardingId, "Did not find any Bucket with access permissions.", Enums.Feature.Intelligence);
+                throw new Exception("Did not find any Bucket with access permissions.");
+
+            }
             return trails;
         }
 

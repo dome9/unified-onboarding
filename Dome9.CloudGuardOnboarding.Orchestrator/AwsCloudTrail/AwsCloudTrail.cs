@@ -8,7 +8,8 @@
         public string TrailArn { get; set; }
         public string ExternalId { get; set; }
         public string BucketRegion { get; set; }
-        public bool BuckethasSubscribtions { get; set; }      
+        public bool BuckethasSubscribtions { get; set; }
+        public bool BucketIsAccessible { get; set; }
 
         public AwsCloudTrail()
         {
@@ -21,7 +22,8 @@
             S3BucketName = s3BucketName;
             TrailArn = trailArn;
             ExternalId = externalId;
-            BuckethasSubscribtions = false;          
+            BuckethasSubscribtions = false;
+            BucketIsAccessible = false;
 
         }
     }  
