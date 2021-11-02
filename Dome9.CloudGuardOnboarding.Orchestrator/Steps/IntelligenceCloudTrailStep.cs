@@ -54,10 +54,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 List<AwsCloudTrail> withoutSubscription =
-                    trailDetails.Where(c => c.BuckethasSubscribtions == false).ToList();
+                    trailDetails.Where(c => c.BucketHasSubscribtions == false).ToList();
                 if (withoutSubscription.Count == 0)
                 {
-                    throw new Exception($"[Error] [{nameof(ChoseBucketDetails)}] Event Notification is already configured on S3 Bucket(s) with CloudTrail.");
+                    Console.WriteLine($"[Error] [{nameof(ChoseBucketDetails)}] Event Notification is already configured on S3 Bucket(s) with CloudTrail.");
+                    throw new OnboardingException("CloudTrail S3 bucket already has Intelligence running on it", Enums.Feature.Intelligence);
                 }               
 
                 List<AwsCloudTrail> onlyGlobals = withoutSubscription.Where(c => c.IsMultiRegionTrail == true).ToList();
@@ -69,10 +70,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 }
                 return withoutSubscription[0];
             }
+            catch (OnboardingException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(ChoseBucketDetails)} failed. Error={ex}]");
-                throw ex;
+                throw new OnboardingException("Failed to chouse a bucket for trail", Enums.Feature.Intelligence);
             }
         }
 
@@ -135,11 +140,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                         {
                             using (var bucketClient = new AmazonS3Client())
                             {                                
-                                var s3Region = await bucketClient.GetBucketLocationAsync(new GetBucketLocationRequest() { BucketName = trail.S3BucketName });
-                                trail.BucketRegion = s3Region.Location.Value;
-                                using var bucketClientWithRegion = new AmazonS3Client(RegionEndpoint.GetBySystemName(s3Region.Location.Value));
+                                var s3RegionRes = await bucketClient.GetBucketLocationAsync(new GetBucketLocationRequest() { BucketName = trail.S3BucketName });
+                                // according to aws sdk documentation if the bucket is located in "us-east-1" than the location returned is an empty string
+                                var s3Region = s3RegionRes.Location.Value == "" ? "us-east-1" : s3RegionRes.Location.Value; 
+                                Console.WriteLine($"[{nameof(FindCloudTrailsStorageDetails)}] s3Region={s3Region}, trail={trail}");
+                                trail.BucketRegion = s3Region;
+                                using var bucketClientWithRegion = new AmazonS3Client(RegionEndpoint.GetBySystemName(s3Region));
                                 var s3Subscriptions = await bucketClientWithRegion.GetBucketNotificationAsync(new GetBucketNotificationRequest() { BucketName = trail.S3BucketName });
-                                trail.BuckethasSubscribtions = s3Subscriptions?.TopicConfigurations?.Count > 0 ? true : false;
+                                trail.BucketHasSubscribtions = s3Subscriptions?.TopicConfigurations?.Count > 0 ? true : false;
                                 trail.BucketIsAccessible = true;
                             }                           
                         }
@@ -157,8 +165,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                         }                         
                         catch (Exception e)
                         {
-                            Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={e}");
-                            throw new Exception($"Failed to get cloud trail bucket. trail={trail.TrailArn}, Error={e}");
+                            Console.WriteLine($"[Error] [{nameof(FindCloudTrailsStorageDetails)} Failed to get cloud trail bucket. trail={trail}, Error={e}");
                         }
                         finally
                         {
@@ -256,7 +263,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public override Task Cleanup()
         {
-            // TODO: delete resources if necessary
             return Task.CompletedTask;
         }
     }
