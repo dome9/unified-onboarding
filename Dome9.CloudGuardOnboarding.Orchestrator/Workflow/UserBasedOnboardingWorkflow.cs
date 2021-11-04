@@ -61,6 +61,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 Console.WriteLine($"[ERROR] Failed onboarding process. Error={ex}");
                 await TryUpdateStatusFailureInDynamo(request.OnboardingId, ex.ToString(), ex is OnboardingException ? (ex as OnboardingException).Feature : Enums.Feature.None);
                 await TryRollback();
+                await (new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId)).Execute();
                 await TryPostCustomResourceFailureResultToS3(customResourceResponseHandler, ex.ToString());
                 throw;
             }
