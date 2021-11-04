@@ -66,7 +66,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - 'secretsmanager:*'
-                Resource: !Sub arn:{AwsPartition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
+                Resource: !Sub arn:${AwsPartition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         # or just add administrator on everything to make sure that the perms 
@@ -88,10 +88,11 @@ Resources:
     Version: "1.0"
     Properties:
       ServiceToken: !GetAtt CloudGuardOnboardingOrchestrator.Arn
-      PostureTemplateName: !Sub 'https://!{S3BucketName}.s3.${AWS:Region}.amazonaws.com.cn/templates/${PostureTemplateName}'
       OnboardingId: !Ref OnboardingId
       ApiBaseUrl: !Ref ApiBaseUrl
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
       AwsAccountId: !Sub '${AWS::AccountId}'
       AwsPartition: !Ref AwsPartition
+      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}'
+      AwsAccountRegion: !Sub '${AWS::Region}'
