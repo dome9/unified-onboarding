@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a read-only cross account user that authorizes access for CloudGuard'
+Metadata:
+  Version: 0.0.1
+  
+Parameters: 
+  AwsPartition:
+    Description: The AWS partition type (aws-gov, aws-cn)
+    Type: String
+    AllowedValues:
+      - aws-us-gov
+      - aws-cn
+
+Resources:
+
+  CrossAccountUserCredentials:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      Status: Active
+      UserName: !Ref CrossAccountUser
+          
+  CrossAccountUserCredentialsStored:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: CloudGuardCrossAccountUserCredentials
+      SecretString: !Sub '{"ACCESS_KEY":"${CrossAccountUserCredentials}","SECRET_KEY":"${CrossAccountUserCredentials.SecretAccessKey}"}'
+            
+  CrossAccountUser:
+    Type: AWS::IAM::User
+    Properties:
+      # max 64 chars
+      UserName: 'CloudGuard-Connect-RO-user'
+     
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/SecurityAudit
+
+      Policies:
+        - PolicyName: CloudGuard-Connect-RO-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CloudGuardReadOnly
+                Action:
+                  - 'apigateway:GET'
+                  - 'athena:GetQueryExecution'
+                  - 'athena:GetWorkGroup'
+                  - 'cognito-identity:DescribeIdentityPool'
+                  - 'cognito-idp:DescribeUserPool'
+                  - 'cognito-idp:DescribeRiskConfiguration'
+                  - 'dynamodb:ListTagsOfResource'
+                  - 'ec2:SearchTransitGatewayRoutes'
+                  - 'elasticfilesystem:Describe*'
+                  - 'elasticache:ListTagsForResource'
+                  - 'es:ListTags'
+                  - 'eks:DescribeNodegroup'
+                  - 'eks:ListNodegroups'
+                  - 'glue:GetConnections'
+                  - 'glue:GetSecurityConfigurations'
+                  - 'kafka:ListClusters'
+                  - 'kinesis:List*'
+                  - 'kinesis:Describe*'
+                  - 'kinesisvideo:Describe*'
+                  - 'kinesisvideo:List*'
+                  - 'logs:Get*'
+                  - 'logs:FilterLogEvents'
+                  - 'logs:ListLogDeliveries'
+                  - 'mq:DescribeBroker'
+                  - 'mq:ListBrokers'
+                  - 'network-firewall:DescribeFirewall'
+                  - 'network-firewall:DescribeLoggingConfiguration'
+                  - 'network-firewall:ListFirewalls'
+                  - 'personalize:DescribeDatasetGroup'
+                  - 'personalize:ListDatasetGroups'
+                  - 's3:List*'
+                  - 'secretsmanager:DescribeSecret'
+                  - 'sns:ListSubscriptions'
+                  - 'sns:ListTagsForResource'
+                  - 'sns:GetPlatformApplicationAttributes'
+                  - 'sns:ListPlatformApplications'
+                  - 'states:DescribeStateMachine'
+                  - 'transcribe:Get*'
+                  - 'transcribe:List*'
+                  - 'translate:GetTerminology'
+                  - 'waf-regional:ListResourcesForWebACL'
+                  - 'wafv2:ListWebACLs'
+                  - 'wafv2:ListResourcesForWebACL'
+                Effect: Allow
+                Resource: '*'
+              - Sid: ElasticbeanstalkConfigurationSettingsPermission
+                Action:
+                  - 's3:GetObject'
+                Effect: Allow
+                Resource: !Sub 'arn:${AwsPartition}:s3:::elasticbeanstalk-env-resources-??*?/*'       

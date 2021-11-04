@@ -3,7 +3,7 @@ Description: 'Check Point CloudGuard Dome9 unified onboarding'
 Metadata:
   Version: 0.0.1
 
-Parameters:
+Parameters:  
   S3BucketName:
     Description: The S3 Bucket
     Type: String
@@ -22,8 +22,16 @@ Parameters:
   LambdaPkgPath:
     Description: The CloudGuard onboarding Lambda package path
     Type: String
+  AwsPartition:
+    Description: The AWS account partition type, default aws
+    Type: String
+    AllowedValues:
+      - aws
+      - aws-us-gov
+      - aws-cn
+    Default: aws
 
-Resources:
+Resources:  
   CloudGuardLambdaStackCreationRole:  
     Type: AWS::IAM::Role
     Properties:  
@@ -50,6 +58,15 @@ Resources:
                   - '*'
                 Effect: Allow
                 Resource: '*'
+        # TODO: make below GetCloudGuardApiKeys policy conditional on cn/gov
+        - PolicyName: CloudGuard-Lambda-GetCloudGuardApiKeys-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:*'
+                Resource: !Sub arn:${AwsPartition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         # or just add administrator on everything to make sure that the perms 
@@ -63,8 +80,8 @@ Resources:
       Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900
       Code:
-        S3Bucket: !Sub '${S3BucketName}-${AWS::Region}'
-        S3Key: !Sub '${LambdaPkgPath}'     
+       S3Bucket: !Sub '${S3BucketName}-${AWS::Region}-dev'
+       S3Key: !Sub '${LambdaPkgPath}'
       Description: Invoke a function during stack creation.      
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
@@ -76,5 +93,6 @@ Resources:
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
       AwsAccountId: !Sub '${AWS::AccountId}'
-      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}'
+      AwsPartition: !Ref AwsPartition
+      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}-dev'
       AwsAccountRegion: !Sub '${AWS::Region}'

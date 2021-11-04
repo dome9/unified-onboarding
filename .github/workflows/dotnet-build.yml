@@ -36,11 +36,11 @@ jobs:
       run: | 
         temp_dir=$(mktemp -d)
         mkdir -p $temp_dir/lambda/orchestrator/
-        mkdir -p $temp_dir/templates
+        mkdir -p $temp_dir/templates/
         echo "Working with Temp Dir: $temp_dir"
         tree $temp_dir
         echo "TEMP_DIR=$temp_dir" >> $GITHUB_ENV
-      
+        
     - name: Install zip
       uses: montudor/action-zip@v1
       
@@ -56,7 +56,7 @@ jobs:
       
     - name: Copy CFT files
       run: |
-        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/* ${{ env.TEMP_DIR }}/templates/
+        cp -r Dome9.CloudGuardOnboarding.Orchestrator/cft/* ${{ env.TEMP_DIR }}/templates/
     
     - name: Upload files to S3
       run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET }} --acl public-read

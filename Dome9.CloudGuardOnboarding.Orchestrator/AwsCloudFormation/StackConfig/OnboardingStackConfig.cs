@@ -16,5 +16,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         }
 
         public string OnboardingId { get; set; }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, {nameof(OnboardingId)}='{OnboardingId}'";
+        }
     }
 }

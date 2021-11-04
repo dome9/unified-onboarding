@@ -1,18 +1,14 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
-using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Response;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {
-    public class GetConfigurationsStep : StepBase
+    public class GetConfigurationStep : StepBase
     {
         private readonly string _onboardingId;
-        public ConfigurationsResponseModel Configurations { get; set; }
+        public ConfigurationsResponseModel Configuration { get; set; }
 
-        public GetConfigurationsStep
+        public GetConfigurationStep
         (
             ICloudGuardApiWrapper apiProvider,
             IRetryAndBackoffService retryAndBackoffService,
@@ -29,10 +25,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 Console.WriteLine($"[INFO] About to get configurations");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Getting configurations from CloudGuard", Enums.Feature.ContinuousCompliance)));
-                Configurations = await _retryAndBackoffService.RunAsync(() => _apiProvider.GetConfigurations(new ConfigurationsRequestModel(_onboardingId)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Getting configurations from CloudGuard", Enums.Feature.None)));
+                Configuration = await _retryAndBackoffService.RunAsync(() => _apiProvider.GetConfiguration(new ConfigurationsRequestModel(_onboardingId)));
                 Console.WriteLine($"[INFO] Got configurations successfully");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Validated onboarding id successfully", Enums.Feature.ContinuousCompliance)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Validated onboarding id successfully", Enums.Feature.None)));
             }
             catch (Exception ex)
             {

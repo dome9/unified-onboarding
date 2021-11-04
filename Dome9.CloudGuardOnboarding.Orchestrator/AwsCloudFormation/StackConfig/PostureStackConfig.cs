@@ -20,5 +20,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             CloudGuardAwsAccountId = cloudGuardAwsAccountId;
             RoleExternalTrustSecret = cloudGuardExternalTrustSecret;
         }
+        public override string ToString()
+        {
+            return $"{base.ToString()}, {nameof(RoleExternalTrustSecret)}='{RoleExternalTrustSecret}', {nameof(CloudGuardAwsAccountId)}='{CloudGuardAwsAccountId}'";
+        }
     }
 }

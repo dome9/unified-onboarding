@@ -46,7 +46,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 case StackOperation.Create:
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(stackConfig.OnboardingId, "Creating stack", Feature)));
-                    await _cfnWrapper.CreateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters, (status) => TryUpdateStackStatus(stackConfig.OnboardingId, status, Feature), stackConfig.ExecutionTimeoutMinutes);
+                    await _cfnWrapper.CreateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters, async (status) => await TryUpdateStackStatus(stackConfig.OnboardingId, status, Feature), stackConfig.ExecutionTimeoutMinutes);
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(stackConfig.OnboardingId, "Created stack successfully", Feature)));
                     break;
 
@@ -66,9 +66,19 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public async Task DeleteStackAsync(OnboardingStackConfig stackConfig)
         {
-            await TryUpdateStatus(stackConfig.OnboardingId, "Deleting Stack", Enums.Status.ERROR);
-            await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName);
-            await TryUpdateStatus(stackConfig.OnboardingId, "Deleted Stack", Enums.Status.ERROR);
+            try
+            {
+                await TryUpdateStatus(stackConfig.OnboardingId, "Rollingback stack", Enums.Status.PENDING);
+                await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName);
+                await TryUpdateStatus(stackConfig.OnboardingId, "Rollback stack complete", Enums.Status.INACTIVE);
+                await TryUpdateStackStatus(stackConfig.OnboardingId, "Rollingback complete", Feature);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to Rollback stack. Feature={Feature}, Error={e}");
+                await TryUpdateStatus(stackConfig.OnboardingId, "Rollback  stack failed", Enums.Status.ERROR);
+            }
+            
         }
 
         private async Task TryUpdateStatus(string onboardingId, string statusMessage, Enums.Status activeStatus)
@@ -84,11 +94,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        private void TryUpdateStackStatus(string onboaringId, string stackStatus, Enums.Feature feature)
+        private async Task TryUpdateStackStatus(string onboaringId, string stackStatus, Enums.Feature feature)
         {
             try
             {
-                _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(onboaringId, stackStatus, feature)).ConfigureAwait(false);
+                await _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(onboaringId, stackStatus, feature)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

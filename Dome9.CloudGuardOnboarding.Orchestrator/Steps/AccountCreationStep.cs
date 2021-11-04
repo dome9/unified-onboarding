@@ -7,13 +7,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         private readonly string _awsAccountId;
         private readonly string _onboardingId;
+        private readonly ApiCredentials _apiCredentials;
 
-        public AccountCreationStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, string awsAccountId, string onboardingId)
+        public AccountCreationStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, string awsAccountId, string onboardingId, ApiCredentials apiCredentials = null)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
             _awsAccountId = awsAccountId;
             _onboardingId = onboardingId;
+            _apiCredentials = apiCredentials;
         }
         public override Task Cleanup()
         {
@@ -27,7 +29,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Creating cloud account", Enums.Feature.ContinuousCompliance)));
 
             string accountName = await AwsCredentialUtils.GetAwsAccountNameAsync(_awsAccountId);
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardAccount(new AccountModel(_onboardingId, _awsAccountId, accountName)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardAccount(new AccountModel(_onboardingId, _awsAccountId, accountName, _apiCredentials)));
 
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Cloud account created successfully", Enums.Feature.ContinuousCompliance)));
             Console.WriteLine($"[INFO] Successfully posted onboarding request. Cloud account created successfully.");

@@ -18,13 +18,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     CloudGuardApiKeyId = "",
                     CloudGuardApiKeySecret = "",
                     AwsAccountId = "",
-                    S3BucketName = "CftS3Bucket",
-                    AwsAccountRegion = "AwsAccountRegion"
+                    S3BucketName = "",
+                    AwsAccountRegion = ""
                 };
 
             var api = new CloudGuardApiWrapper();
             var retry = new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider());
-            await new OnboardingWorkflow(api, retry).RunAsync(onboardingRequest, null);
+            await new UserBasedOnboardingWorkflow(api, retry).RunAsync(onboardingRequest, null);
         }
     }
 }

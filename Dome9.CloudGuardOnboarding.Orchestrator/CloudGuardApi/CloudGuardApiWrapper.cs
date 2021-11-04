@@ -1,6 +1,4 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
-using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Response;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -9,7 +7,7 @@ using System.Threading.Tasks;
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class CloudGuardApiWrapper : ICloudGuardApiWrapper, IDisposable
-    {        
+    {
         private HttpClient _httpClient;
 
         private const string CONTROLLER_ROUTE = "/v2/UnifiedOnboarding";
@@ -75,7 +73,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 if (response == null || !response.IsSuccessStatusCode)
                 {
                     throw new Exception($"Reponse StatusCode:{response?.StatusCode} Reason:{response?.ReasonPhrase}");
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -87,7 +85,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public async Task UpdateOnboardingStatus(StatusModel model)
         {
             await _semaphore.WaitAsync();
-            
+
             try
             {
                 string methodRoute = "UpdateStatus";
@@ -148,9 +146,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         throw new Exception("OnboardAccount failed. Response is null.");
                     }
-                }                
+                }
 
-                if (!response.IsSuccessStatusCode) 
+                if (!response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content?.ReadAsStringAsync();
                     throw new OnboardAccountException($"OnboardAccount failed. Reponse StatusCode:{response.StatusCode}, ReasonPhrase:'{response.ReasonPhrase}', Content:'{responseContent}'")
@@ -190,9 +188,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 {
                     var responseContent = await response.Content?.ReadAsStringAsync();
 
-                    throw new Exception($"Serverless add account failed failed. Reponse StatusCode:{response.StatusCode}, ReasonPhrase:'{response.ReasonPhrase}', Content:'{responseContent}'");                   
+                    throw new Exception($"Serverless add account failed failed. Reponse StatusCode:{response.StatusCode}, ReasonPhrase:'{response.ReasonPhrase}', Content:'{responseContent}'");
                 }
-            }            
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
@@ -200,7 +198,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        public async Task<ConfigurationsResponseModel> GetConfigurations(ConfigurationsRequestModel model)
+        public async Task<ConfigurationsResponseModel> GetConfiguration(ConfigurationsRequestModel model)
         {
 
             try
@@ -208,7 +206,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var response = await _httpClient.GetAsync($"{CONTROLLER_ROUTE}/Configuration/{model.OnboardingId}");
                 if (response == null || !response.IsSuccessStatusCode)
                 {
-                    throw new Exception($"Failed to get configorations from CloudGuard. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'");
+                    throw new Exception($"Failed to get configuration from CloudGuard. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'");
                 }
 
                 var jsonString = await response.Content?.ReadAsStringAsync();
@@ -216,7 +214,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Error] [{nameof(GetConfigurations)} failed. Error={ex}]");
+                Console.WriteLine($"[Error] [{nameof(GetConfiguration)} failed. Error={ex}]");
                 throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
@@ -259,4 +257,3 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         }
     }
 }
-

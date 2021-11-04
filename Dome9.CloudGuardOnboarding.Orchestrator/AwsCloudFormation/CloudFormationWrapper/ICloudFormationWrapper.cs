@@ -28,5 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         Task<StackSummary> GetStackSummaryAsync(Enums.Feature feature, string stackName);
 
         Task DeleteStackAsync(Enums.Feature feature, string stackName);
+
+        Task<ApiCredentials> GetCredentialsFromSecretsManager();
     }
 }

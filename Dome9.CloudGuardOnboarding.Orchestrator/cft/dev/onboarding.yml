@@ -20,7 +20,7 @@ Parameters:
     Description: The CloudGuard service account API Key secret
     Type: String
   LambdaPkgPath:
-    Description: The lambda code path
+    Description: The CloudGuard onboarding Lambda package path
     Type: String
 
 Resources:

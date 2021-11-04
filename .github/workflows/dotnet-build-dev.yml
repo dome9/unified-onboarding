@@ -40,7 +40,7 @@ jobs:
       run: | 
         temp_dir=$(mktemp -d)
         mkdir -p $temp_dir/lambda/orchestrator/
-        mkdir -p $temp_dir/templates
+        mkdir -p $temp_dir/templates/
         echo "Working with Temp Dir: $temp_dir"
         tree $temp_dir
         echo "TEMP_DIR=$temp_dir" >> $GITHUB_ENV
@@ -60,8 +60,7 @@ jobs:
       
     - name: Copy CFT files
       run: |
-        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/* ${{ env.TEMP_DIR }}/templates/
-
+        cp -r Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/* ${{ env.TEMP_DIR }}/templates/
 
     - name: Upload files to DEV S3 (by branch)
       run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET_DEV }}/${{ steps.extract_branch.outputs.branch }} --acl public-read

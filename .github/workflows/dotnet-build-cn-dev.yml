@@ -60,7 +60,7 @@ jobs:
       
     - name: Copy CFT files
       run: |
-        cp Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/* ${{ env.TEMP_DIR }}/templates/
+        cp -r Dome9.CloudGuardOnboarding.Orchestrator/cft/dev/* ${{ env.TEMP_DIR }}/templates/
 
 
     - name: Upload files to DEV S3 (by branch)

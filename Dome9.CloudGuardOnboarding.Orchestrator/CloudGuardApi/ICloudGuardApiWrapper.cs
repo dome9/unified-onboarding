@@ -1,8 +1,4 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
-using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Response;
-using System.Threading.Tasks;
-
-
+﻿using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
@@ -15,7 +11,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         Task OnboardAccount(AccountModel model);
         Task UpdateOnboardingStatus(StatusModel model);
         Task ServerlessAddAccount(ServelessAddAccountModel model);
-        Task<ConfigurationsResponseModel> GetConfigurations(ConfigurationsRequestModel model);
+        Task<ConfigurationsResponseModel> GetConfiguration(ConfigurationsRequestModel model);
         Task OnboardIntelligence(MagellanOnboardingModel data);
     }
 }

@@ -11,14 +11,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public string ApiBaseUrl { get; set; }
         public string CloudGuardApiKeyId { get; set; }
         public string CloudGuardApiKeySecret { get; set; }
-        public string AwsAccountId { get; set; }
+        public string AwsAccountId { get; set; } 
         public string S3BucketName { get; set; }
         public string AwsAccountRegion {  get; set; }
-        
+        public string AwsPartition { get; set; }
+
         public override string ToString()
         {
             return $"OnboardingRequest: [OnboardingId={OnboardingId}], [AwsAccountId={AwsAccountId}], [ApiBaseUrl={ApiBaseUrl}], " +
-                $"[CloudGuardApiKeyId={CloudGuardApiKeyId}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret}], [S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}]";
+                $"[CloudGuardApiKeyId={CloudGuardApiKeyId.MaskChars(3)}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret.MaskChars(0)}], [S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]";
         }
     }
 

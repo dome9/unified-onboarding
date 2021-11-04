@@ -19,5 +19,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         }
 
         public StackConfig() { }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, {nameof(TemplateS3Url)}='{TemplateS3Url}', {nameof(StackName)}='{StackName}', {nameof(ExecutionRoleArn)}='{ExecutionRoleArn}', {nameof(ExecutionTimeoutMinutes)}='{ExecutionTimeoutMinutes}', {nameof(Capabilities)}=[{string.Join(',', Capabilities ?? new List<string>())}],";
+        }
     }
 }

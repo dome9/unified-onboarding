@@ -47,9 +47,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 throw new NotImplementedException("Request of type 'Update' is not supported");
             }
 
-            await new OnboardingWorkflow(
-                new CloudGuardApiWrapper(), 
-                new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()))
+            await WorkflowFactory.Create(!string.IsNullOrWhiteSpace(cloudFormationRequest.ResourceProperties?.AwsPartition))
                 .RunAsync(cloudFormationRequest.ResourceProperties, customResourceResponseHandler);
         }
 
