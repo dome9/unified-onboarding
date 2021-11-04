@@ -1,4 +1,4 @@
-name: .NET master build
+name: .NET CN master build
 
 on:
   workflow_dispatch:
@@ -12,9 +12,9 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
+        aws-access-key-id: ${{ secrets.AWS_KEY_ID_CN }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_CN }}
+        aws-region: cn-north-1
 
     - name: Extract branch name
       shell: bash
@@ -59,4 +59,4 @@ jobs:
         cp Dome9.CloudGuardOnboarding.Orchestrator/cft/* ${{ env.TEMP_DIR }}/templates/
     
     - name: Upload files to S3
-      run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET }} --acl public-read
+      run: aws s3 sync ${{ env.TEMP_DIR }} s3://${{ secrets.AWS_BUCKET_CN }} --acl public-read
