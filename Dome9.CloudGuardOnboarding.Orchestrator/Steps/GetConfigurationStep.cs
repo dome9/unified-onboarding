@@ -28,7 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Getting configurations from CloudGuard", Enums.Feature.None)));
                 Configuration = await _retryAndBackoffService.RunAsync(() => _apiProvider.GetConfiguration(new ConfigurationsRequestModel(_onboardingId)));
                 Console.WriteLine($"[INFO] Got configurations successfully");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Validated onboarding id successfully", Enums.Feature.None)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Successfully got configurations from CloudGuard", Enums.Feature.None)));
             }
             catch (Exception ex)
             {
