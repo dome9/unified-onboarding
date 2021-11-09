@@ -91,7 +91,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         await ExecuteStep(new IntelligenceCloudTrailStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion,
                         request.AwsAccountId, request.OnboardingId, configurations.PostureTemplateS3Path, configurations.CloudGuardAwsAccountId, 
-                        configurations.IntelligenceTemplateS3Path, configurations.IntelligenceStackName, configurations.IntelligenceSnsTopicArn));
+                        configurations.IntelligenceTemplateS3Path, configurations.IntelligenceStackName, configurations.IntelligenceSnsTopicArn, configurations.IntelligenceRulesSetsIds));
                     }
                     else
                     {                        

@@ -16,6 +16,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Response
         public string IntelligenceTemplateS3Path { get; set; }
         public bool IntelligenceEnabled { get; set; }
         public string IntelligenceSnsTopicArn { get; set; }
+        public List<long> IntelligenceRulesSetsIds { get; set; }
         public string CloudGuardAwsAccountId { get; set; }
         public string RoleExternalTrustSecret { get; set; }
     }

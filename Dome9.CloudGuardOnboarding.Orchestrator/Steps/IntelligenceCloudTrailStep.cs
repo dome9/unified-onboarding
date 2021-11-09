@@ -29,10 +29,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly int _throttlerMaxCount = 3;
         private readonly string _snsTopicArn;
         private readonly string _s3Url;
+        private readonly List<long> _rulesSetIds;
 
         public IntelligenceCloudTrailStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, 
             string cftS3Buckets, string region, string awsAccountId, string OnboardingId, string roleName, string cloudGuardAwsAccountId, 
-            string intelligenceTemplateS3Url, string stackName, string snsTopicArn)
+            string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesSetIds)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
@@ -47,6 +48,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{intelligenceTemplateS3Url}";
             _stackConfig = new InteligenceStackConfig(_s3Url, _intelligenceStackName, _capabilities, _onboardingId, "", _cloudGuardRoleName, 30);
             _snsTopicArn = snsTopicArn;
+            _rulesSetIds = rulesSetIds;
         }
 
         public async Task<AwsCloudTrail> ChoseBucketDetails(List<AwsCloudTrail> trailDetails)
@@ -203,7 +205,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Created Intelligence stack successfully", Enums.Feature.Intelligence)));           
 
             // enable Intelligence account in Dome9
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new MagellanOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true }));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new MagellanOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true, RulesSetIds= _rulesSetIds}));
 
             Console.WriteLine($"[INFO] finish LIntelligence step..");
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Added Intelligence successfully", Enums.Feature.Intelligence)));
