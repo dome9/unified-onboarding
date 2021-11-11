@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Check Point CloudGuard Dome9 unified onboarding'
+Metadata:
+  Version: 0.0.1
+
+Parameters:
+  S3BucketName:
+    Description: The S3 Bucket
+    Type: String
+  OnboardingId:
+    Description: The id of the onboarding process
+    Type: String
+  ApiBaseUrl:
+    Description: The base url of the CloudGuard web API
+    Type: String
+  CloudGuardApiKeyId:
+    Description: The CloudGuard service account API Key Id
+    Type: String
+  CloudGuardApiKeySecret:
+    Description: The CloudGuard service account API Key secret
+    Type: String
+  LambdaPkgPath:
+    Description: The CloudGuard onboarding Lambda package path
+    Type: String
+
+Resources:
+  CloudGuardLambdaStackCreationRole:  
+    Type: AWS::IAM::Role
+    Properties:  
+      RoleName: 'CloudGuard-Lambda-CloudFormation-role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CloudGuard-Lambda-CloudFormation-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CloudGuardLambdaCloudFormation
+                Action:                   
+                  #- 'cloudformation:*'
+                  #- 'iam:*'
+                  #- 'sns:*'
+                  - '*'
+                Effect: Allow
+                Resource: '*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        # or just add administrator on everything to make sure that the perms 
+  CloudGuardOnboardingOrchestrator:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - CloudGuardLambdaStackCreationRole
+    Properties:
+      Runtime: dotnetcore3.1
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
+      Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
+      Timeout: 900
+      Code:
+        S3Bucket: !Sub '${S3BucketName}-${AWS::Region}'
+        S3Key: !Sub '${LambdaPkgPath}'     
+      Description: Invoke a function during stack creation.      
+  CloudGuardOnboardingOrchestratorInvoke:
+    Type: AWS::CloudFormation::CustomResource
+    Version: "1.0"
+    Properties:
+      ServiceToken: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+      OnboardingId: !Ref OnboardingId
+      ApiBaseUrl: !Ref ApiBaseUrl
+      CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
+      CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
+      AwsAccountId: !Sub '${AWS::AccountId}'
+      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}'
+      AwsAccountRegion: !Sub '${AWS::Region}'
