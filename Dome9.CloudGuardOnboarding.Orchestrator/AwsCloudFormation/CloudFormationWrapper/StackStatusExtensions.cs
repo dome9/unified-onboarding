@@ -71,6 +71,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public static string ToDetailedString(this StackSummary stackSummary)
         {
             return $"StackName:'{stackSummary.StackName}' Status:'{stackSummary.StackStatus}', Reason:'{stackSummary.StackStatusReason}',  LastUpdated:{stackSummary.LastUpdatedTime}";
-        }
+        }       
     }
 }

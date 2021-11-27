@@ -47,6 +47,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         private async Task PostbackStatus(string status, string error = null)
         {
+            Console.WriteLine($"[INFO] [{nameof(PostbackStatus)}] status='{status}', error='{error ?? string.Empty}'");
+
             string errorIfExists = string.IsNullOrWhiteSpace(error) ? string.Empty : $"{error.Trim()}. ";
 
             using (HttpClient client = new HttpClient())

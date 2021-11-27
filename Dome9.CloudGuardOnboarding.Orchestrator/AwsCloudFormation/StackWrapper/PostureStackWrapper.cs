@@ -15,14 +15,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             if(!(onboardingStackConfig is PostureStackConfig))
             {
-                throw new ArgumentException("OnboardingStackConfig must be of type PostureStackConfig");
+                throw new ArgumentException($"{nameof(onboardingStackConfig)} is not of type {nameof(PostureStackConfig)}");
             }
 
             PostureStackConfig postureStackConfig = onboardingStackConfig as PostureStackConfig;
             return new Dictionary<string, string>
             {
-                {"CloudGuardAwsAccountId",  postureStackConfig.CloudGuardAwsAccountId},
-                {"RoleExternalTrustSecret", postureStackConfig.RoleExternalTrustSecret }
+                { "CloudGuardAwsAccountId",  postureStackConfig.CloudGuardAwsAccountId },
+                { "RoleExternalTrustSecret", postureStackConfig.RoleExternalTrustSecret }             
             };
         }
     }

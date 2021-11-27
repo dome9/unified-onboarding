@@ -13,13 +13,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     /// <summary>
     /// Singleton that executes operations on an AWS CloudFormation client
     /// </summary>
-    public class CloudFormationWrapper : ICloudFormationWrapper, IDisposable
+    public class CloudFormationWrapper : ICloudFormationWrapper
     {
         private readonly AmazonCloudFormationClient _client;
         private static ICloudFormationWrapper _cfnWrapper = null;
         private static readonly object _instanceLock = new object();
         private const int STATUS_POLLING_INTERVAL_MILLISECONDS = 500;
-        private bool _disposed = false;
+        private bool _disposed = false;        
 
         private CloudFormationWrapper()
         {
@@ -42,9 +42,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             Dictionary<string, string> parameters, 
             Action<string> statusUpdate,
             int executionTimeoutMinutes)
-        {           
-
-            int statusPollCount = 0;
+        {
 
             var requestParameters = parameters?.Select(p => new Parameter
                 {
@@ -63,40 +61,32 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
             try
             {
-                StackSummary stackSummary = null;
+                // we don't check if a stack with the same name already exists (even though we can),
+                // in case there is - stack create will fail.
                 var response = await _client.CreateStackAsync(request);
-                do
+                if (response?.HttpStatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    stackSummary = await GetStackSummaryAsync(feature, stackName);
-                    if (!stackSummary.StackStatus.IsFinal())
+                    StackSummary stackSummary = await PollUntilStackStatusFinal(feature, stackName, statusUpdate, executionTimeoutMinutes);
+
+                    if (stackSummary == null || !stackSummary.StackStatus.IsFinal() || stackSummary.StackStatus.IsError())
                     {
-                        Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll stack status again, {stackSummary.ToDetailedString()}");
-                        statusUpdate($"{stackSummary.StackStatus}");
-                        await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
+                        throw new Exception($"Invalid stack status: {stackSummary?.ToDetailedString() ?? $"Unable to get stack summary. Feature='{feature}' StackName='{stackName}', StackTemplateS3Url='{stackTemplateS3Url}'."}");
                     }
 
-                    if(STATUS_POLLING_INTERVAL_MILLISECONDS * ++statusPollCount > executionTimeoutMinutes * 60 * 1000)
-                    {
-                        Console.WriteLine("[WARNING] Execution timeout exceeded");
-                        break;
-                    }
+                    Console.WriteLine($"[INFO] [{nameof(CreateStackAsync)}] Success in creating stack. StackSummary=[{stackSummary.ToDetailedString()}]. StackTemplateS3Url='{stackTemplateS3Url}'.");
+                    return response.StackId;
                 }
-                while (stackSummary == null || !stackSummary.StackStatus.IsFinal());
-                
-                if(stackSummary == null || !stackSummary.StackStatus.IsFinal() || stackSummary.StackStatus.IsError())
+                else
                 {
-                    throw new Exception(stackSummary?.ToDetailedString() ?? "Unable to get stack summary");
+                    throw new Exception($"Failed to create stack. Feature='{feature}', StackName='{stackName}', StackTemplateS3Url='{stackTemplateS3Url}',  HttpStatusCode='{response.HttpStatusCode}'.");
                 }
-
-                Console.WriteLine($"[INFO] Success, {stackSummary.ToDetailedString()}. StackTemplateS3Url:'{stackTemplateS3Url}'");
-                return response.StackId;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] [{nameof(CreateStackAsync)}] Failed to create stack. StackName:'{stackName}', StackTemplateS3Url:'{stackTemplateS3Url}', Error={ex}");
+                Console.WriteLine($"[ERROR] [{nameof(CreateStackAsync)}] {ex}");
                 throw new OnboardingException(ex.Message, feature);
             }
-        }
+        }       
 
         public async Task<string> UpdateStackAsync(
             Enums.Feature feature, 
@@ -155,17 +145,24 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             try
             {
                 var nextToken = "";
-                StackSummary stack = null;
-                while (stack == null && nextToken != null)
+                StackSummary stackSummary = null;
+                while (stackSummary == null && nextToken != null)
                 {
-                    var response = await _client.ListStacksAsync();
-                    stack = response.StackSummaries.FirstOrDefault(s => s.StackName == stackName);
+                    var listRequest = new ListStacksRequest
+                    {
+                        NextToken = string.IsNullOrWhiteSpace(nextToken) ? null : nextToken,
+                    };
+
+                    var response = await _client.ListStacksAsync(listRequest);
+                        
+                    stackSummary = response.StackSummaries.FirstOrDefault(s => s.StackName == stackName);
+                   
                     nextToken = response.NextToken;
                 }
 
-                return stack;
+                return stackSummary;
 
-            }
+            }            
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] [{nameof(GetStackSummaryAsync)}] Failed to get StackSummary for stack '{stackName}'. Error={ex}");
@@ -173,7 +170,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        public async Task DeleteStackAsync(Enums.Feature feature, string stackName)
+        /// <summary>
+        /// This method will wait until the delete operation is finished, because if it does not wait, and lambda proceeds to exit, 
+        /// the authorization to perform delete actions on the stack will be lost.
+        /// </summary>
+        /// <param name="feature"></param>
+        /// <param name="stackName"></param>
+        /// <returns></returns>
+        public async Task DeleteStackAsync(Enums.Feature feature, string stackName, int executionTimeoutMinutes)
         {
             var request = new DeleteStackRequest
             {
@@ -182,21 +186,69 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             
             try
             {
-                await _client.DeleteStackAsync(request);
+                var stack = await GetStackSummaryAsync(feature, stackName);
+                if (stack == null)
+                {
+                    Console.WriteLine($"[INFO] [{nameof(DeleteStackAsync)}] can not get stack, probably stack not exist, will skip stack deletion. Feature={feature}, StackName={stackName}.");
+                    return;
+                }
+
+                var response = await _client.DeleteStackAsync(request);
+                if (response?.HttpStatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    StackSummary stackSummary = await PollUntilStackStatusFinal(feature, stackName, (s) => Console.Write(s), executionTimeoutMinutes);
+
+                    if (stackSummary == null || !stackSummary.StackStatus.IsFinal() || stackSummary.StackStatus.IsError())
+                    {
+                        throw new Exception($"Invalid stack status: {stackSummary?.ToDetailedString() ?? $"Unable to get stack summary. Feature={feature}, StackName={stackName}"}.");
+                    }
+                    Console.WriteLine($"[INFO] [{nameof(DeleteStackAsync)}] Success in deleting stack. Feature={feature}, StackSummary=[{stackSummary.ToDetailedString()}].");
+
+                }
+                else
+                {
+                    throw new Exception($"Failed to delete stack. Feature={feature}, Stackname='{stackName}' HttpStatusCode='{response?.HttpStatusCode}'.");
+                }                
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete stack '{stackName}'. Error={ex}");
-                throw new OnboardingException(ex.Message, feature); ;
+                Console.WriteLine($"[ERROR] {nameof(DeleteStackAsync)} {ex}");
+                throw new OnboardingDeleteStackException(ex.Message, stackName, feature); ;
             }
+        }
+
+        private async Task<StackSummary> PollUntilStackStatusFinal(Enums.Feature feature, string stackName, Action<string> statusUpdate, int executionTimeoutMinutes)
+        {
+            int statusPollCount = 0;
+            StackSummary stackSummary;
+
+            do
+            {
+                stackSummary = await GetStackSummaryAsync(feature, stackName);
+                if (stackSummary == null || !stackSummary.StackStatus.IsFinal())
+                {
+                    Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll stack status again, {stackSummary?.ToDetailedString()}");
+                    statusUpdate($"{stackSummary.StackStatus}");
+                    await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
+                }
+
+                if (STATUS_POLLING_INTERVAL_MILLISECONDS * ++statusPollCount > executionTimeoutMinutes * 60 * 1000)
+                {
+                    Console.WriteLine($"[WARN] [{nameof(PollUntilStackStatusFinal)}] Execution timeout exceeded. Feature={feature}, StackName={stackName}, ExecutionTimeoutMinutes={executionTimeoutMinutes}.");
+                    break;
+                }
+            }
+            while (stackSummary == null || !stackSummary.StackStatus.IsFinal());
+
+            return stackSummary;
         }
 
         #region User Based Secrets
 
-        public async Task<ApiCredentials> GetCredentialsFromSecretsManager()
+        public async Task<ApiCredentials> GetCredentialsFromSecretsManager(string resourceName)
         {
             const string tagKey = "aws:cloudformation:logical-id";
-            const string tagValue = "CrossAccountUserCredentialsStored";
+            string tagValue = resourceName;
             const string accessKeyId = "ACCESS_KEY";
             const string accessKeySecret = "SECRET_KEY";
 
@@ -230,6 +282,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
             }
         }
+
+
     
         private async Task<List<SecretListEntry>> SecretsManagerListSecrets()
         {           

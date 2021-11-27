@@ -4,25 +4,20 @@ using System.Text;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public class PostureUserBasedStackConfig :  OnboardingStackConfig
+    public class PostureUserBasedStackConfig : OnboardingStackConfig
     {
-        public string AwsPartition { get; set; }
-
         public PostureUserBasedStackConfig(
             string templateS3Url,
             string stackName,
-            List<string> capabilities,
-            string onboardingId,
-            string awsPartition,
+            string onboardingId,        
             int executionTimeoutMinutes)
-            : base(onboardingId, templateS3Url, stackName, capabilities, executionTimeoutMinutes)
+            : base(onboardingId, templateS3Url, stackName, executionTimeoutMinutes)
         {
-            AwsPartition = awsPartition;
         }
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(AwsPartition)}='{AwsPartition}'" ;
+            return base.ToString();
         }
     }
 }

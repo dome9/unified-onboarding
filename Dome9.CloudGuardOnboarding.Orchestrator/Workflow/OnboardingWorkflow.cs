@@ -23,14 +23,17 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     throw new ArgumentException($"{nameof(request.OnboardingId)} is null or whitespace");
                 }
 
-                var initialServiceAccount = new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl);
-                _apiProvider.SetLocalCredentials(initialServiceAccount);
+                // 0. set the credentials step - will delete the service account on rollback in case of workflow error
+                var initServiceAccountStep = new InitServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl);
+                await ExecuteStep(initServiceAccountStep);
 
                 Console.WriteLine($"[INFO] Executing onboarding process - OnboardingId: {request?.OnboardingId}");
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.PENDING, "Starting onboarding workflow", Enums.Feature.None)));
 
                 // 1. create new service account and delete initial service account with exposed credentials (stack url containing the credentials could be passed around)               
-                await ExecuteStep(new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, initialServiceAccount, request.OnboardingId));
+                var replaceServiceAccountStep = new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, initServiceAccountStep.ServiceAccount, request.OnboardingId);
+                await ExecuteStep(replaceServiceAccountStep);
+                initServiceAccountStep.ServiceAccount = replaceServiceAccountStep.ServiceAccount;
 
                 // 2.  validate onboarding id
                 await ExecuteStep(new ValidateOnboardingStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
@@ -43,7 +46,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 await ExecuteStep(new PostureStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PostureStackName, configuration.PostureTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId));
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
-                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
+                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, request.OnboardingLambdaRoleArn, request.RootStackId, null, null));
 
 
                 // serverless - do not fail workflow on exceptions
@@ -83,7 +86,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         await ExecuteStep(new IntelligenceCloudTrailStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion,
                         request.AwsAccountId, request.OnboardingId, configuration.PostureTemplateS3Path, configuration.CloudGuardAwsAccountId,
-                        configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn));
+                        configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn, configuration.IntelligenceRulesetsIds));
                     }
                     else
                     {
@@ -111,8 +114,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 Console.WriteLine($"[ERROR] Failed onboarding process. Error={ex}");
                 await TryUpdateStatusFailureInDynamo(request.OnboardingId, ex.ToString(), ex is OnboardingException ? (ex as OnboardingException).Feature : Enums.Feature.None);
-                await TryRollback();
-                await (new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId)).Execute();
+                await TryRollback();                
                 await TryPostCustomResourceFailureResultToS3(customResourceResponseHandler, ex.ToString());
 
                 throw;

@@ -6,9 +6,19 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public static class WorkflowFactory
     {
-        public static IWorkflow Create(bool userBased)
+        public static IWorkflow Create(CloudFormationRequest cloudFormationRequest)
         {
-            if (userBased)
+            if (cloudFormationRequest.RequestType.ToLower().Equals("delete"))
+            {
+                return new DeleteStackWorkflow();
+            }
+            else if (cloudFormationRequest.RequestType.ToLower().Equals("update"))
+            {
+                return new UpdateStackWorkflow();
+            }
+
+
+            if (cloudFormationRequest.IsUserBased())
             {
                 return new UserBasedOnboardingWorkflow(
                     new CloudGuardApiWrapper(),
@@ -19,5 +29,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 new CloudGuardApiWrapper(),
                 new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()));
         }
+        
     }
 }

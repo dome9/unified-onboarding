@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Check Point CloudGuard Dome9 unified onboarding'
 Metadata:
-  Version: 0.0.1
+  Version: 2.0.0
 
 Parameters:
   S3BucketName:
@@ -22,10 +22,68 @@ Parameters:
   LambdaPkgPath:
     Description: The CloudGuard onboarding Lambda package path
     Type: String
+  CloudGuardAwsAccountNumber:
+    Description: The CloudGuard AWS account number
+    Type: String
 
 Resources:
-  CloudGuardLambdaStackCreationRole:  
+
+  CloudGuardOnboardingStackModifyRole:
     Type: AWS::IAM::Role
+    Properties:  
+      RoleName: 'CloudGuard-Onboarding-StackModify-role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+                AWS: !Sub 'arn:aws:iam::${CloudGuardAwsAccountNumber}:root'
+            Action: sts:AssumeRole
+
+      Policies:
+        - PolicyName: CloudGuard-Lambda-StackModify-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ModifyStack
+                Effect: Allow
+                Action:
+                  - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStacks
+                Resource: !Ref AWS::StackId
+          
+              - Sid: ModifyFunction
+                Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                  - lambda:DeleteFunction
+                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
+          
+              - Sid: ModifyRole
+                Effect: Allow
+                Action:
+                  - iam:DeleteRole
+                  - iam:DetachRolePolicy
+                  - iam:DeleteRolePolicy
+                Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
+                  
+              - Sid: LambdaRemovePermission
+                Effect: Allow
+                Action: lambda:RemovePermission
+                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
+
+              - Sid: DeleteRolePolicy
+                Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:DeleteRole
+                Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role'
+
+  CloudGuardLambdaStackCreationRole: 
+    Type: AWS::IAM::Role
+    DependsOn:
+       - CloudGuardOnboardingStackModifyRole
     Properties:  
       RoleName: 'CloudGuard-Lambda-CloudFormation-role'
       AssumeRolePolicyDocument:
@@ -44,20 +102,19 @@ Resources:
             Statement:
               - Sid: CloudGuardLambdaCloudFormation
                 Action:                   
-                  #- 'cloudformation:*'
-                  #- 'iam:*'
-                  #- 'sns:*'
                   - '*'
                 Effect: Allow
-                Resource: '*'
+                Resource: '*'      
+
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        # or just add administrator on everything to make sure that the perms 
+
   CloudGuardOnboardingOrchestrator:
-    Type: AWS::Lambda::Function
+    Type: AWS::Lambda::Function    
     DependsOn:
       - CloudGuardLambdaStackCreationRole
     Properties:
+      FunctionName: 'CloudGuardOnboardingOrchestrator'
       Runtime: dotnetcore3.1
       Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
       Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
@@ -65,8 +122,20 @@ Resources:
       Code:
         S3Bucket: !Sub '${S3BucketName}-${AWS::Region}-dev'
         S3Key: !Sub '${LambdaPkgPath}'     
-      Description: Invoke a function during stack creation.      
+      Description: Invoke a function during stack creation.
+
+  CloudGuardOnboardingOrchestratorLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+     - CloudGuardOnboardingOrchestrator
+    Properties:
+        FunctionName: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+        Action: lambda:InvokeFunction
+        Principal: !Ref CloudGuardAwsAccountNumber 
+
   CloudGuardOnboardingOrchestratorInvoke:
+    DependsOn:
+       - CloudGuardOnboardingOrchestratorLambdaPermission
     Type: AWS::CloudFormation::CustomResource
     Version: "1.0"
     Properties:
@@ -75,6 +144,9 @@ Resources:
       ApiBaseUrl: !Ref ApiBaseUrl
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
-      AwsAccountId: !Sub '${AWS::AccountId}'
+      AwsAccountId: !Ref AWS::AccountId
       S3BucketName: !Sub '${S3BucketName}-${AWS::Region}-dev'
-      AwsAccountRegion: !Sub '${AWS::Region}'
+      AwsAccountRegion: !Ref AWS::Region
+      OnboardingLambdaRoleArn: !GetAtt CloudGuardOnboardingStackModifyRole.Arn   
+      EnableRemoteStackModify: true 
+      RootStackId: !Ref AWS::StackId

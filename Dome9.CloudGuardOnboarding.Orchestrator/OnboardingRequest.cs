@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+﻿namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class OnboardingRequest
     {
@@ -15,14 +11,20 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public string S3BucketName { get; set; }
         public string AwsAccountRegion {  get; set; }
         public string AwsPartition { get; set; }
+        public string Version { get; set; }
+        public string OnboardingLambdaRoleArn { get; set; }
+        public string EnableRemoteStackModify { get; set; }
+        public string RootStackId { get; set; }
 
         public override string ToString()
         {
             return $"OnboardingRequest: [OnboardingId={OnboardingId}], [AwsAccountId={AwsAccountId}], [ApiBaseUrl={ApiBaseUrl}], " +
-                $"[CloudGuardApiKeyId={CloudGuardApiKeyId.MaskChars(3)}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret.MaskChars(0)}], [S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]";
+                $"[CloudGuardApiKeyId={CloudGuardApiKeyId.MaskChars(3)}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret.MaskChars(0)}]," +
+                $"[S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]" +
+                $"[OnboardingLambdaRoleArn={OnboardingLambdaRoleArn}], [EnableRemoteStackModify={EnableRemoteStackModify}]" +
+                $"[RootStackId={RootStackId}]";
         }
     }
-
 
     public class CloudFormationRequest
     {

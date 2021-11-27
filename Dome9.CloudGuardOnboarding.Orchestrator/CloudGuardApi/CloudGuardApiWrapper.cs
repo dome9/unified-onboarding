@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
@@ -239,7 +240,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             GC.SuppressFinalize(this);
         }
 
-        public async Task OnboardIntelligence(MagellanOnboardingModel data)
+        public async Task OnboardIntelligence(IntelligenceOnboardingModel data)
         {
             try
             {

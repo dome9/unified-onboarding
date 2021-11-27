@@ -18,13 +18,18 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string templateS3Path,
             string cloudGuardAwsAccountId,
             string cloudGuardExternalTrustId,
-            string onboardingId,
+            string onboardingId,          
             int stackExecutionTimeoutMinutes = 35)
         {
-            var capabilities = new List<string> { "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND" };
             _awsStackWrapper = new PostureStackWrapper(apiProvider, retryAndBackoffService);
             var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
-            _stackConfig = new PostureStackConfig(s3Url, stackName, capabilities, onboardingId, cloudGuardAwsAccountId, cloudGuardExternalTrustId, stackExecutionTimeoutMinutes);
+            _stackConfig = new PostureStackConfig(
+                s3Url, 
+                stackName, 
+                onboardingId, 
+                cloudGuardAwsAccountId, 
+                cloudGuardExternalTrustId,            
+                stackExecutionTimeoutMinutes);
         }
 
         public override async Task Execute()
@@ -37,7 +42,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public override async Task Rollback()
         {
             Console.WriteLine($"[INFO][{nameof(PostureStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync starting");
-            await _awsStackWrapper.DeleteStackAsync(_stackConfig);
+            await _awsStackWrapper.DeleteStackAsync(_stackConfig, true);
             Console.WriteLine($"[INFO][{nameof(PostureStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync finished");
 
         }

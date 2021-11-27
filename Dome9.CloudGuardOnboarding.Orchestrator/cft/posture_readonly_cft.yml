@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Create a read-only cross account role that authorizes access for CloudGuard Dome9.'
 Metadata:
-  Version: 0.0.1
+  Version: 2.0.0
   
 Parameters: 
   CloudGuardAwsAccountId:    
@@ -9,7 +9,7 @@ Parameters:
     Type: String
   RoleExternalTrustSecret:    
     Description: CloudGuard generated unique id for assuming external trust
-    Type: String
+    Type: String  
 
 Resources:
   CrossAccountRole:
@@ -22,12 +22,11 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
                 AWS: !Sub 'arn:aws:iam::${CloudGuardAwsAccountId}:root'
             Action: sts:AssumeRole
             Condition:
               StringEquals:
-                sts:ExternalId: !Sub ${RoleExternalTrustSecret}
+                sts:ExternalId: !Ref RoleExternalTrustSecret
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
 

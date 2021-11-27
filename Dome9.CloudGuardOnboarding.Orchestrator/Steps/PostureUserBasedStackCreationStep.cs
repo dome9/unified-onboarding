@@ -8,8 +8,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         private readonly PostureUserBasedStackWrapper _awsStackWrapper;
         private readonly OnboardingStackConfig _stackConfig;
-        public ApiCredentials AwsUserCredentials { get; private set; }
+        private readonly bool _enableRemoteStackModify = false;
 
+        public ApiCredentials AwsUserCredentials { get; private set; }
+        public ApiCredentials LambdaUserCredentials { get; private set; }
 
         public PostureUserBasedStackCreationStep(
             ICloudGuardApiWrapper apiProvider,
@@ -20,14 +22,18 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string templateS3Path,
             string onboardingId,
             string awsPartition,
+            string enableRemoteStackModify,
             int stackExecutionTimeoutMinutes = 35)
         {
-            // TODO: if there are capablilities that are not unique to the Posture stack, this dictionary should be initialized at PostureConfig base, and only Posture-specific entries added
-            // e.g. Capablilitis.Add("WHATEVER_IAM");
-            var capabilities = new List<string> { "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND" };
             var s3Url = $"https://{cftS3BucketName}.s3.{region}.{GetDomain(awsPartition)}/{templateS3Path}";
             _awsStackWrapper = new PostureUserBasedStackWrapper(apiProvider, retryAndBackoffService);
-            _stackConfig = new PostureUserBasedStackConfig(s3Url, stackName, capabilities, onboardingId, awsPartition, stackExecutionTimeoutMinutes);
+            _stackConfig = new PostureUserBasedStackConfig(
+                s3Url, 
+                stackName, 
+                onboardingId,               
+                stackExecutionTimeoutMinutes);
+
+            bool.TryParse(enableRemoteStackModify, out _enableRemoteStackModify);
         }
 
         public override async Task Execute()
@@ -35,20 +41,25 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             Console.WriteLine($"[INFO][{nameof(PostureUserBasedStackCreationStep)}.{nameof(Execute)}] RunStackAsync starting");
             await _awsStackWrapper.RunStackAsync(_stackConfig);
 
-            await SetAwsUserCredentials();
+            await SetUserCredentials();
 
             Console.WriteLine($"[INFO][{nameof(PostureUserBasedStackCreationStep)}.{nameof(Execute)}] RunStackAsync finished");
         }
 
-        private async Task SetAwsUserCredentials()
+        private async Task SetUserCredentials()
         {
-            AwsUserCredentials = await _awsStackWrapper.GetCredentials();
+            AwsUserCredentials = await _awsStackWrapper.GetAwsUserCredentials();
+
+            if (_enableRemoteStackModify)
+            {
+                LambdaUserCredentials = await _awsStackWrapper.GetStackModifyUserCredentials();
+            }
         }
 
         public override async Task Rollback()
         {
             Console.WriteLine($"[INFO][{nameof(PostureUserBasedStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync starting");
-            await _awsStackWrapper.DeleteStackAsync(_stackConfig);
+            await _awsStackWrapper.DeleteStackAsync(_stackConfig, true);
             Console.WriteLine($"[INFO][{nameof(PostureUserBasedStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync finished");
         }
 

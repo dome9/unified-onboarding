@@ -8,9 +8,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             string onboardingId, 
             string templateS3Url, 
             string stackName, 
-            List<string> capabilities, 
             int executionTimeoutMinutes) 
-            : base(templateS3Url, stackName, capabilities, executionTimeoutMinutes)
+            : base(templateS3Url, stackName, executionTimeoutMinutes)
         {
             OnboardingId = onboardingId;
         }

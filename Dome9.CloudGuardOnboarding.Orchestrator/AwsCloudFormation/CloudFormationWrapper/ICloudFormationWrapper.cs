@@ -5,7 +5,7 @@ using Amazon.CloudFormation.Model;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public interface ICloudFormationWrapper
+    public interface ICloudFormationWrapper : IDisposable
     {
         Task<string> CreateStackAsync(
             Enums.Feature feature, 
@@ -27,8 +27,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         Task<StackSummary> GetStackSummaryAsync(Enums.Feature feature, string stackName);
 
-        Task DeleteStackAsync(Enums.Feature feature, string stackName);
+        Task DeleteStackAsync(Enums.Feature feature, string stackName, int executionTimeoutMinutes);
 
-        Task<ApiCredentials> GetCredentialsFromSecretsManager();
+        Task<ApiCredentials> GetCredentialsFromSecretsManager(string key);
     }
 }

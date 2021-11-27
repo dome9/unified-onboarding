@@ -6,14 +6,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {
     public class ReplaceServiceAccountStep : StepBase
     {
-        private ServiceAccount _serviceAccount;
+        public ServiceAccount ServiceAccount { get; private set; }
         private readonly string _onboardingId;
 
         public ReplaceServiceAccountStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, ServiceAccount serviceAccount, string onboardingId)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
-            _serviceAccount = serviceAccount;
+            ServiceAccount = serviceAccount;
             _onboardingId = onboardingId;
         }
         public override async Task Execute()
@@ -21,7 +21,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 // set initially received account from Lambda funciton
-                _apiProvider.SetLocalCredentials(_serviceAccount);
+                _apiProvider.SetLocalCredentials(ServiceAccount);
 
                 Console.WriteLine($"[INFO] About to replace service account");
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replacing service account")));
@@ -35,7 +35,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                         throw new OnboardingException("Created new service account is invalid", Enums.Feature.None);
                     }
 
-                    _serviceAccount = newServiceAccount;
+                    ServiceAccount = newServiceAccount;
                 }
                 catch (OnboardingException)
                 {
@@ -47,7 +47,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 }
 
                 // set provider to use new account 
-                _apiProvider.SetLocalCredentials(_serviceAccount);
+                _apiProvider.SetLocalCredentials(ServiceAccount);
 
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replaced service account successfully")));
                 Console.WriteLine($"[INFO] Replaced service account successfully");

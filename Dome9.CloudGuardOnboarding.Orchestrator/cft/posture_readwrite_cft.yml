@@ -1,33 +1,31 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Create a R/W cross account role that authorizes access for CloudGuard Dome9.'
 Metadata:
-  Version: 0.0.1
+  Version: 2.0.0
   
 Parameters:
   CloudGuardAwsAccountId:    
     Description: CloudGuard instance AWS AccountId that is requiring external trust
     Type: String
-  RoleExternalTrustSecret:   
+  RoleExternalTrustSecret:    
     Description: CloudGuard generated unique id for assuming external trust
-    Type: String
+    Type: String  
 
 Resources:
   CrossAccountRole:
     Type: AWS::IAM::Role    
     Properties:
-      # max 64 chars
       RoleName: 'CloudGuard-Connect-RW-role'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
-              # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
                 AWS: !Sub 'arn:aws:iam::${CloudGuardAwsAccountId}:root'
             Action: sts:AssumeRole
             Condition:
               StringEquals:
-                sts:ExternalId: !Sub ${RoleExternalTrustSecret}
+                sts:ExternalId: !Ref RoleExternalTrustSecret
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
 
@@ -93,6 +91,7 @@ Resources:
                   - 's3:GetObject'
                 Effect: Allow
                 Resource: 'arn:aws:s3:::elasticbeanstalk-env-resources-??*?/*'
+
         - PolicyName: CloudGuard-Connect-RW-policy         
           PolicyDocument:
             Version: 2012-10-17
@@ -111,4 +110,3 @@ Resources:
                 Effect: Allow
                 Resource: '*'             
 
- 

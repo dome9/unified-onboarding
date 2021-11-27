@@ -2,13 +2,13 @@
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public class CloudTrailLogicLogsModel
+    public class CloudTrailIntelligenceModel
     {
-        public CloudTrailLogicLogsModel()
+        public CloudTrailIntelligenceModel()
         {
         }
 
-        public CloudTrailLogicLogsModel(List<string> externalAccountNumbers)
+        public CloudTrailIntelligenceModel(List<string> externalAccountNumbers)
         {
             ExternalAccountNumbers = externalAccountNumbers;
         }
@@ -16,17 +16,17 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public List<string> ExternalAccountNumbers;
     }
 
-    public class TrailLogicLogsViewModel
+    public class TrailIntelligenceLogsViewModel
     {
-        public TrailLogicLogsViewModel(List<TrailLogicLogViewModel> cloudTrailLogs)
+        public TrailIntelligenceLogsViewModel(List<TrailIntelligenceLogViewModel> cloudTrailLogs)
         {
             logicLogs = cloudTrailLogs;
         }
 
-        public List<TrailLogicLogViewModel> logicLogs { get; set; }
+        public List<TrailIntelligenceLogViewModel> logicLogs { get; set; }
     }
 
-    public class TrailLogicLogViewModel
+    public class TrailIntelligenceLogViewModel
     {       
         public string CloudAccountId { get; set; }
         public string CloudAccountName { get; set; }
@@ -68,12 +68,5 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             Name = name;
             Value = value;
         }
-    }
-
-    public class MagellanOnboardingModel
-    {        
-        public string CloudAccountId { get; set; }        
-        public string BucketName { get; set; }
-        public bool IsUnifiedOnboarding { get; set; }
     }
 }

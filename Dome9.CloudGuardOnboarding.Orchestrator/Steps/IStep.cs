@@ -48,7 +48,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             }
         }
 
-        public async Task TryUpdateStatusWaringng(string onboardingId, string msg, Enums.Feature feature = Enums.Feature.None)
+        public async Task TryUpdateStatusWarning(string onboardingId, string msg, Enums.Feature feature = Enums.Feature.None)
         {
             // try to report status msg
             try

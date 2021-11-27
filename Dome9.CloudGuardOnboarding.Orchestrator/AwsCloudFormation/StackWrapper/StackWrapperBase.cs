@@ -6,7 +6,7 @@ using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public abstract class StackWrapperBase
+    public abstract class StackWrapperBase : IDisposable
     {
         protected enum StackOperation
         {
@@ -22,6 +22,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         private readonly List<StackStatus> _nonExistingStatus = new List<StackStatus> { StackStatus.CREATE_FAILED, StackStatus.DELETE_COMPLETE };
         private readonly List<StackStatus> _inProgressStatus = new List<StackStatus> { StackStatus.CREATE_IN_PROGRESS, StackStatus.DELETE_IN_PROGRESS, StackStatus.IMPORT_IN_PROGRESS, StackStatus.REVIEW_IN_PROGRESS, StackStatus.UPDATE_IN_PROGRESS, StackStatus.ROLLBACK_IN_PROGRESS, StackStatus.IMPORT_ROLLBACK_IN_PROGRESS, StackStatus.UPDATE_ROLLBACK_IN_PROGRESS, StackStatus.UPDATE_COMPLETE_CLEANUP_IN_PROGRESS, StackStatus.UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS };
         private readonly List<StackStatus> _readyStatus = new List<StackStatus> { StackStatus.CREATE_COMPLETE, StackStatus.IMPORT_COMPLETE, StackStatus.UPDATE_COMPLETE, StackStatus.ROLLBACK_COMPLETE };
+        private bool _disposed;
 
         public StackWrapperBase(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService)
         {
@@ -64,19 +65,27 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         protected virtual Dictionary<string, string> GetParameters(OnboardingStackConfig onboardingStackConfig) => null;        
 
-        public async Task DeleteStackAsync(OnboardingStackConfig stackConfig)
+        public async Task DeleteStackAsync(OnboardingStackConfig stackConfig, bool isTriggeredByError = false)
         {
             try
             {
-                await TryUpdateStatus(stackConfig.OnboardingId, "Rollingback stack", Enums.Status.PENDING);
-                await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName);
-                await TryUpdateStatus(stackConfig.OnboardingId, "Rollback stack complete", Enums.Status.ERROR);
-                TryUpdateStackStatus(stackConfig.OnboardingId, "Rollingback complete", Feature);
+                if (isTriggeredByError)
+                {
+                    await TryUpdateStatus(stackConfig.OnboardingId, "Deleting stack", Enums.Status.PENDING);
+                }
+                
+                await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName, stackConfig.ExecutionTimeoutMinutes);
+                
+                if (isTriggeredByError)
+                {
+                    await TryUpdateStatus(stackConfig.OnboardingId, "Delete stack complete", Enums.Status.ERROR);                
+                    await TryUpdateStackStatus(stackConfig.OnboardingId, "Delete stack complete", Feature);
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to Rollback stack. Feature={Feature}, Error={e}");
-                await TryUpdateStatus(stackConfig.OnboardingId, "Rollback  stack failed", Enums.Status.ERROR);
+                Console.WriteLine($"Failed to delete stack. Feature={Feature}, Error={e}");
+                await TryUpdateStatus(stackConfig.OnboardingId, "Delete stack failed", Enums.Status.ERROR);
             }
             
         }
@@ -94,11 +103,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        private void TryUpdateStackStatus(string onboaringId, string stackStatus, Enums.Feature feature)
+        private async Task TryUpdateStackStatus(string onboaringId, string stackStatus, Enums.Feature feature)
         {
             try
             {
-                 _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(onboaringId, stackStatus, feature)).ConfigureAwait(false);
+                await _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(onboaringId, stackStatus, feature)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -141,6 +150,26 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
 
             return StackOperation.None;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _cfnWrapper?.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }       
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

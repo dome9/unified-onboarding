@@ -18,10 +18,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _retryAndBackoffService = retryAndBackoffService;
             _awsAccountId = awsAccountId;
             _onboardingId = onboardingId;
-
-            var capabilities = new List<string> { "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND" };
             _awsStackWrapper = new ServerlessStackWrapper(apiProvider, retryAndBackoffService);
-            _stackConfig = new ServerlessStackConfig(serverlessStackS3Url, serverlessStackName, capabilities, onboardingId, 30);
+            _stackConfig = new ServerlessStackConfig(serverlessStackS3Url, serverlessStackName, onboardingId, 30);
 
         }
         public override Task Cleanup()

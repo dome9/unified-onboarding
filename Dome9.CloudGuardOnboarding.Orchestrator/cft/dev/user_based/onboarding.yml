@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Check Point CloudGuard Dome9 unified onboarding'
 Metadata:
-  Version: 0.0.1
+  Version: 2.0.0
 
 Parameters:  
   S3BucketName:
@@ -22,18 +22,64 @@ Parameters:
   LambdaPkgPath:
     Description: The CloudGuard onboarding Lambda package path
     Type: String
-  AwsPartition:
-    Description: The AWS account partition type, default aws
-    Type: String
-    AllowedValues:
-      - aws
-      - aws-us-gov
-      - aws-cn
-    Default: aws
 
-Resources:  
-  CloudGuardLambdaStackCreationRole:  
+Resources:
+  StackModifyCrossAccountUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: 'CloudGuard-Onboarding-StackModify-user'
+
+      Policies:
+        - PolicyName: CloudGuard-Lambda-StackModify-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ModifyStack
+                Effect: Allow
+                Action:
+                  - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack
+                Resource: !Ref AWS::StackId
+          
+              - Sid: ModifyFunction
+                Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                  - lambda:DeleteFunction
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator
+          
+              - Sid: ModifyRole
+                Effect: Allow
+                Action:
+                  - iam:DeleteRole
+                  - iam:DetachRolePolicy
+                  - iam:DeleteRolePolicy
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role
+                  
+              - Sid: LambdaRemovePermission
+                Effect: Allow
+                Action: lambda:RemovePermission
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator
+
+              - Sid: DeleteUserPolicy
+                Effect: Allow
+                Action:
+                  - iam:DeleteUserPolicy
+                  - iam:DeleteUser
+                  - iam:DeleteAccessKey
+                  - iam:ListAccessKeys
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Onboarding-StackModify-user
+
+              - Sid: DeleteSecret
+                Effect: Allow
+                Action:
+                  - secretsmanager:DeleteSecret 
+                Resource: !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
+
+  CloudGuardLambdaStackCreationRole:
     Type: AWS::IAM::Role
+    DependsOn:
+      - StackModifyCrossAccountUser
     Properties:  
       RoleName: 'CloudGuard-Lambda-CloudFormation-role'
       AssumeRolePolicyDocument:
@@ -51,14 +97,10 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Sid: CloudGuardLambdaCloudFormation
-                Action:                   
-                  #- 'cloudformation:*'
-                  #- 'iam:*'
-                  #- 'sns:*'
+                Action:
                   - '*'
                 Effect: Allow
                 Resource: '*'
-        # TODO: make below GetCloudGuardApiKeys policy conditional on cn/gov
         - PolicyName: CloudGuard-Lambda-GetCloudGuardApiKeys-policy
           PolicyDocument:
             Version: 2012-10-17
@@ -66,23 +108,39 @@ Resources:
               - Effect: Allow
                 Action:
                   - 'secretsmanager:*'
-                Resource: !Sub arn:${AwsPartition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
+                Resource: 
+                  - !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
+                  - !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        # or just add administrator on everything to make sure that the perms 
+
+  StackModifyCrossAccountUserCredentials:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      Status: Active
+      UserName: !Ref StackModifyCrossAccountUser
+          
+  StackModifyCrossAccountUserCredentialsStored:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: CloudGuardStackModifyCrossAccountUserCredentials
+      SecretString: !Sub '{"ACCESS_KEY":"${StackModifyCrossAccountUserCredentials}","SECRET_KEY":"${StackModifyCrossAccountUserCredentials.SecretAccessKey}"}'       
+        
   CloudGuardOnboardingOrchestrator:
     Type: AWS::Lambda::Function
     DependsOn:
       - CloudGuardLambdaStackCreationRole
     Properties:
+      FunctionName: 'CloudGuardOnboardingOrchestrator'
       Runtime: dotnetcore3.1
       Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
       Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900
       Code:
-       S3Bucket: !Sub '${S3BucketName}-${AWS::Region}-dev'
-       S3Key: !Sub '${LambdaPkgPath}'
-      Description: Invoke a function during stack creation.      
+        S3Bucket: !Sub '${S3BucketName}-${AWS::Region}-dev'
+        S3Key: !Sub '${LambdaPkgPath}'
+      Description: Invoke a function during stack creation.
+      
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
     Version: "1.0"
@@ -92,7 +150,9 @@ Resources:
       ApiBaseUrl: !Ref ApiBaseUrl
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
-      AwsAccountId: !Sub '${AWS::AccountId}'
-      AwsPartition: !Ref AwsPartition
+      AwsAccountId: !Ref AWS::AccountId
+      AwsPartition: !Ref AWS::Partition
       S3BucketName: !Sub '${S3BucketName}-${AWS::Region}-dev'
-      AwsAccountRegion: !Sub '${AWS::Region}'
+      AwsAccountRegion: !Ref AWS::Region   
+      EnableRemoteStackModify: true
+      RootStackId: !Ref AWS::StackId

@@ -17,7 +17,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper
         {
             if (!(onboardingStackConfig is InteligenceStackConfig))
             {
-                throw new ArgumentException("OnboardingStackConfig must be of type LogicStackConfig");
+                throw new ArgumentException($"{nameof(onboardingStackConfig)} is not of type {nameof(InteligenceStackConfig)}");
             }
 
             InteligenceStackConfig logicStackConfig = onboardingStackConfig as InteligenceStackConfig;

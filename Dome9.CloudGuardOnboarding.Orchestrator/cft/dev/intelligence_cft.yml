@@ -1,7 +1,7 @@
 ﻿AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Create Dome9 Intelligence Policy that enable CloudGuard Dome9 to access CloudTrail data.'
 Metadata:
-  Version: 0.0.1
+  Version: 2.0.0
 
 Parameters: 
   CloudtrailS3BucketName:    

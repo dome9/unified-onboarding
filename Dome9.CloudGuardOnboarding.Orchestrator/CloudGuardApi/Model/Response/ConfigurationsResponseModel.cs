@@ -1,4 +1,5 @@
-﻿namespace Dome9.CloudGuardOnboarding.Orchestrator
+﻿using System.Collections.Generic;
+namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class ConfigurationsResponseModel
     {
@@ -12,6 +13,7 @@
         public string IntelligenceTemplateS3Path { get; set; }
         public bool IntelligenceEnabled { get; set; }
         public string IntelligenceSnsTopicArn { get; set; }
+        public List<long> IntelligenceRulesetsIds { get; set; }
         public string CloudGuardAwsAccountId { get; set; }
         public string RoleExternalTrustSecret { get; set; }
     }

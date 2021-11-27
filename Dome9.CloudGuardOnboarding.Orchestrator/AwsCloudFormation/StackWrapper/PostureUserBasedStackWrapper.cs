@@ -17,19 +17,21 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             Console.WriteLine($"[INFO] [GetParameters] {onboardingStackConfig.GetType().Name}=[{onboardingStackConfig}]");
             if(!(onboardingStackConfig is PostureUserBasedStackConfig))
             {
-                throw new ArgumentException("onboardingStackConfig is not of type PostureUserBasedStackConfig");
+                throw new ArgumentException($"{nameof(onboardingStackConfig)} is not of type {nameof(PostureUserBasedStackConfig)}");
             }
 
             var postureStackConfig = onboardingStackConfig as PostureUserBasedStackConfig;
-            return new Dictionary<string, string>
-            {
-                {"AwsPartition",  postureStackConfig.AwsPartition},
-            };
+            return new Dictionary<string, string>();
         }
 
-        public async Task<ApiCredentials> GetCredentials()
+        public async Task<ApiCredentials> GetAwsUserCredentials()
         {
-            return await _cfnWrapper.GetCredentialsFromSecretsManager();
+            return await _cfnWrapper.GetCredentialsFromSecretsManager("CrossAccountUserCredentialsStored");
+        }
+
+        public async Task<ApiCredentials> GetStackModifyUserCredentials()
+        {
+            return await _cfnWrapper.GetCredentialsFromSecretsManager("StackModifyCrossAccountUserCredentialsStored");
         }
     }
 }

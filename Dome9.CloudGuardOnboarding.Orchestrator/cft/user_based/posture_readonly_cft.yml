@@ -1,18 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Creates a read-only cross account user that authorizes access for CloudGuard'
 Metadata:
-  Version: 0.0.1
-  
-Parameters: 
-  AwsPartition:
-    Description: The AWS partition type (aws-gov, aws-cn)
-    Type: String
-    AllowedValues:
-      - aws-us-gov
-      - aws-cn
+  Version: 2.0.0
 
 Resources:
-
   CrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
     Properties: 
@@ -95,4 +86,4 @@ Resources:
                 Action:
                   - 's3:GetObject'
                 Effect: Allow
-                Resource: !Sub 'arn:${AwsPartition}:s3:::elasticbeanstalk-env-resources-??*?/*'       
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::elasticbeanstalk-env-resources-??*?/*'       

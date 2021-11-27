@@ -11,6 +11,7 @@ using RegionEndpoint = Amazon.RegionEndpoint;
 using Falconetix.Model.Entities.Cloud.Trail;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {
@@ -23,16 +24,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly string _intelligenceTemplateS3Url;
         private readonly string _intelligenceStackName;
         private readonly IntelligenceStackWrapper _awsStackWrapper;
-        private List<string> _capabilities;
         private readonly string unSupportedRegions = "ap-east-1,af-south-1,eu-south-1,me-south-1,cn-north-1,us-gov-east-1,cn-northwest-1,us-gov-west-1,us-isob-east-1,us-iso-east-1,us-iso-west-1";
         private readonly InteligenceStackConfig _stackConfig;
         private readonly int _throttlerMaxCount = 3;
         private readonly string _snsTopicArn;
         private readonly string _s3Url;
+        private readonly List<long> _rulesetsIds;
 
         public IntelligenceCloudTrailStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService,
             string cftS3Buckets, string region, string awsAccountId, string OnboardingId, string roleName, string cloudGuardAwsAccountId,
-            string intelligenceTemplateS3Url, string stackName, string snsTopicArn)
+            string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesetsIds)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
@@ -43,13 +44,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _awsStackWrapper = new IntelligenceStackWrapper(apiProvider, retryAndBackoffService);
             _intelligenceTemplateS3Url = intelligenceTemplateS3Url;
             _intelligenceStackName = stackName;
-            _capabilities = new List<string> { "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND" };
             _s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{intelligenceTemplateS3Url}";
-            _stackConfig = new InteligenceStackConfig(_s3Url, _intelligenceStackName, _capabilities, _onboardingId, "", _cloudGuardRoleName, 30);
+            _stackConfig = new InteligenceStackConfig(_s3Url, _intelligenceStackName,_onboardingId, "", _cloudGuardRoleName, 30);
             _snsTopicArn = snsTopicArn;
+            _rulesetsIds = rulesetsIds;
         }
 
-        public async Task<AwsCloudTrail> ChoseBucketDetails(List<AwsCloudTrail> trailDetails)
+        private async Task<AwsCloudTrail> ChoseBucketDetails(List<AwsCloudTrail> trailDetails)
         {
             try
             {
@@ -66,7 +67,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
                 if (withoutSubscription.Count > 1)
                 {
-                    await TryUpdateStatusWaringng(_stackConfig.OnboardingId, $"{withoutSubscription[0].S3BucketName} was onboarded. Additional S3 Bucket(s) with CloudTrail were found.", Enums.Feature.Intelligence);
+                    await TryUpdateStatusWarning(_stackConfig.OnboardingId, $"{withoutSubscription[0].S3BucketName} was onboarded. Additional S3 Bucket(s) with CloudTrail were found.", Enums.Feature.Intelligence);
                 }
                 return withoutSubscription[0];
             }
@@ -77,11 +78,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(ChoseBucketDetails)} failed. Error={ex}]");
-                throw new OnboardingException("Failed to chouse a bucket for trail", Enums.Feature.Intelligence);
+                throw new OnboardingException("Failed to choose a bucket for trail", Enums.Feature.Intelligence);
             }
         }
 
-        public async Task<List<AwsCloudTrail>> FindAccountCloudTrails()
+        private async Task<List<AwsCloudTrail>> FindAccountCloudTrails()
         {
             var allRegion = RegionEndpoint.EnumerableAllRegions.Select(t => t.SystemName).ToList();
             var searchRegions = allRegion.Except(unSupportedRegions.Split(',')).ToList();
@@ -107,7 +108,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"[Error] [{nameof(FindAccountCloudTrails)} failed to get cloudtrail for region {region}. Error={ex}]");
+                            Console.WriteLine($"[Error] [{nameof(FindAccountCloudTrails)} failed to get CloudTrail for region {region}. Error={ex}]");
                         }
                         finally
                         {
@@ -127,7 +128,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             return trails;
         }
 
-        public async Task<List<AwsCloudTrail>> FindCloudTrailsStorageDetails(List<AwsCloudTrail> trails)
+        private async Task<List<AwsCloudTrail>> FindCloudTrailsStorageDetails(List<AwsCloudTrail> trails)
         {
             var tasks = new List<Task>();
             using (SemaphoreSlim throttler = new SemaphoreSlim(_throttlerMaxCount))
@@ -144,7 +145,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                                 var s3RegionRes = await bucketClient.GetBucketLocationAsync(new GetBucketLocationRequest() { BucketName = trail.S3BucketName });
                                 // according to aws sdk documentation if the bucket is located in "us-east-1" than the location returned is an empty string
                                 var s3Region = s3RegionRes.Location.Value == "" ? "us-east-1" : s3RegionRes.Location.Value;
-                                Console.WriteLine($"[{nameof(FindCloudTrailsStorageDetails)}] s3Region={s3Region}, trail={trail}");
+                                Console.WriteLine($"[INFO] [{nameof(FindCloudTrailsStorageDetails)}] s3Region={s3Region}, trail={trail}");
                                 trail.BucketRegion = s3Region;
                                 using var bucketClientWithRegion = new AmazonS3Client(RegionEndpoint.GetBySystemName(s3Region));
                                 var s3Subscriptions = await bucketClientWithRegion.GetBucketNotificationAsync(new GetBucketNotificationRequest() { BucketName = trail.S3BucketName });
@@ -180,14 +181,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             trails = trails.Where(c => c.BucketIsAccessible == true).ToList();
             if (trails.Count == 0)
             {
-                await TryUpdateStatusWaringng(_stackConfig.OnboardingId, "Did not find any Bucket with access permissions.", Enums.Feature.Intelligence);
-                throw new Exception("Did not find any Bucket with access permissions.");
-
+                await TryUpdateStatusWarning(_stackConfig.OnboardingId, "Could not find any S3 bucket with access permissions.", Enums.Feature.Intelligence);
+                throw new Exception("Could not find any S3 bucket with access permissions.");
             }
             return trails;
         }
 
-        public TopicConfiguration GenerateS3BucketFiltersList(string id, string topic, List<AwsS3FilterRule> ruleList)
+        private TopicConfiguration GenerateS3BucketFiltersList(string id, string topic, List<AwsS3FilterRule> ruleList)
         {
             return new TopicConfiguration()
             {
@@ -198,14 +198,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             };
         }
 
-        public async Task<AwsCloudTrail> ChooseCloudTrailToOnboaredIntelligence()
+        private async Task<AwsCloudTrail> ChooseCloudTrailToOnboaredIntelligence()
         {
             var trails = await FindAccountCloudTrails();
             var trailsWithBucketDetails = await FindCloudTrailsStorageDetails(trails);
             return await ChoseBucketDetails(trailsWithBucketDetails);
         }
 
-        public async Task PutIntelligenceSubscriptionInBucket(AwsCloudTrail chosenCloudTrail, string topic)
+        private async Task PutIntelligenceSubscriptionInBucket(AwsCloudTrail chosenCloudTrail, string topic)
         {
             var bucketClient = new AmazonS3Client(RegionEndpoint.GetBySystemName(chosenCloudTrail.BucketRegion));
             var S3BucketTopicPrefix = $"AWSLogs/{chosenCloudTrail.ExternalId}/CloudTrail";
@@ -214,7 +214,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 new AwsS3FilterRule("prefix", S3BucketTopicPrefix)
             };
             var existingTopics = new List<TopicConfiguration> { GenerateS3BucketFiltersList($"cloudtrail_{chosenCloudTrail.ExternalId}", topic, currentRule) };
-            Console.WriteLine("start puting notification to bucket");
+            Console.WriteLine($"start puting notification to bucket: {chosenCloudTrail.S3BucketName}");
             await bucketClient.PutBucketNotificationAsync(new PutBucketNotificationRequest() { BucketName = chosenCloudTrail.S3BucketName, TopicConfigurations = existingTopics });
         }
 
@@ -236,9 +236,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Created Intelligence stack successfully", Enums.Feature.Intelligence)));
 
             // enable Intelligence account in Dome9
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new MagellanOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true }));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new IntelligenceOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true, RulesetsIds = _rulesetsIds }));
 
-            Console.WriteLine($"[INFO] finish LIntelligence step..");
+            Console.WriteLine($"[INFO] finish Intelligence step..");
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Added Intelligence successfully", Enums.Feature.Intelligence)));
 
         }
@@ -247,7 +247,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         {
             Console.WriteLine($"[INFO][{nameof(IntelligenceCloudTrailStep)}.{nameof(Rollback)}] DeleteStackAsync starting");
             // stack may not have been created, try to delete but do not throw in case of failure
-            await _awsStackWrapper.DeleteStackAsync(_stackConfig);
+            await _awsStackWrapper.DeleteStackAsync(_stackConfig, true);
             Console.WriteLine($"[INFO][{nameof(IntelligenceCloudTrailStep)}.{nameof(Rollback)}] DeleteStackAsync finished");
         }
 

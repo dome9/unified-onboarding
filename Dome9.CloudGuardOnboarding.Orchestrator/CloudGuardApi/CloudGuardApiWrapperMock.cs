@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
@@ -22,7 +23,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return Task.CompletedTask;
         }
 
-        public Task OnboardIntelligence(MagellanOnboardingModel data)
+        public Task OnboardIntelligence(IntelligenceOnboardingModel data)
         {
             throw new NotImplementedException();
         }
