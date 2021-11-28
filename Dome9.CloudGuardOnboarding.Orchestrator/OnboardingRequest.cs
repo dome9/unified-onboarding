@@ -22,7 +22,7 @@
                 $"[CloudGuardApiKeyId={CloudGuardApiKeyId.MaskChars(3)}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret.MaskChars(0)}]," +
                 $"[S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]" +
                 $"[OnboardingLambdaRoleArn={OnboardingLambdaRoleArn}], [EnableRemoteStackModify={EnableRemoteStackModify}]" +
-                $"[RootStackId={RootStackId}]";
+                $"[RootStackId={RootStackId}, Version={Version}]";
         }
     }
 

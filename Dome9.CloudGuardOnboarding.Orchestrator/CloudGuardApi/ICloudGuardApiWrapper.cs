@@ -12,7 +12,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         Task OnboardAccount(AccountModel model);
         Task UpdateOnboardingStatus(StatusModel model);
         Task ServerlessAddAccount(ServelessAddAccountModel model);
-        Task<ConfigurationsResponseModel> GetConfiguration(ConfigurationsRequestModel model);
+        Task<ConfigurationResponseModel> GetConfiguration(ConfigurationRequestModel model);
         Task OnboardIntelligence(IntelligenceOnboardingModel data);
     }
 }

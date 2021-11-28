@@ -13,11 +13,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             var onboardingRequest =
                 new OnboardingRequest
                 {
-                    OnboardingId = "",
-                    ApiBaseUrl = "",
-                    CloudGuardApiKeyId = "",
-                    CloudGuardApiKeySecret = "",
-                    AwsAccountId = "",
+                    OnboardingId = "",
+                    ApiBaseUrl = "",
+                    CloudGuardApiKeyId = "",
+                    CloudGuardApiKeySecret = "",
+                    AwsAccountId = "",
                     S3BucketName = "",
                     AwsAccountRegion = ""
                 };
@@ -25,6 +25,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             var api = new CloudGuardApiWrapper();
             var retry = new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider());
             await new UserBasedOnboardingWorkflow(api, retry).RunAsync(onboardingRequest, null);
+
+
+
         }
     }
 }

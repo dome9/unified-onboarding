@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+﻿namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public static class WorkflowFactory
     {
@@ -10,13 +6,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             if (cloudFormationRequest.RequestType.ToLower().Equals("delete"))
             {
-                return new DeleteStackWorkflow();
+                return new DeleteStackWorkflow(cloudFormationRequest.IsUserBased());
             }
-            else if (cloudFormationRequest.RequestType.ToLower().Equals("update"))
+            
+            if (cloudFormationRequest.RequestType.ToLower().Equals("update"))
             {
-                return new UpdateStackWorkflow();
+                return new UpdateStackWorkflow(
+                    new CloudGuardApiWrapperSilent(),
+                    new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()),
+                    cloudFormationRequest.IsUserBased());
             }
-
 
             if (cloudFormationRequest.IsUserBased())
             {
@@ -28,6 +27,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return new OnboardingWorkflow(
                 new CloudGuardApiWrapper(),
                 new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()));
+                      
         }
         
     }

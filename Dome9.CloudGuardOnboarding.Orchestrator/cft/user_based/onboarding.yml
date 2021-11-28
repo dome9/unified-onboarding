@@ -22,12 +22,16 @@ Parameters:
   LambdaPkgPath:
     Description: The CloudGuard onboarding Lambda package path
     Type: String
+  Version:
+    Description: The CloudGuard onboarding version
+    Type: String
 
 Resources:
   StackModifyCrossAccountUser:
     Type: AWS::IAM::User
     Properties:
       UserName: 'CloudGuard-Onboarding-StackModify-user'
+
       Policies:
         - PolicyName: CloudGuard-Lambda-StackModify-policy
           PolicyDocument:
@@ -36,6 +40,7 @@ Resources:
               - Sid: ModifyStack
                 Effect: Allow
                 Action:
+                  - cloudformation:DescribeStacks
                   - cloudformation:UpdateStack
                   - cloudformation:DeleteStack
                 Resource: !Ref AWS::StackId
@@ -43,6 +48,7 @@ Resources:
               - Sid: ModifyFunction
                 Effect: Allow
                 Action:
+                  - lambda:UpdateFunctionCode
                   - lambda:InvokeFunction
                   - lambda:DeleteFunction
                 Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator
@@ -50,6 +56,7 @@ Resources:
               - Sid: ModifyRole
                 Effect: Allow
                 Action:
+                  - iam:GetRole
                   - iam:DeleteRole
                   - iam:DetachRolePolicy
                   - iam:DeleteRolePolicy
@@ -63,10 +70,11 @@ Resources:
               - Sid: DeleteUserPolicy
                 Effect: Allow
                 Action:
+                  - iam:GetUser
                   - iam:DeleteUserPolicy
                   - iam:DeleteUser
-                  - iam:ListAccessKeys
                   - iam:DeleteAccessKey
+                  - iam:ListAccessKeys
                 Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Onboarding-StackModify-user
 
               - Sid: DeleteSecret
@@ -74,6 +82,12 @@ Resources:
                 Action:
                   - secretsmanager:DeleteSecret 
                 Resource: !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
+
+              - Sid: GetLmabdaCode
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${S3BucketName}-${AWS::Region}/*'
 
   CloudGuardLambdaStackCreationRole:
     Type: AWS::IAM::Role
@@ -159,3 +173,4 @@ Resources:
       AwsAccountRegion: !Ref AWS::Region   
       EnableRemoteStackModify: true
       RootStackId: !Ref AWS::StackId
+      Version: !Ref Version

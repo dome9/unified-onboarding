@@ -13,9 +13,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return Task.CompletedTask;
         }
 
-        public Task<ConfigurationsResponseModel> GetConfiguration(ConfigurationsRequestModel model)
+        public Task<ConfigurationResponseModel> GetConfiguration(ConfigurationRequestModel model)
         {
-            return new Task<ConfigurationsResponseModel>(() => new ConfigurationsResponseModel() { PostureStackName = "Mock" });
+            return new Task<ConfigurationResponseModel>(() => new ConfigurationResponseModel() { PostureStackName = "Mock" });
         }
 
         public Task OnboardAccount(AccountModel model)

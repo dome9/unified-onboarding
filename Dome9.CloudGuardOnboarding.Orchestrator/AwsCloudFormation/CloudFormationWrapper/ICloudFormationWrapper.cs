@@ -16,18 +16,20 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             Action<string> statusUpdate,
             int executionTimeoutMinutes);
 
-        Task<string> UpdateStackAsync(
+        Task UpdateStackAsync(
             Enums.Feature feature, 
             string stackTemplateS3Url, 
             string stackName,
             List<string> capabilities, 
-            Dictionary<string, string> parameters);
+            Dictionary<string, string> parameters,
+            int executionTimeoutMinutes);
 
         Task<string> GetStackTemplateAsync(Enums.Feature feature, string stackName);
 
-        Task<StackSummary> GetStackSummaryAsync(Enums.Feature feature, string stackName);
+        Task<Stack> GetStackDescriptionAsync(Enums.Feature feature, string stackName, bool filterDeleted = true);
 
         Task DeleteStackAsync(Enums.Feature feature, string stackName, int executionTimeoutMinutes);
+        Task<bool> IsStackExist(Enums.Feature feature, string stackName);
 
         Task<ApiCredentials> GetCredentialsFromSecretsManager(string key);
     }

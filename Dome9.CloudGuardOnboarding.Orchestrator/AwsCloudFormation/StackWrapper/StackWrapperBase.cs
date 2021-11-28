@@ -6,15 +6,15 @@ using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
+    public enum StackOperation
+    {
+        None,
+        Create,
+        Update,
+    }
+
     public abstract class StackWrapperBase : IDisposable
     {
-        protected enum StackOperation
-        {
-            None,
-            Create,
-            Update,
-        }
-
         protected readonly ICloudFormationWrapper _cfnWrapper;
         protected readonly ICloudGuardApiWrapper _apiProvider;
         protected readonly IRetryAndBackoffService _retryAndBackoffService;
@@ -38,11 +38,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         /// </summary>
         /// <param name="stackConfig"></param>
         /// <returns></returns>
-        public async Task RunStackAsync(OnboardingStackConfig stackConfig)
+        public async Task RunStackAsync(OnboardingStackConfig stackConfig, StackOperation stackOperation)
         {
             Dictionary<string, string> parameters = GetParameters(stackConfig);
 
-            var stackOperation = await GetStackOperation(stackConfig.StackName);
             switch (stackOperation)
             {
                 case StackOperation.Create:
@@ -52,9 +51,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     break;
 
                 case StackOperation.Update:
-                    throw new NotImplementedException("Need to check diff before can update.");
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(stackConfig.OnboardingId, Enums.Status.PENDING, "Updating existing stack", Feature)));
-                    await _cfnWrapper.UpdateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters);
+                    await _cfnWrapper.UpdateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters, stackConfig.ExecutionTimeoutMinutes);
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(stackConfig.OnboardingId, Enums.Status.ACTIVE, "Updated existing stack successfully", Feature)));
                     break;
 
@@ -113,43 +111,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 Console.WriteLine($"[ERROR] [{nameof(TryUpdateStackStatus)}] failed. Error:{ex}");
             }
-        }
-
-        /// <summary>
-        /// TODO: update action will fail if there is nothing to update, so checking the name has one of _readyStatus values is not enough. 
-        /// </summary>
-        /// <param name="stackName"></param>
-        /// <param name="iteration"></param>
-        /// <returns></returns>
-        protected async Task<StackOperation> GetStackOperation(string stackName, int iteration = 0)
-        {
-            // for now disabling this recursive method, as we only support Create anyway.
-            return StackOperation.Create;
-
-
-            var existingStack = await _cfnWrapper.GetStackSummaryAsync(Feature, stackName);
-            if (existingStack == null || _nonExistingStatus.Contains(existingStack.StackStatus))
-            {
-                return StackOperation.Create;
-            }
-
-            if (_inProgressStatus.Contains(existingStack.StackStatus))
-            {
-                if (iteration >= 12)
-                {
-                    return StackOperation.None;
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                return await GetStackOperation(stackName, ++iteration);
-            }
-
-            if (_readyStatus.Contains(existingStack.StackStatus))
-            {
-                return StackOperation.Update;
-            }
-
-            return StackOperation.None;
         }
 
         protected virtual void Dispose(bool disposing)

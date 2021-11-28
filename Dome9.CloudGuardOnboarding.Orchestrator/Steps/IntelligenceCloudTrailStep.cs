@@ -30,10 +30,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly string _snsTopicArn;
         private readonly string _s3Url;
         private readonly List<long> _rulesetsIds;
+        private readonly StackOperation _stackOperation;
 
         public IntelligenceCloudTrailStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService,
             string cftS3Buckets, string region, string awsAccountId, string OnboardingId, string roleName, string cloudGuardAwsAccountId,
-            string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesetsIds)
+            string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesetsIds,
+            StackOperation stackOperation = StackOperation.Create)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
@@ -48,6 +50,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _stackConfig = new InteligenceStackConfig(_s3Url, _intelligenceStackName,_onboardingId, "", _cloudGuardRoleName, 30);
             _snsTopicArn = snsTopicArn;
             _rulesetsIds = rulesetsIds;
+            _stackOperation = stackOperation;
         }
 
         private async Task<AwsCloudTrail> ChoseBucketDetails(List<AwsCloudTrail> trailDetails)
@@ -232,7 +235,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             // create Intelligence policy and attached to dome9 role                                   
             _stackConfig.CloudtrailS3BucketName = chosenCloudTrail.S3BucketName;
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Creating Intelligence stack", Enums.Feature.Intelligence)));
-            await _awsStackWrapper.RunStackAsync(_stackConfig);
+            await _awsStackWrapper.RunStackAsync(_stackConfig, _stackOperation);
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Created Intelligence stack successfully", Enums.Feature.Intelligence)));
 
             // enable Intelligence account in Dome9

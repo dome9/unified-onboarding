@@ -24,7 +24,10 @@ Parameters:
     Type: String
   CloudGuardAwsAccountNumber:
     Description: The CloudGuard AWS account number
-    Type: String 
+    Type: String
+  Version:
+    Description: The CloudGuard onboarding version
+    Type: String
 
 Resources:
 
@@ -48,14 +51,15 @@ Resources:
               - Sid: ModifyStack
                 Effect: Allow
                 Action:
-                  - cloudformation:UpdateStack
-                  - cloudformation:DeleteStack
                   - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack                  
                 Resource: !Ref AWS::StackId
           
               - Sid: ModifyFunction
                 Effect: Allow
                 Action:
+                  - lambda:UpdateFunctionCode
                   - lambda:InvokeFunction
                   - lambda:DeleteFunction
                 Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
@@ -63,6 +67,7 @@ Resources:
               - Sid: ModifyRole
                 Effect: Allow
                 Action:
+                  - iam:GetRole
                   - iam:DeleteRole
                   - iam:DetachRolePolicy
                   - iam:DeleteRolePolicy
@@ -76,9 +81,16 @@ Resources:
               - Sid: DeleteRolePolicy
                 Effect: Allow
                 Action:
+                  - iam:GetRole
                   - iam:DeleteRolePolicy
                   - iam:DeleteRole
                 Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role'
+
+              - Sid: GetLmabdaCode
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${S3BucketName}-${AWS::Region}/*'
                
   CloudGuardLambdaStackCreationRole:  
     Type: AWS::IAM::Role
@@ -150,4 +162,5 @@ Resources:
       OnboardingLambdaRoleArn: !GetAtt CloudGuardOnboardingStackModifyRole.Arn    
       EnableRemoteStackModify: true
       RootStackId: !Ref AWS::StackId
+      Version: !Ref Version
   

@@ -57,7 +57,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 return info.IsFinal;
             }
             throw new ArgumentOutOfRangeException(status);
-        }
+        }        
 
         public static bool IsError(this StackStatus status)
         {
@@ -68,9 +68,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             throw new ArgumentOutOfRangeException(status);
         }
 
+        public static string ToDetailedString(this Stack stack)
+        {
+            return $"StackName:'{stack.StackName}' Status:'{stack.StackStatus}', Reason:'{stack.StackStatusReason}',  LastUpdated:{stack.LastUpdatedTime}";
+        }
+
         public static string ToDetailedString(this StackSummary stackSummary)
         {
             return $"StackName:'{stackSummary.StackName}' Status:'{stackSummary.StackStatus}', Reason:'{stackSummary.StackStatusReason}',  LastUpdated:{stackSummary.LastUpdatedTime}";
-        }       
+        }
     }
 }

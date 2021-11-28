@@ -38,7 +38,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 await ExecuteStep(new ValidateOnboardingStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
 
                 // 3. get configuration from API
-                var configurationStep = await ExecuteStep(new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
+                var configurationStep = await ExecuteStep(new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version));
                 var configuration = (configurationStep as GetConfigurationStep).Configuration;
 
                 // 4. run the Posture stack (create cross account user for CloudGuard)
