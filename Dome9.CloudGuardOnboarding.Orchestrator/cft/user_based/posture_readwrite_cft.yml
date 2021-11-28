@@ -32,6 +32,7 @@ Resources:
             Statement:
               - Sid: CloudGuardReadOnly
                 Action:
+                  - 'aws-marketplace:*'
                   - 'apigateway:GET'
                   - 'athena:GetQueryExecution'
                   - 'athena:GetWorkGroup'
