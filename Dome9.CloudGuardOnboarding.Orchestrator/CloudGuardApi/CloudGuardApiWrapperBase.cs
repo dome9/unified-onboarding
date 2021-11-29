@@ -35,10 +35,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
         }
 
-        /// <summary>
-        /// This method should disappear, and instead we should create a method called ReplaceServiceAccount, which gets a new ApiKey+Secret
-        /// </summary>
-        /// <returns></returns>
         public async Task<ServiceAccount> ReplaceServiceAccount(CredentialsModel model)
         {
             string methodRoute = "ReplaceServiceAccount";
@@ -63,6 +59,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
+
         public async Task DeleteServiceAccount(CredentialsModel model)
         {
             string methodRoute = "DeleteServiceAccount";
@@ -191,6 +188,28 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 Console.WriteLine($"[Error] [{nameof(GetConfiguration)} failed. Error={ex}]");
                 throw new OnboardingException(ex.Message, Enums.Feature.None);
+            }
+        }
+
+        public async Task CreatePosturePolicies(string onboardingId)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/CreatePosturePolicies/{onboardingId}", null);
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    string errorMessage = $"Failed to create Posture policies. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'";
+                    if (response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new CloudGuardUnauthorizedException(errorMessage);
+                    }
+                    throw new Exception(errorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(GetConfiguration)} failed. Error={ex}]");
+                throw new OnboardingException(ex.Message, Enums.Feature.Posture);
             }
         }
 

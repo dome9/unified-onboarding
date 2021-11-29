@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {
-    public class PostureUserBasedStackUpdateStep : StepBase
+    public class PermissionsUserBasedStackUpdateStep : StepBase
     {
-        private readonly PostureUserBasedStackWrapper _awsStackWrapper;
+        private readonly PermissionsUserBasedStackWrapper _awsStackWrapper;
         private readonly OnboardingStackConfig _stackConfig;
 
-        public PostureUserBasedStackUpdateStep(
+        public PermissionsUserBasedStackUpdateStep(
             ICloudGuardApiWrapper apiProvider,
             IRetryAndBackoffService retryAndBackoffService,
             string stackName,
@@ -22,15 +22,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             int stackExecutionTimeoutMinutes = 35)
         {
             var s3Url = $"https://{cftS3BucketName}.s3.{region}.{GetDomain(awsPartition)}/{templateS3Path}";
-            _awsStackWrapper = new PostureUserBasedStackWrapper(apiProvider, retryAndBackoffService);
-            _stackConfig = new PostureUserBasedStackConfig(s3Url, stackName, onboardingId, stackExecutionTimeoutMinutes);
+            _awsStackWrapper = new PermissionsUserBasedStackWrapper(apiProvider, retryAndBackoffService);
+            _stackConfig = new PermissionsUserBasedStackConfig(s3Url, stackName, onboardingId, stackExecutionTimeoutMinutes);
         }
 
         public override async Task Execute()
         {
-            Console.WriteLine($"[INFO][{nameof(PostureUserBasedStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync starting");
+            Console.WriteLine($"[INFO][{nameof(PermissionsUserBasedStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync starting");
             await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Update);
-            Console.WriteLine($"[INFO][{nameof(PostureUserBasedStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync finished");
+            Console.WriteLine($"[INFO][{nameof(PermissionsUserBasedStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync finished");
         }
 
         public override Task Rollback()
@@ -55,13 +55,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             switch (awsPartition)
             {
                 case "aws":
-                    throw new OnboardingException($"{nameof(PostureUserBasedStackCreationStep)} is not valid for roles based onboarding required by partition '{awsPartition}'", Enums.Feature.ContinuousCompliance);
+                    throw new OnboardingException($"{nameof(PermissionsUserBasedStackCreationStep)} is not valid for roles based onboarding required by partition '{awsPartition}'", Enums.Feature.Permissions);
                 case "aws-us-gov":
                     return "amazonaws.com";
                 case "aws-cn":
                     return "amazonaws.com.cn";
                 default:
-                    throw new OnboardingException($"Unsupported partition '{awsPartition}'", Enums.Feature.ContinuousCompliance);
+                    throw new OnboardingException($"Unsupported partition '{awsPartition}'", Enums.Feature.Permissions);
             }
         }
     }

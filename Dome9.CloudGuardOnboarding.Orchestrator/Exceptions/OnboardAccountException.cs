@@ -6,7 +6,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class OnboardAccountException : OnboardingException
     {
-        public OnboardAccountException(string message) : base(message, Enums.Feature.ContinuousCompliance) { }
+        public OnboardAccountException(string message) : base(message, Enums.Feature.Permissions) { }
 
         public HttpStatusCode HttpStatusCode { get; set; }
         public string ReasonPhrase { get; set; }

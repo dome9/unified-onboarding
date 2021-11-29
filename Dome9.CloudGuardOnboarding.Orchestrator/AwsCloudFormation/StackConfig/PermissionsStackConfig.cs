@@ -2,12 +2,12 @@
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public class PostureStackConfig : OnboardingStackConfig
+    public class PermissionsStackConfig : OnboardingStackConfig
     {
         public string CloudGuardAwsAccountId { get; set; }
         public string RoleExternalTrustSecret { get; set; }
 
-        public PostureStackConfig(
+        public PermissionsStackConfig(
             string templateS3Url,
             string stackName,
             string onboardingId,

@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {
-    public class PostureStackCreationStep : StepBase
+    public class PermissionsStackCreationStep : StepBase
     {
-        private readonly PostureStackWrapper _awsStackWrapper;
-        private readonly PostureStackConfig _stackConfig;
+        private readonly PermissionsStackWrapper _awsStackWrapper;
+        private readonly PermissionsStackConfig _stackConfig;
 
-        public PostureStackCreationStep(
+        public PermissionsStackCreationStep(
             ICloudGuardApiWrapper apiProvider,
             IRetryAndBackoffService retryAndBackoffService,
             string cftS3Buckets,
@@ -21,9 +21,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string onboardingId,
             int stackExecutionTimeoutMinutes = 35)
         {
-            _awsStackWrapper = new PostureStackWrapper(apiProvider, retryAndBackoffService);
+            _awsStackWrapper = new PermissionsStackWrapper(apiProvider, retryAndBackoffService);
             var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
-            _stackConfig = new PostureStackConfig(
+            _stackConfig = new PermissionsStackConfig(
                 s3Url, 
                 stackName, 
                 onboardingId, 
@@ -34,16 +34,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public override async Task Execute()
         {
-            Console.WriteLine($"[INFO][{nameof(PostureStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync starting");
+            Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync starting");
             await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Create);
-            Console.WriteLine($"[INFO][{nameof(PostureStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync finished");
+            Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync finished");
         }
 
         public override async Task Rollback()
         {
-            Console.WriteLine($"[INFO][{nameof(PostureStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync starting");
+            Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync starting");
             await _awsStackWrapper.DeleteStackAsync(_stackConfig, true);
-            Console.WriteLine($"[INFO][{nameof(PostureStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync finished");
+            Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync finished");
 
         }
 

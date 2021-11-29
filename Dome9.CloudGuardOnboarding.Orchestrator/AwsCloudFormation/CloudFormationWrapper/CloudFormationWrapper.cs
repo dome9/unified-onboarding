@@ -534,7 +534,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var secrets = await SecretsManagerListSecrets();
                 if (!(secrets.Any()))
                 {
-                    throw new OnboardingException("No secrets found in secrets manager", Enums.Feature.ContinuousCompliance);
+                    throw new OnboardingException("No secrets found in secrets manager", Enums.Feature.Permissions);
                 }
 
                 var secretEntry = secrets.FirstOrDefault(s => s.Tags.Any(t => t.Key.Equals(tagKey) && t.Value.Equals(tagValue)));
@@ -542,7 +542,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var secretString = await SecretsManagerGetSecretValue(secretEntry?.ARN);
                 if (string.IsNullOrWhiteSpace(secretString))
                 {
-                    throw new OnboardingException($"Secret not found in secrets manager for secret entry with ARN '{secretEntry?.ARN}'", Enums.Feature.ContinuousCompliance);
+                    throw new OnboardingException($"Secret not found in secrets manager for secret entry with ARN '{secretEntry?.ARN}'", Enums.Feature.Permissions);
                 }
 
                 var secretDict = JsonSerializer.Deserialize<Dictionary<string, string>>(secretString);
@@ -556,7 +556,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] [{nameof(GetCredentialsFromSecretsManager)}] Failed. Error={ex}");
-                throw new OnboardingException(ex.Message, Enums.Feature.ContinuousCompliance);
+                throw new OnboardingException(ex.Message, Enums.Feature.Permissions);
             }
         }
 

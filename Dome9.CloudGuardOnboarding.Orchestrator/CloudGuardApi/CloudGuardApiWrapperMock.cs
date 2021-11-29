@@ -8,6 +8,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class CloudGuardApiWrapperMock : ICloudGuardApiWrapper
     {
+        public Task CreatePosturePolicies(string onboardingId)
+        {
+            return Task.CompletedTask;
+        }
+
         public Task DeleteServiceAccount(CredentialsModel model)
         {
             return Task.CompletedTask;
@@ -15,7 +20,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public Task<ConfigurationResponseModel> GetConfiguration(ConfigurationRequestModel model)
         {
-            return new Task<ConfigurationResponseModel>(() => new ConfigurationResponseModel() { PostureStackName = "Mock" });
+            return new Task<ConfigurationResponseModel>(() => new ConfigurationResponseModel() { PermissionsStackName = "Mock" });
         }
 
         public Task OnboardAccount(AccountModel model)

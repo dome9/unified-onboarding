@@ -42,11 +42,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var configurationStep = await ExecuteStep(new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version));
                 var configuration = (configurationStep as GetConfigurationStep).Configuration;
 
-                // 4. run the Posture stack (create cross account role for CloudGuard)
-                await ExecuteStep(new PostureStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PostureStackName, configuration.PostureTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId));
+                // 4. run the Permissions stack (create cross account role for CloudGuard)
+                await ExecuteStep(new PermissionsStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId));
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
                 await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, request.OnboardingLambdaRoleArn, request.RootStackId, null, null));
+
+                // 6. create Posture policies - create cloud account, rulesets, serverless account if selected
+                await ExecuteStep(new CreatePosturePoliciesStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
 
 
                 // serverless - do not fail workflow on exceptions
@@ -61,10 +64,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                         }
                         else
                         {
-                            // 6. add serverless protection account
+                            // 7. add serverless protection account
                             await ExecuteStep(new ServerlessAddAccountStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
-                            // 7. create serverless protection stack if enabled
+                            // 8. create serverless protection stack if enabled
                             await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, configuration.ServerlessTemplateS3Path, configuration.ServerlessStackName));
                         }
                     }
@@ -79,13 +82,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, "Failed to acivate Serverless protection", Enums.Feature.ServerlessProtection)));
                 }
 
-                // 8. Intelligence step - do not fail workflow on exceptions
+                // 9. Intelligence step - do not fail workflow on exceptions
                 try
                 {
                     if (configuration.IntelligenceEnabled)
                     {
                         await ExecuteStep(new IntelligenceCloudTrailStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion,
-                        request.AwsAccountId, request.OnboardingId, configuration.PostureTemplateS3Path, configuration.CloudGuardAwsAccountId,
+                        request.AwsAccountId, request.OnboardingId, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId,
                         configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn, configuration.IntelligenceRulesetsIds));
                     }
                     else
@@ -100,10 +103,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, ex.Message, Enums.Feature.Intelligence)));
                 }
 
-                // 9. Delete the service account
+                // 10. Delete the service account
                 await ExecuteStep(new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
 
-                // 10. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
+                // 11. Write cloudformation lambda custom resoource reponse back to S3 to signal Stack created succesfully.
                 Console.WriteLine($"[INFO] About to postback custom resource response success");
                 await _retryAndBackoffService.RunAsync(() => customResourceResponseHandler?.PostbackSuccess(), 3);
                 Console.WriteLine($"[INFO] Custom resource response successful");

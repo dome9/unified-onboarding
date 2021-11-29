@@ -3,8 +3,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class ConfigurationResponseModel
     {
-        public string PostureStackName { get; set; }
-        public string PostureTemplateS3Path { get; set; }
+        public string PermissionsStackName { get; set; }
+        public string PermissionsTemplateS3Path { get; set; }
         public string ServerlessStackName { get; set; }
         public string ServerlessTemplateS3Path { get; set; }
         public bool ServerlessProtectionEnabled { get; set; }
@@ -19,10 +19,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public override string ToString()
         {
-            return $"{nameof(PostureStackName)}='{PostureStackName}', " +
-                $"{nameof(PostureTemplateS3Path)}='{PostureTemplateS3Path}', " +
+            return $"{nameof(PermissionsStackName)}='{PermissionsStackName}', " +
+                $"{nameof(PermissionsTemplateS3Path)}='{PermissionsTemplateS3Path}', " +
                 $"{nameof(ServerlessStackName)}='{ServerlessStackName}', " +
-                $"{nameof(PostureTemplateS3Path)}='{PostureTemplateS3Path}', " +
+                $"{nameof(PermissionsTemplateS3Path)}='{PermissionsTemplateS3Path}', " +
                 $"{nameof(ServerlessProtectionEnabled)}='{ServerlessProtectionEnabled}', " +
                 $"{nameof(ServerlessCftRegion)}='{ServerlessCftRegion}', " +
                 $"{nameof(IntelligenceStackName)}='{IntelligenceStackName}', " +

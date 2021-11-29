@@ -16,7 +16,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             None,
             Inventory,
-            ContinuousCompliance,
+            Permissions,
+            Posture,
             ServerlessProtection,
             Intelligence
         }

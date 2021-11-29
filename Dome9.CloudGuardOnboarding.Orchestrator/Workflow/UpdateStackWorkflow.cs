@@ -19,15 +19,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             switch (feature)
             {
-                case Enums.Feature.ContinuousCompliance:
+                case Enums.Feature.Permissions:
                     if (_onboardingType == OnboardingType.RoleBased)
                     {
-                        return new PostureStackUpdateStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PostureStackName, configuration.PostureTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId);
+                        return new PermissionsStackUpdateStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId);
 
                     }
                     else if (_onboardingType == OnboardingType.UserBased)
                     {
-                        return new PostureUserBasedStackUpdateStep(_apiProvider, _retryAndBackoffService, configuration.PostureStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PostureTemplateS3Path, request.OnboardingId, request.AwsPartition);
+                        return new PermissionsUserBasedStackUpdateStep(_apiProvider, _retryAndBackoffService, configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition);
                     }
                     else
                     {

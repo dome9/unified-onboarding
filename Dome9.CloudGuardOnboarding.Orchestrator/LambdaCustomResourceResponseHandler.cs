@@ -61,11 +61,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     StackId = _cloudFormationRequest.StackId,
                     RequestId = _cloudFormationRequest.RequestId,
                     LogicalResourceId = _cloudFormationRequest.LogicalResourceId,
-                    NoEcho = false,
-                    //Data = null // needs to look like {}                   
+                    NoEcho = false,                
                 };
 
-                var content = HttpClientUtils.GetContent<CloudFormationResponseBody>(body,  HttpClientUtils.SerializationOptionsType.PascalCase);
+                var content = HttpClientUtils.GetContent(body,  HttpClientUtils.SerializationOptionsType.PascalCase);
                 Console.WriteLine($"[INFO] CloudFormationResponseBody={await content.ReadAsStringAsync()}");
                 var response = await client.PutAsync(_cloudFormationRequest.ResponseURL, content);
                 if (!response.IsSuccessStatusCode)

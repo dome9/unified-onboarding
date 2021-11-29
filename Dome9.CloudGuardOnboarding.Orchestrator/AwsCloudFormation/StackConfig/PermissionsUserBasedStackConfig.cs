@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    public class PostureUserBasedStackConfig : OnboardingStackConfig
+    public class PermissionsUserBasedStackConfig : OnboardingStackConfig
     {
-        public PostureUserBasedStackConfig(
+        public PermissionsUserBasedStackConfig(
             string templateS3Url,
             string stackName,
             string onboardingId,        

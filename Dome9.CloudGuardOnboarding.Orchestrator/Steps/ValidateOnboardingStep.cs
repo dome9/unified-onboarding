@@ -36,7 +36,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             }
             catch (Exception ex)
             {
-                await TryUpdateStatusError(_onboardingId, ex.Message, Enums.Feature.ContinuousCompliance);
+                await TryUpdateStatusError(_onboardingId, ex.Message, Enums.Feature.Permissions);
                 throw;
             }        
         }

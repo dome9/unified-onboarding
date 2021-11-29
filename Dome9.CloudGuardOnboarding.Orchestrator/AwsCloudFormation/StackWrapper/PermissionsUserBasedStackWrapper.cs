@@ -4,23 +4,23 @@ using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
-    class PostureUserBasedStackWrapper : StackWrapperBase
+    class PermissionsUserBasedStackWrapper : StackWrapperBase
     {
-        public PostureUserBasedStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService)
+        public PermissionsUserBasedStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService)
         {
         }
 
-        protected override Enums.Feature Feature => Enums.Feature.ContinuousCompliance;
+        protected override Enums.Feature Feature => Enums.Feature.Permissions;
 
         protected override Dictionary<string, string> GetParameters(OnboardingStackConfig onboardingStackConfig)
         {
             Console.WriteLine($"[INFO] [GetParameters] {onboardingStackConfig.GetType().Name}=[{onboardingStackConfig}]");
-            if(!(onboardingStackConfig is PostureUserBasedStackConfig))
+            if(!(onboardingStackConfig is PermissionsUserBasedStackConfig))
             {
-                throw new ArgumentException($"{nameof(onboardingStackConfig)} is not of type {nameof(PostureUserBasedStackConfig)}");
+                throw new ArgumentException($"{nameof(onboardingStackConfig)} is not of type {nameof(PermissionsUserBasedStackConfig)}");
             }
 
-            var postureStackConfig = onboardingStackConfig as PostureUserBasedStackConfig;
+            var permissionsStackConfig = onboardingStackConfig as PermissionsUserBasedStackConfig;
             return new Dictionary<string, string>();
         }
 

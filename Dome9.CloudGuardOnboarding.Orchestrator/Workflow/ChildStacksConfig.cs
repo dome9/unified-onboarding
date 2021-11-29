@@ -25,7 +25,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 {
                     { Enums.Feature.Intelligence, "CloudGuard-Onboarding-Intelligence"},
                     { Enums.Feature.ServerlessProtection, "CloudGuard-Onboarding-Serverless"},
-                    { Enums.Feature.ContinuousCompliance, "CloudGuard-Onboarding-Posture"}
+                    { Enums.Feature.Permissions, "CloudGuard-Onboarding-Permissions"}
                 };
         }
 
@@ -36,7 +36,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         OnboardingType.RoleBased, new Dictionary<Enums.Feature, string>()
                         {
-                            { Enums.Feature.ContinuousCompliance, FeatureStackNames[Enums.Feature.ContinuousCompliance]},
+                            { Enums.Feature.Permissions, FeatureStackNames[Enums.Feature.Permissions]},
                             { Enums.Feature.ServerlessProtection, FeatureStackNames[Enums.Feature.ServerlessProtection]},
                             { Enums.Feature.Intelligence, FeatureStackNames[Enums.Feature.Intelligence]},
                         }
@@ -44,7 +44,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         OnboardingType.UserBased, new Dictionary<Enums.Feature, string>()
                         {
-                            { Enums.Feature.ContinuousCompliance, FeatureStackNames[Enums.Feature.ContinuousCompliance]},
+                            { Enums.Feature.Permissions, FeatureStackNames[Enums.Feature.Permissions]},
                         }
                     },
                 };

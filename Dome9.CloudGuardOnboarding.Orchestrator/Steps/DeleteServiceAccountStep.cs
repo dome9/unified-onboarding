@@ -38,7 +38,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public override Task Rollback()
         {
-            //TODO: delete cloud account
             return Task.CompletedTask;
         }
     }
