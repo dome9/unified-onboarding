@@ -218,7 +218,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
                     nextToken = response.NextToken;
                 }
-
                 return false;
 
             }
@@ -496,7 +495,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             Stack stackDesc = null;
             do
             {
-
+                if (!await IsStackExist(feature, stackName))
+                {
+                    return;
+                }
                 stackDesc = await GetStackDescriptionAsync(feature, stackName, false);
                 if (stackDesc == null || !stackDesc.StackStatus.IsFinal())
                 {

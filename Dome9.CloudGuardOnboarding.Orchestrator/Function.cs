@@ -36,7 +36,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
             await WorkflowFactory.Create(cloudFormationRequest)
                 .RunAsync(
-                    cloudFormationRequest.ResourceProperties, 
+                    cloudFormationRequest.ResourceProperties,
                     new LambdaCustomResourceResponseHandler(cloudFormationRequest, context));
 
             Console.WriteLine("[INFO] Function Handler end");

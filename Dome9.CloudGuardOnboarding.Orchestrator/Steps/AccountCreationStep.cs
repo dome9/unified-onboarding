@@ -8,7 +8,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly string _awsAccountId;
         private readonly string _awsRegion;
         private readonly string _onboardingId;
-        private readonly string _labmdaRoleArn;
+        private readonly string _stackModifyRoleArn;
         private readonly string _rootStackId;
         private readonly ApiCredentials _apiCredentials;
         private readonly ApiCredentials _lambdaApiCredentials;
@@ -18,7 +18,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string awsAccountId,
             string awsRegion,
             string onboardingId,            
-            string labmdaRoleArn,
+            string stackModifyRoleArn,
             string rootStackId,
             ApiCredentials apiCredentials,
             ApiCredentials lambdaApiCredentials)
@@ -28,7 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _awsAccountId = awsAccountId;
             _awsRegion = awsRegion;
             _onboardingId = onboardingId;
-            _labmdaRoleArn = labmdaRoleArn;
+            _stackModifyRoleArn = stackModifyRoleArn;
             _rootStackId = rootStackId;
             _apiCredentials = apiCredentials;
             _lambdaApiCredentials = lambdaApiCredentials;
@@ -52,7 +52,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                     _awsAccountId,
                     accountName,
                     _awsRegion,                    
-                    _labmdaRoleArn,
+                    _stackModifyRoleArn,
                     _rootStackId,
                     _apiCredentials,
                     _lambdaApiCredentials)));

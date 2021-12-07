@@ -12,7 +12,7 @@
         public string AwsAccountRegion {  get; set; }
         public string AwsPartition { get; set; }
         public string Version { get; set; }
-        public string OnboardingLambdaRoleArn { get; set; }
+        public string OnboardingStackModifyRoleArn { get; set; }
         public string EnableRemoteStackModify { get; set; }
         public string RootStackId { get; set; }
 
@@ -21,7 +21,7 @@
             return $"OnboardingRequest: [OnboardingId={OnboardingId}], [AwsAccountId={AwsAccountId}], [ApiBaseUrl={ApiBaseUrl}], " +
                 $"[CloudGuardApiKeyId={CloudGuardApiKeyId.MaskChars(3)}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret.MaskChars(0)}]," +
                 $"[S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]" +
-                $"[OnboardingLambdaRoleArn={OnboardingLambdaRoleArn}], [EnableRemoteStackModify={EnableRemoteStackModify}]" +
+                $"[OnboardingStackModifyRoleArn={OnboardingStackModifyRoleArn}], [EnableRemoteStackModify={EnableRemoteStackModify}]" +
                 $"[RootStackId={RootStackId}, Version={Version}]";
         }
     }

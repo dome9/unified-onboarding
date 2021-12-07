@@ -24,7 +24,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/{methodRoute}", HttpClientUtils.GetContent(model, HttpClientUtils.SerializationOptionsType.CamelCase));
                 if (response == null || !response.IsSuccessStatusCode)
                 {
-                    throw new Exception($"Reponse StatusCode:{response?.StatusCode} Reason:{response?.ReasonPhrase}, Reponse:{response}");
+                    throw new Exception($"Response StatusCode:{response?.StatusCode} Reason:{response?.ReasonPhrase}");
                 }
             }
             catch (Exception ex)

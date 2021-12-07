@@ -46,7 +46,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 await ExecuteStep(new PermissionsStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId));
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
-                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, request.OnboardingLambdaRoleArn, request.RootStackId, null, null));
+                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, request.OnboardingStackModifyRoleArn, request.RootStackId, null, null));
 
                 // 6. create Posture policies - create cloud account, rulesets, serverless account if selected
                 await ExecuteStep(new CreatePosturePoliciesStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));

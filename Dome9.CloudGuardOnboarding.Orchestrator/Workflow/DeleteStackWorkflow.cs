@@ -36,11 +36,21 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                         return;
                     }
 
-                    var tasks = ChildStacksConfig.GetSupportedFeaturesStackNames(_onboardingType)
-                                    .Select(f => Task.Run(async () => { await DeleteStackIfExistsAsync(f.Key, f.Value, cfnWrapper); }, tokenSource.Token));
-
-                    // wait until all the delete tasks are finished
-                    await Task.WhenAll(tasks);
+                    var stacks = ChildStacksConfig.GetSupportedFeaturesStackNames(_onboardingType);
+                    if (_onboardingType == OnboardingType.RoleBased)
+                    {
+                        var tasks = new List<Task>();
+                        tasks.Add(Task.Run(async () => { await DeleteStackIfExistsAsync(Enums.Feature.ServerlessProtection, stacks[Enums.Feature.ServerlessProtection], cfnWrapper); }, tokenSource.Token));
+                        tasks.Add(Task.Run(async () => {
+                            await DeleteStackIfExistsAsync(Enums.Feature.Intelligence, stacks[Enums.Feature.Intelligence], cfnWrapper);
+                            await DeleteStackIfExistsAsync(Enums.Feature.Permissions, stacks[Enums.Feature.Permissions], cfnWrapper);
+                        }, tokenSource.Token));
+                        await Task.WhenAll(tasks);
+                    }
+                    else
+                    {
+                        await DeleteStackIfExistsAsync(Enums.Feature.Permissions, stacks[Enums.Feature.Permissions], cfnWrapper);
+                    }
                     Console.WriteLine($"[{nameof(DeleteStackWorkflow)}.{nameof(RunAsync)}][INFO] All delete tasks are complete");
                 }
                 catch (AggregateException ex)
