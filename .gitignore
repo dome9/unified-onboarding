@@ -10,3 +10,8 @@ Dome9.CloudGuardOnboarding.Orchestrator/bin/
 Dome9.CloudGuardOnboarding.Orchestrator/obj/
 
 Dome9.CloudGuardOnboarding.Orchestrator/Properties/
+
+cft/cft-replacer/package-lock.json
+
+cft/cft-replacer/node_modules/
+

@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Check Point CloudGuard Dome9 unified onboarding'
+Metadata:
+  Version: 2.0.0
+
+Parameters:
+  REPLACEMENT_PARAMETERS:
+  RemoteStackModifyRoleExternalTrustSecret:
+    Description: CloudGuard generated unique id for assuming external trust
+    Type: String
+  CloudGuardAwsAccountNumber:
+    Description: The CloudGuard AWS account number
+    Type: String
+
+Conditions:
+  RemoteStackModifyEnabled: !Equals
+    - !Ref EnableRemoteStackModify
+    - true
+
+Resources:
+
+  CloudGuardOnboardingStackModifyRole:
+    Type: AWS::IAM::Role
+    Condition: RemoteStackModifyEnabled
+    Properties:
+      RoleName: 'CloudGuard-Onboarding-StackModify-role'      
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+                AWS: !Sub 'arn:aws:iam::${CloudGuardAwsAccountNumber}:root'
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref RemoteStackModifyRoleExternalTrustSecret
+  
+      Policies:
+        - PolicyName: CloudGuard-Lambda-StackModify-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - REPLACEMENT_SATCK_MODIFY_POLICY_STATEMENT
+              - Sid: DeleteRolePolicy
+                Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:DeleteRolePolicy
+                  - iam:DeleteRole
+                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role'
+
+
+  StackModifyRoleWaiter: 
+    Condition: RemoteStackModifyEnabled
+    DependsOn: CloudGuardOnboardingStackModifyRole
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  Waiter: 
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  StackModifyRoleIfEnabledWaitCondition: 
+    Type: "AWS::CloudFormation::WaitCondition"
+    Properties: 
+      Handle: !If [RemoteStackModifyEnabled, !Ref StackModifyRoleWaiter, !Ref Waiter]
+      Timeout: '1'
+      Count: 0
+               
+  CloudGuardLambdaStackCreationRole:  
+    Type: AWS::IAM::Role
+    DependsOn: StackModifyRoleIfEnabledWaitCondition
+    Properties:  
+      RoleName: 'CloudGuard-Lambda-CloudFormation-role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CloudGuard-Lambda-CloudFormation-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CloudGuardLambdaCloudFormation
+                Action:                 
+                  - '*'
+                Effect: Allow
+                Resource: '*'      
+
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  REPLACEMENT_ORCHESTRATOR:
+
+  CloudGuardOnboardingOrchestratorLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+        FunctionName: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+        Action: lambda:InvokeFunction
+        Principal: !Ref CloudGuardAwsAccountNumber
+
+  CloudGuardOnboardingOrchestratorInvoke:
+    Type: AWS::CloudFormation::CustomResource
+    DependsOn: CloudGuardOnboardingOrchestratorLambdaPermission
+    Properties:
+      REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES:
+      OnboardingStackModifyRoleArn: !If [RemoteStackModifyEnabled, !GetAtt CloudGuardOnboardingStackModifyRole.Arn, '']
+  

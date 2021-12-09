@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a R/W cross account user that authorizes access for CloudGuard'
+Metadata:
+  Version: 2.0.0 
+
+Resources:
+  CrossAccountUserCredentials:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      Status: Active
+      UserName: !Ref CrossAccountUser
+          
+  CrossAccountUserCredentialsStored:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: CloudGuardCrossAccountUserCredentials
+      SecretString: !Sub '{"ACCESS_KEY":"${CrossAccountUserCredentials}","SECRET_KEY":"${CrossAccountUserCredentials.SecretAccessKey}"}'
+            
+  CrossAccountUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: 'CloudGuard-Connect-RW-user'
+     
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/SecurityAudit
+
+      Policies:
+        - PolicyName: CloudGuard-Connect-RO-policy
+          PolicyDocument: REPLACEMENT_READONLY_POLICY
+        - PolicyName: CloudGuard-Connect-RW-policy         
+          PolicyDocument: REPLACEMENT_READWRITE_POLICY
+
+ 

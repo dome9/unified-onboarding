@@ -1,8 +1,7 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Check Point CloudGuard Dome9 unified onboarding'
+AWSTemplateFormatVersion: 2010-09-09
+Description: Check Point CloudGuard Dome9 unified onboarding
 Metadata:
   Version: 2.0.0
-
 Parameters:
   S3BucketName:
     Description: The S3 Bucket
@@ -22,9 +21,6 @@ Parameters:
   LambdaPkgPath:
     Description: The CloudGuard onboarding Lambda package path
     Type: String
-  CloudGuardAwsAccountNumber:
-    Description: The CloudGuard AWS account number
-    Type: String
   Version:
     Description: The CloudGuard onboarding version
     Type: String
@@ -38,35 +34,42 @@ Parameters:
   RemoteStackModifyRoleExternalTrustSecret:
     Description: CloudGuard generated unique id for assuming external trust
     Type: String
-
+  CloudGuardAwsAccountNumber:
+    Description: The CloudGuard AWS account number
+    Type: String
 Conditions:
-  RemoteStackModifyEnabled: !Equals
+  RemoteStackModifyEnabled: !Equals 
     - !Ref EnableRemoteStackModify
     - true
-
 Resources:
-
   CloudGuardOnboardingStackModifyRole:
     Type: AWS::IAM::Role
     Condition: RemoteStackModifyEnabled
-    Properties:  
-      RoleName: 'CloudGuard-Onboarding-StackModify-role'
+    Properties:
+      RoleName: CloudGuard-Onboarding-StackModify-role
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
-                AWS: !Sub 'arn:aws:iam::${CloudGuardAwsAccountNumber}:root'
+              AWS: !Sub arn:aws:iam::${CloudGuardAwsAccountNumber}:root
             Action: sts:AssumeRole
             Condition:
               StringEquals:
                 sts:ExternalId: !Ref RemoteStackModifyRoleExternalTrustSecret
-
       Policies:
         - PolicyName: CloudGuard-Lambda-StackModify-policy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
+              - Sid: DeleteRolePolicy
+                Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:DeleteRolePolicy
+                  - iam:DeleteRole
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role
               - Sid: ModifyStack
                 Effect: Allow
                 Action:
@@ -74,15 +77,14 @@ Resources:
                   - cloudformation:UpdateStack
                   - cloudformation:DeleteStack
                 Resource: !Ref AWS::StackId
-          
               - Sid: ModifyFunction
                 Effect: Allow
                 Action:
                   - lambda:UpdateFunctionCode
                   - lambda:InvokeFunction
                   - lambda:DeleteFunction
-                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
-          
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator
               - Sid: ModifyRole
                 Effect: Allow
                 Action:
@@ -90,90 +92,78 @@ Resources:
                   - iam:DeleteRole
                   - iam:DetachRolePolicy
                   - iam:DeleteRolePolicy
-                Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
-                  
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role
               - Sid: LambdaRemovePermission
                 Effect: Allow
                 Action: lambda:RemovePermission
-                Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
-
-              - Sid: DeleteRolePolicy
-                Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:DeleteRolePolicy
-                  - iam:DeleteRole
-                Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role'
-
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator
               - Sid: GetLmabdaCode
                 Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !Sub 'arn:aws:s3:::${S3BucketName}-${AWS::Region}-dev/*'
-
-  StackModifyRoleWaiter: 
+                Resource: !Sub arn:${AWS::Partition}:s3:::${S3BucketName}-${AWS::Region}/*
+  StackModifyRoleWaiter:
     Condition: RemoteStackModifyEnabled
     DependsOn: CloudGuardOnboardingStackModifyRole
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  Waiter: 
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  StackModifyRoleIfEnabledWaitCondition: 
-    Type: "AWS::CloudFormation::WaitCondition"
-    Properties: 
-      Handle: !If [RemoteStackModifyEnabled, !Ref StackModifyRoleWaiter, !Ref Waiter]
+    Type: AWS::CloudFormation::WaitConditionHandle
+  Waiter:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  StackModifyRoleIfEnabledWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    Properties:
+      Handle: !If 
+        - RemoteStackModifyEnabled
+        - !Ref StackModifyRoleWaiter
+        - !Ref Waiter
       Timeout: '1'
       Count: 0
-
-  CloudGuardLambdaStackCreationRole: 
+  CloudGuardLambdaStackCreationRole:
     Type: AWS::IAM::Role
     DependsOn: StackModifyRoleIfEnabledWaitCondition
-    Properties:  
-      RoleName: 'CloudGuard-Lambda-CloudFormation-role'
+    Properties:
+      RoleName: CloudGuard-Lambda-CloudFormation-role
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - lambda.amazonaws.com
             Action:
-              - 'sts:AssumeRole'
+              - sts:AssumeRole
       Policies:
         - PolicyName: CloudGuard-Lambda-CloudFormation-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Sid: CloudGuardLambdaCloudFormation
-                Action:                   
+                Action:
                   - '*'
                 Effect: Allow
-                Resource: '*'      
-
+                Resource: '*'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-
   CloudGuardOnboardingOrchestrator:
-    Type: AWS::Lambda::Function    
+    Type: AWS::Lambda::Function
     Properties:
-      FunctionName: 'CloudGuardOnboardingOrchestrator'
+      FunctionName: CloudGuardOnboardingOrchestrator
       Runtime: dotnetcore3.1
       Role: !GetAtt CloudGuardLambdaStackCreationRole.Arn
-      Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
+      Handler: >-
+        Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900
       Code:
-        S3Bucket: !Sub '${S3BucketName}-${AWS::Region}-dev'
-        S3Key: !Sub '${LambdaPkgPath}'     
+        S3Bucket: !Sub ${S3BucketName}-${AWS::Region}
+        S3Key: !Sub ${LambdaPkgPath}
       Description: Invoke a function during stack creation.
-
   CloudGuardOnboardingOrchestratorLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-        FunctionName: !GetAtt CloudGuardOnboardingOrchestrator.Arn
-        Action: lambda:InvokeFunction
-        Principal: !Ref CloudGuardAwsAccountNumber 
-
+      FunctionName: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+      Action: lambda:InvokeFunction
+      Principal: !Ref CloudGuardAwsAccountNumber
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
     DependsOn: CloudGuardOnboardingOrchestratorLambdaPermission
@@ -184,9 +174,13 @@ Resources:
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
       AwsAccountId: !Ref AWS::AccountId
-      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}-dev'
+      AwsPartition: !Ref AWS::Partition
+      S3BucketName: !Sub ${S3BucketName}-${AWS::Region}
       AwsAccountRegion: !Ref AWS::Region
-      OnboardingStackModifyRoleArn: !If [RemoteStackModifyEnabled, !GetAtt CloudGuardOnboardingStackModifyRole.Arn, '']
-      EnableRemoteStackModify: !Ref EnableRemoteStackModify 
+      EnableRemoteStackModify: !Ref EnableRemoteStackModify
       RootStackId: !Ref AWS::StackId
       Version: !Ref Version
+      OnboardingStackModifyRoleArn: !If 
+        - RemoteStackModifyEnabled
+        - !GetAtt CloudGuardOnboardingStackModifyRole.Arn
+        - ''

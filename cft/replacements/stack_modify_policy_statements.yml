@@ -1,0 +1,31 @@
+- Sid: ModifyStack
+  Effect: Allow
+  Action:
+    - cloudformation:DescribeStacks
+    - cloudformation:UpdateStack
+    - cloudformation:DeleteStack
+  Resource: !Ref AWS::StackId
+- Sid: ModifyFunction
+  Effect: Allow
+  Action:
+    - lambda:UpdateFunctionCode
+    - lambda:InvokeFunction
+    - lambda:DeleteFunction
+  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
+- Sid: ModifyRole
+  Effect: Allow
+  Action:
+    - iam:GetRole
+    - iam:DeleteRole
+    - iam:DetachRolePolicy
+    - iam:DeleteRolePolicy
+  Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
+- Sid: LambdaRemovePermission
+  Effect: Allow
+  Action: lambda:RemovePermission
+  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
+- Sid: GetLmabdaCode
+  Effect: Allow
+  Action:
+    - s3:GetObject
+  Resource: !Sub 'arn:${AWS::Partition}:s3:::${S3BucketName}-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX/*'

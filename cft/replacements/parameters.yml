@@ -1,0 +1,28 @@
+S3BucketName:
+  Description: The S3 Bucket
+  Type: String
+OnboardingId:
+  Description: The id of the onboarding process
+  Type: String
+ApiBaseUrl:
+  Description: The base url of the CloudGuard web API
+  Type: String
+CloudGuardApiKeyId:
+  Description: The CloudGuard service account API Key Id
+  Type: String
+CloudGuardApiKeySecret:
+  Description: The CloudGuard service account API Key secret
+  Type: String
+LambdaPkgPath:
+  Description: The CloudGuard onboarding Lambda package path
+  Type: String
+Version:
+  Description: The CloudGuard onboarding version
+  Type: String
+EnableRemoteStackModify:
+  Description: Whether CloudGuard have permissions to update or delete the stack
+  Type: String
+  Default: true
+  AllowedValues:
+    - true
+    - false

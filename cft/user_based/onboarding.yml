@@ -3,35 +3,8 @@ Description: 'Check Point CloudGuard Dome9 unified onboarding'
 Metadata:
   Version: 2.0.0
 
-Parameters:  
-  S3BucketName:
-    Description: The S3 Bucket
-    Type: String
-  OnboardingId:
-    Description: The id of the onboarding process
-    Type: String
-  ApiBaseUrl:
-    Description: The base url of the CloudGuard web API
-    Type: String
-  CloudGuardApiKeyId:
-    Description: The CloudGuard service account API Key Id
-    Type: String
-  CloudGuardApiKeySecret:
-    Description: The CloudGuard service account API Key secret
-    Type: String
-  LambdaPkgPath:
-    Description: The CloudGuard onboarding Lambda package path
-    Type: String
-  Version:
-    Description: The CloudGuard onboarding version
-    Type: String
-  EnableRemoteStackModify:
-    Description: Whether CloudGuard have permissions to update or delete the stack
-    Type: String
-    Default: true
-    AllowedValues:
-      - true
-      - false
+Parameters:
+  REPLACEMENT_PARAMETERS:
 
 Conditions:
   RemoteStackModifyEnabled: !Equals
@@ -50,36 +23,7 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Sid: ModifyStack
-                Effect: Allow
-                Action:
-                  - cloudformation:DescribeStacks
-                  - cloudformation:UpdateStack
-                  - cloudformation:DeleteStack
-                Resource: !Ref AWS::StackId
-          
-              - Sid: ModifyFunction
-                Effect: Allow
-                Action:
-                  - lambda:UpdateFunctionCode
-                  - lambda:InvokeFunction
-                  - lambda:DeleteFunction
-                Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
-          
-              - Sid: ModifyRole
-                Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:DeleteRole
-                  - iam:DetachRolePolicy
-                  - iam:DeleteRolePolicy
-                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
-                  
-              - Sid: LambdaRemovePermission
-                Effect: Allow
-                Action: lambda:RemovePermission
-                Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
-
+              - REPLACEMENT_SATCK_MODIFY_POLICY_STATEMENT
               - Sid: DeleteUserPolicy
                 Effect: Allow
                 Action:
@@ -95,12 +39,6 @@ Resources:
                 Action:
                   - secretsmanager:DeleteSecret 
                 Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*'
-
-              - Sid: GetLmabdaCode
-                Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource: !Sub 'arn:${AWS::Partition}:s3:::${S3BucketName}-${AWS::Region}/*'
 
   StackModifyCrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
@@ -173,31 +111,9 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         
-  CloudGuardOnboardingOrchestrator:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: 'CloudGuardOnboardingOrchestrator'
-      Runtime: dotnetcore3.1
-      Role: !GetAtt CloudGuardLambdaStackCreationRole.Arn
-      Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
-      Timeout: 900
-      Code:
-       S3Bucket: !Sub '${S3BucketName}-${AWS::Region}'
-       S3Key: !Sub '${LambdaPkgPath}'
-      Description: Invoke a function during stack creation.
+  REPLACEMENT_ORCHESTRATOR:
       
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
     Properties:
-      ServiceToken: !GetAtt CloudGuardOnboardingOrchestrator.Arn
-      OnboardingId: !Ref OnboardingId
-      ApiBaseUrl: !Ref ApiBaseUrl
-      CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
-      CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
-      AwsAccountId: !Ref AWS::AccountId
-      AwsPartition: !Ref AWS::Partition
-      S3BucketName: !Sub '${S3BucketName}-${AWS::Region}'
-      AwsAccountRegion: !Ref AWS::Region   
-      EnableRemoteStackModify: !Ref EnableRemoteStackModify
-      RootStackId: !Ref AWS::StackId
-      Version: !Ref Version
+      REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES:

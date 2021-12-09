@@ -1,0 +1,12 @@
+ServiceToken: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+OnboardingId: !Ref OnboardingId
+ApiBaseUrl: !Ref ApiBaseUrl
+CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
+CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
+AwsAccountId: !Ref AWS::AccountId
+AwsPartition: !Ref AWS::Partition
+S3BucketName: !Sub '${S3BucketName}-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX'
+AwsAccountRegion: !Ref AWS::Region
+EnableRemoteStackModify: !Ref EnableRemoteStackModify
+RootStackId: !Ref AWS::StackId
+Version: !Ref Version

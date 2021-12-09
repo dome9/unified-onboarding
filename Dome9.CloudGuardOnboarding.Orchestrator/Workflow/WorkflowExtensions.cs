@@ -8,7 +8,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     {
         public static bool IsUserBased(this CloudFormationRequest cloudFormationRequest)
         {
-            return !string.IsNullOrWhiteSpace(cloudFormationRequest.ResourceProperties?.AwsPartition);
+            return !(string.IsNullOrWhiteSpace(cloudFormationRequest.ResourceProperties?.AwsPartition) || cloudFormationRequest.ResourceProperties?.AwsPartition == "aws");
         }
     }
 }
