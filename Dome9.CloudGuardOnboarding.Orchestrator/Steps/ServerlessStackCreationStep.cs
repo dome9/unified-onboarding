@@ -12,14 +12,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly ServerlessStackConfig _stackConfig;
         private readonly StackOperation _stackOperation;
 
-        public ServerlessStackCreationStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, string awsAccountId, string onboardingId, string serverlessStackS3Url, string serverlessStackName, StackOperation stackOperation = StackOperation.Create)
+        public ServerlessStackCreationStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, string awsAccountId, string onboardingId, string serverlessStackS3Url, string serverlessStackName, string uniqueSuffix, StackOperation stackOperation = StackOperation.Create)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
             _awsAccountId = awsAccountId;
             _onboardingId = onboardingId;
             _awsStackWrapper = new ServerlessStackWrapper(apiProvider, retryAndBackoffService);
-            _stackConfig = new ServerlessStackConfig(serverlessStackS3Url, serverlessStackName, onboardingId, 30);
+            _stackConfig = new ServerlessStackConfig(serverlessStackS3Url, serverlessStackName, onboardingId, uniqueSuffix, 30);
             _stackOperation = stackOperation;
 
         }

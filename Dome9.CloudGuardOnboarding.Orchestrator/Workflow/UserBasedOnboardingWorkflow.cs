@@ -40,15 +40,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 // 3. get configuration from API
                 var configurationStep = await ExecuteStep(new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version));
                 var configuration = (configurationStep as GetConfigurationStep).Configuration;
+                configuration.SetStackNameSuffix(request.UniqueSuffix);
 
                 // 4. run the Permissions stack (create cross account user for CloudGuard)
-                var userBasedPermissionsStep = new PermissionsUserBasedStackCreationStep(_apiProvider, _retryAndBackoffService, configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition, request.EnableRemoteStackModify);
+                var userBasedPermissionsStep = new PermissionsUserBasedStackCreationStep(_apiProvider, _retryAndBackoffService, configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition, request.EnableRemoteStackModify, request.UniqueSuffix);
                 await ExecuteStep(userBasedPermissionsStep);
                 Console.WriteLine($"[INFO] userBasedPermissionsStep.AwsUserCredentials ApiKeyId='{userBasedPermissionsStep.AwsUserCredentials?.ApiKeyId?.MaskChars(4)}', ApiKeySecret='{userBasedPermissionsStep.AwsUserCredentials?.ApiKeySecret?.MaskChars(0)}'");
-                Console.WriteLine($"[INFO] userBasedPermissionsStep.LambdaUserCredentials ApiKeyId='{userBasedPermissionsStep.LambdaUserCredentials?.ApiKeyId?.MaskChars(4)}', ApiKeySecret='{userBasedPermissionsStep.LambdaUserCredentials?.ApiKeySecret?.MaskChars(0)}'");
+                Console.WriteLine($"[INFO] userBasedPermissionsStep.LambdaUserCredentials ApiKeyId='{userBasedPermissionsStep.StackModifyUserCredentials?.ApiKeyId?.MaskChars(4)}', ApiKeySecret='{userBasedPermissionsStep.StackModifyUserCredentials?.ApiKeySecret?.MaskChars(0)}'");
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
-                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, null, request.RootStackId, userBasedPermissionsStep.AwsUserCredentials, userBasedPermissionsStep.LambdaUserCredentials));
+                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, null, request.RootStackId, userBasedPermissionsStep.AwsUserCredentials, userBasedPermissionsStep.StackModifyUserCredentials, null));
 
                 // 6. create Posture policies - create cloud account, rulesets, serverless account if selected
                 await ExecuteStep(new CreatePosturePoliciesStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));

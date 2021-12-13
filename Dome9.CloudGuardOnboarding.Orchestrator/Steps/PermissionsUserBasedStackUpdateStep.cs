@@ -19,11 +19,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string templateS3Path,
             string onboardingId,
             string awsPartition,
+            string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
             var s3Url = $"https://{cftS3BucketName}.s3.{region}.{GetDomain(awsPartition)}/{templateS3Path}";
             _awsStackWrapper = new PermissionsUserBasedStackWrapper(apiProvider, retryAndBackoffService);
-            _stackConfig = new PermissionsUserBasedStackConfig(s3Url, stackName, onboardingId, stackExecutionTimeoutMinutes);
+            _stackConfig = new PermissionsUserBasedStackConfig(s3Url, stackName, onboardingId, uniqueSuffix, stackExecutionTimeoutMinutes);
         }
 
         public override async Task Execute()

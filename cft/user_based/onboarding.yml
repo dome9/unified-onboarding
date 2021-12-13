@@ -16,10 +16,10 @@ Resources:
     Type: AWS::IAM::User
     Condition: RemoteStackModifyEnabled
     Properties:
-      UserName: 'CloudGuard-Onboarding-StackModify-user'
+      UserName: !Sub 'CloudGuard-Onboarding-StackModify-user${UniqueSuffix}'
 
       Policies:
-        - PolicyName: CloudGuard-Lambda-StackModify-policy
+        - PolicyName: !Sub 'CloudGuard-Lambda-StackModify-policy${UniqueSuffix}'
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -32,7 +32,7 @@ Resources:
                   - iam:DeleteUser
                   - iam:DeleteAccessKey
                   - iam:ListAccessKeys
-                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Onboarding-StackModify-user'
+                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Onboarding-StackModify-user${UniqueSuffix}'
 
               - Sid: DeleteSecret
                 Effect: Allow
@@ -73,8 +73,8 @@ Resources:
   CloudGuardLambdaStackCreationRole:
     Type: AWS::IAM::Role
     DependsOn: StackModifyCrossAccountUserIfEnabledWaitCondition
-    Properties:  
-      RoleName: 'CloudGuard-Lambda-CloudFormation-role'
+    Properties:
+      RoleName: !Sub 'CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}'
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -87,7 +87,7 @@ Resources:
 
       Policies:
 
-        - PolicyName: CloudGuard-Lambda-CloudFormation-policy
+        - PolicyName: !Sub 'CloudGuard-Lambda-CloudFormation-policy${UniqueSuffix}'
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -97,14 +97,14 @@ Resources:
                 Effect: Allow
                 Resource: '*'
 
-        - PolicyName: CloudGuard-Lambda-GetCloudGuardApiKeys-policy
+        - PolicyName: !Sub 'CloudGuard-Lambda-GetCloudGuardApiKeys-policy${UniqueSuffix}'
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
                   - 'secretsmanager:*'
-                Resource: 
+                Resource:
                   - !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
                   - !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
 

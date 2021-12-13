@@ -15,6 +15,7 @@
         public string OnboardingStackModifyRoleArn { get; set; }
         public string EnableRemoteStackModify { get; set; }
         public string RootStackId { get; set; }
+        public string UniqueSuffix { get; set; }
 
         public override string ToString()
         {
@@ -22,7 +23,7 @@
                 $"[CloudGuardApiKeyId={CloudGuardApiKeyId.MaskChars(3)}], [CloudGuardApiKeySecret={CloudGuardApiKeySecret.MaskChars(0)}]," +
                 $"[S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]" +
                 $"[OnboardingStackModifyRoleArn={OnboardingStackModifyRoleArn}], [EnableRemoteStackModify={EnableRemoteStackModify}]" +
-                $"[RootStackId={RootStackId}, Version={Version}]";
+                $"[RootStackId={RootStackId}, Version={Version}, UniqueSuffix={UniqueSuffix}]";
         }
     }
 

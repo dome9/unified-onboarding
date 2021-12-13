@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
@@ -8,6 +9,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         private readonly PermissionsStackWrapper _awsStackWrapper;
         private readonly PermissionsStackConfig _stackConfig;
+        public string CrossAccountRoleArn {get;set;}
 
         public PermissionsStackCreationStep(
             ICloudGuardApiWrapper apiProvider,
@@ -19,6 +21,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string cloudGuardAwsAccountId,
             string cloudGuardExternalTrustId,
             string onboardingId,
+            string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
             _awsStackWrapper = new PermissionsStackWrapper(apiProvider, retryAndBackoffService);
@@ -28,7 +31,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 stackName, 
                 onboardingId, 
                 cloudGuardAwsAccountId, 
-                cloudGuardExternalTrustId,            
+                cloudGuardExternalTrustId,
+                uniqueSuffix,
                 stackExecutionTimeoutMinutes);
         }
 
@@ -37,6 +41,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync starting");
             await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Create);
             Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync finished");
+
+            var stack = await _awsStackWrapper.DescribeStackAsync(Enums.Feature.Permissions, _stackConfig.StackName);
+            CrossAccountRoleArn = stack.Outputs.FirstOrDefault(o => o.OutputKey == "CrossAccountRoleArn").OutputValue;
         }
 
         public override async Task Rollback()

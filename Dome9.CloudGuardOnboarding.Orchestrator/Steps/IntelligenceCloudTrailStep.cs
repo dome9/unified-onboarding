@@ -34,7 +34,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public IntelligenceCloudTrailStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService,
             string cftS3Buckets, string region, string awsAccountId, string OnboardingId, string roleName, string cloudGuardAwsAccountId,
-            string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesetsIds,
+            string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesetsIds, string uniqueSuffix,
             StackOperation stackOperation = StackOperation.Create)
         {
             _apiProvider = apiProvider;
@@ -43,11 +43,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _onboardingId = OnboardingId;
             _cloudGuardAwsAccountId = cloudGuardAwsAccountId;
             _cloudGuardRoleName = roleName.Contains("readonly") ? "CloudGuard-Connect-RO-role" : "CloudGuard-Connect-RW-role";
+            _cloudGuardRoleName += uniqueSuffix;
             _awsStackWrapper = new IntelligenceStackWrapper(apiProvider, retryAndBackoffService);
             _intelligenceTemplateS3Url = intelligenceTemplateS3Url;
             _intelligenceStackName = stackName;
             _s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{intelligenceTemplateS3Url}";
-            _stackConfig = new InteligenceStackConfig(_s3Url, _intelligenceStackName,_onboardingId, "", _cloudGuardRoleName, 30);
+            _stackConfig = new InteligenceStackConfig(_s3Url, _intelligenceStackName,_onboardingId, "", _cloudGuardRoleName, uniqueSuffix, 30);
             _snsTopicArn = snsTopicArn;
             _rulesetsIds = rulesetsIds;
             _stackOperation = stackOperation;

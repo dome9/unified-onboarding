@@ -31,7 +31,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 $"{nameof(IntelligenceSnsTopicArn)}='{IntelligenceSnsTopicArn}', " +
                 $"{nameof(IntelligenceRulesetsIds)}='{string.Join(", ", IntelligenceRulesetsIds ?? new List<long>())}', " +
                 $"{nameof(CloudGuardAwsAccountId)}='{CloudGuardAwsAccountId}', " +
-                $"{nameof(RoleExternalTrustSecret)}='{RoleExternalTrustSecret.MaskChars(2)}'"; 
+                $"{nameof(RoleExternalTrustSecret)}='{RoleExternalTrustSecret.MaskChars(2)}'";
+        }
+
+        public void SetStackNameSuffix(string suffix)
+        {
+            PermissionsStackName += suffix;
+            ServerlessStackName += suffix;
+            IntelligenceStackName += suffix;
         }
     }
 }

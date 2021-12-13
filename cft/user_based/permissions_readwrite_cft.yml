@@ -3,6 +3,13 @@ Description: 'Creates a R/W cross account user that authorizes access for CloudG
 Metadata:
   Version: 2.0.0 
 
+Parameters:
+  UniqueSuffix:
+    Description: An optional suffix for all resources
+    Type: String
+    Default: ''
+    MaxLength: 19
+
 Resources:
   CrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
@@ -19,15 +26,15 @@ Resources:
   CrossAccountUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: 'CloudGuard-Connect-RW-user'
+      UserName: !Sub 'CloudGuard-Connect-RW-user${UniqueSuffix}'
      
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
 
       Policies:
-        - PolicyName: CloudGuard-Connect-RO-policy
+        - PolicyName: !Sub 'CloudGuard-Connect-RO-policy${UniqueSuffix}'
           PolicyDocument: REPLACEMENT_READONLY_POLICY
-        - PolicyName: CloudGuard-Connect-RW-policy         
+        - PolicyName: !Sub 'CloudGuard-Connect-RW-policy${UniqueSuffix}'
           PolicyDocument: REPLACEMENT_READWRITE_POLICY
 
  

@@ -22,12 +22,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 case Enums.Feature.Permissions:
                     if (_onboardingType == OnboardingType.RoleBased)
                     {
-                        return new PermissionsStackUpdateStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId);
+                        return new PermissionsStackUpdateStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix);
 
                     }
                     else if (_onboardingType == OnboardingType.UserBased)
                     {
-                        return new PermissionsUserBasedStackUpdateStep(_apiProvider, _retryAndBackoffService, configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition);
+                        return new PermissionsUserBasedStackUpdateStep(_apiProvider, _retryAndBackoffService, configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition, request.UniqueSuffix);
                     }
                     else
                     {
@@ -55,6 +55,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     var configStep = new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version);
                     await ExecuteStep(configStep);
 
+                    var configuration = configStep.Configuration;
+                    configuration.SetStackNameSuffix(request.UniqueSuffix);
 
                     var tasks = ChildStacksConfig.GetSupportedFeaturesStackNames(_onboardingType)
                         .Select(f => Task.Run(async () => { await ExecuteStep(CreateStep(configStep.Configuration, f.Key, request)); }));

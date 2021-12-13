@@ -11,10 +11,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig
             string stackName,
             string onboardingId,
             string cloudtrailS3BucketName,
-            string cloudGuardRoleName,
+            string cloudGuardRoleName, 
+            string uniqueSuffix,
             int executionTimeoutMinutes
             )
-            : base(onboardingId, templateS3Url, stackName, executionTimeoutMinutes)
+            : base(onboardingId, templateS3Url, stackName, uniqueSuffix, executionTimeoutMinutes)
         {
             CloudtrailS3BucketName = cloudtrailS3BucketName;
             CloudGuardRoleName = cloudGuardRoleName;

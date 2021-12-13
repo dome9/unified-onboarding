@@ -23,7 +23,7 @@ Resources:
     Type: AWS::IAM::Role
     Condition: RemoteStackModifyEnabled
     Properties:
-      RoleName: 'CloudGuard-Onboarding-StackModify-role'      
+      RoleName: !Sub 'CloudGuard-Onboarding-StackModify-role${UniqueSuffix}'
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -36,7 +36,7 @@ Resources:
                 sts:ExternalId: !Ref RemoteStackModifyRoleExternalTrustSecret
   
       Policies:
-        - PolicyName: CloudGuard-Lambda-StackModify-policy
+        - PolicyName: !Sub 'CloudGuard-Lambda-StackModify-policy${UniqueSuffix}'
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -47,7 +47,7 @@ Resources:
                   - iam:GetRole
                   - iam:DeleteRolePolicy
                   - iam:DeleteRole
-                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role'
+                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role${UniqueSuffix}'
 
 
   StackModifyRoleWaiter: 
@@ -69,7 +69,7 @@ Resources:
     Type: AWS::IAM::Role
     DependsOn: StackModifyRoleIfEnabledWaitCondition
     Properties:  
-      RoleName: 'CloudGuard-Lambda-CloudFormation-role'
+      RoleName: !Sub 'CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}'
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -80,7 +80,7 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Policies:
-        - PolicyName: CloudGuard-Lambda-CloudFormation-policy
+        - PolicyName: !Sub 'CloudGuard-Lambda-CloudFormation-policy${UniqueSuffix}'
           PolicyDocument:
             Version: 2012-10-17
             Statement:

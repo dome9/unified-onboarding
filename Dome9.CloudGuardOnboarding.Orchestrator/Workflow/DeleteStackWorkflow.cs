@@ -28,7 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 {
                     tokenSource.CancelAfter(TimeSpan.FromMinutes(FLOW_TIMEOUT_UNTIL_POSTBACK_MINUTES));
 
-                    var stack = await cfnWrapper.GetStackDescriptionAsync(Enums.Feature.None, "CloudGuard-Onboarding");
+                    var stack = await cfnWrapper.GetStackDescriptionAsync(Enums.Feature.None, "CloudGuard-Onboarding" + request.UniqueSuffix);
                     var stackVersion = stack.Parameters.FirstOrDefault(p => p.ParameterKey == nameof(OnboardingRequest.Version))?.ParameterValue;
                     if (stackVersion != request.Version)
                     {
@@ -40,16 +40,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     if (_onboardingType == OnboardingType.RoleBased)
                     {
                         var tasks = new List<Task>();
-                        tasks.Add(Task.Run(async () => { await DeleteStackIfExistsAsync(Enums.Feature.ServerlessProtection, stacks[Enums.Feature.ServerlessProtection], cfnWrapper); }, tokenSource.Token));
+                        tasks.Add(Task.Run(async () => { await DeleteStackIfExistsAsync(Enums.Feature.ServerlessProtection, stacks[Enums.Feature.ServerlessProtection] + request.UniqueSuffix, cfnWrapper); }, tokenSource.Token));
                         tasks.Add(Task.Run(async () => {
-                            await DeleteStackIfExistsAsync(Enums.Feature.Intelligence, stacks[Enums.Feature.Intelligence], cfnWrapper);
-                            await DeleteStackIfExistsAsync(Enums.Feature.Permissions, stacks[Enums.Feature.Permissions], cfnWrapper);
+                            await DeleteStackIfExistsAsync(Enums.Feature.Intelligence, stacks[Enums.Feature.Intelligence] + request.UniqueSuffix, cfnWrapper);
+                            await DeleteStackIfExistsAsync(Enums.Feature.Permissions, stacks[Enums.Feature.Permissions] + request.UniqueSuffix, cfnWrapper);
                         }, tokenSource.Token));
                         await Task.WhenAll(tasks);
                     }
                     else
                     {
-                        await DeleteStackIfExistsAsync(Enums.Feature.Permissions, stacks[Enums.Feature.Permissions], cfnWrapper);
+                        await DeleteStackIfExistsAsync(Enums.Feature.Permissions, stacks[Enums.Feature.Permissions] + request.UniqueSuffix, cfnWrapper);
                     }
                     Console.WriteLine($"[{nameof(DeleteStackWorkflow)}.{nameof(RunAsync)}][INFO] All delete tasks are complete");
                 }

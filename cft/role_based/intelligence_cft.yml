@@ -10,12 +10,17 @@ Parameters:
   CloudGuardRoleName:
     Description: Name of Cloud Guard Role to attached logic policy
     Type: String
+  UniqueSuffix:
+    Description: An optional suffix for all resources
+    Type: String
+    Default: ''
+    MaxLength: 19
 
 Resources:
   IntelligencePolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: CloudGuard-for-intelligence
+      PolicyName: !Sub 'CloudGuard-for-intelligence${UniqueSuffix}'
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -28,4 +33,4 @@ Resources:
               - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}"
               - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}/*"                     
       Roles:
-        - !Ref CloudGuardRoleName   
+        - !Ref CloudGuardRoleName

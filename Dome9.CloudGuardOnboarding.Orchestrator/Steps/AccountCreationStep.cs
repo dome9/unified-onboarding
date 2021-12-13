@@ -11,7 +11,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly string _stackModifyRoleArn;
         private readonly string _rootStackId;
         private readonly ApiCredentials _apiCredentials;
-        private readonly ApiCredentials _lambdaApiCredentials;
+        private readonly ApiCredentials _stackModifyApiCredentials;
+        private readonly string _crossAccountRoleArn;
+
 
         public AccountCreationStep(ICloudGuardApiWrapper apiProvider,
             IRetryAndBackoffService retryAndBackoffService,
@@ -21,7 +23,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string stackModifyRoleArn,
             string rootStackId,
             ApiCredentials apiCredentials,
-            ApiCredentials lambdaApiCredentials)
+            ApiCredentials stackModifyApiCredentials,
+            string crossAccountRoleArn)
         {
             _apiProvider = apiProvider;
             _retryAndBackoffService = retryAndBackoffService;
@@ -31,7 +34,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _stackModifyRoleArn = stackModifyRoleArn;
             _rootStackId = rootStackId;
             _apiCredentials = apiCredentials;
-            _lambdaApiCredentials = lambdaApiCredentials;
+            _stackModifyApiCredentials = stackModifyApiCredentials;
+            _crossAccountRoleArn = crossAccountRoleArn;
         }
         public override Task Cleanup()
         {
@@ -55,7 +59,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                     _stackModifyRoleArn,
                     _rootStackId,
                     _apiCredentials,
-                    _lambdaApiCredentials)));
+                    _stackModifyApiCredentials,
+                    _crossAccountRoleArn)));
 
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Cloud account created successfully", Enums.Feature.None)));
             Console.WriteLine($"[INFO] Successfully posted onboarding request. Cloud account created successfully.");

@@ -10,3 +10,4 @@ AwsAccountRegion: !Ref AWS::Region
 EnableRemoteStackModify: !Ref EnableRemoteStackModify
 RootStackId: !Ref AWS::StackId
 Version: !Ref Version
+UniqueSuffix: !Ref UniqueSuffix

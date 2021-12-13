@@ -11,7 +11,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly bool _enableRemoteStackModify = false;
 
         public ApiCredentials AwsUserCredentials { get; private set; }
-        public ApiCredentials LambdaUserCredentials { get; private set; }
+        public ApiCredentials StackModifyUserCredentials { get; private set; }
 
         public PermissionsUserBasedStackCreationStep(
             ICloudGuardApiWrapper apiProvider,
@@ -23,6 +23,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string onboardingId,
             string awsPartition,
             string enableRemoteStackModify,
+            string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
             var s3Url = $"https://{cftS3BucketName}.s3.{region}.{GetDomain(awsPartition)}/{templateS3Path}";
@@ -30,7 +31,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             _stackConfig = new PermissionsUserBasedStackConfig(
                 s3Url, 
                 stackName, 
-                onboardingId,               
+                onboardingId,       
+                uniqueSuffix,
                 stackExecutionTimeoutMinutes);
             bool.TryParse(enableRemoteStackModify, out _enableRemoteStackModify);
         }
@@ -51,7 +53,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
             if (_enableRemoteStackModify)
             {
-                LambdaUserCredentials = await _awsStackWrapper.GetStackModifyUserCredentials();
+                StackModifyUserCredentials = await _awsStackWrapper.GetStackModifyUserCredentials();
             }
         }
 

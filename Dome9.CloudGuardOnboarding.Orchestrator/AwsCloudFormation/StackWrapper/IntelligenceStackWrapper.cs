@@ -20,11 +20,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper
                 throw new ArgumentException($"{nameof(onboardingStackConfig)} is not of type {nameof(InteligenceStackConfig)}");
             }
 
-            InteligenceStackConfig logicStackConfig = onboardingStackConfig as InteligenceStackConfig;
+            InteligenceStackConfig inelligenceStackConfig = onboardingStackConfig as InteligenceStackConfig;
             return new Dictionary<string, string>
             {
-                {"CloudtrailS3BucketName",  logicStackConfig.CloudtrailS3BucketName},
-                {"CloudGuardRoleName", logicStackConfig.CloudGuardRoleName }
+                {"CloudtrailS3BucketName",  inelligenceStackConfig.CloudtrailS3BucketName},
+                {"CloudGuardRoleName", inelligenceStackConfig.CloudGuardRoleName },
+                {"UniqueSuffix", inelligenceStackConfig.UniqueSuffix }
             };
         }
     }

@@ -11,7 +11,7 @@
     - lambda:UpdateFunctionCode
     - lambda:InvokeFunction
     - lambda:DeleteFunction
-  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
+  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}'
 - Sid: ModifyRole
   Effect: Allow
   Action:
@@ -19,11 +19,12 @@
     - iam:DeleteRole
     - iam:DetachRolePolicy
     - iam:DeleteRolePolicy
-  Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role'
+    - iam:PutRolePolicy
+  Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}'
 - Sid: LambdaRemovePermission
   Effect: Allow
   Action: lambda:RemovePermission
-  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator'
+  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}'
 - Sid: GetLmabdaCode
   Effect: Allow
   Action:

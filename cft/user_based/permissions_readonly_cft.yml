@@ -3,6 +3,13 @@ Description: 'Creates a read-only cross account user that authorizes access for 
 Metadata:
   Version: 2.0.0
 
+Parameters:
+  UniqueSuffix:
+    Description: An optional suffix for all resources
+    Type: String
+    Default: ''
+    MaxLength: 19
+
 Resources:
   CrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
@@ -19,11 +26,11 @@ Resources:
   CrossAccountUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: 'CloudGuard-Connect-RO-user'
+      UserName: !Sub 'CloudGuard-Connect-RO-user${UniqueSuffix}'
      
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
 
       Policies:
-        - PolicyName: CloudGuard-Connect-RO-policy
+        - PolicyName: !Sub 'CloudGuard-Connect-RO-policy${UniqueSuffix}'
           PolicyDocument: REPLACEMENT_READONLY_POLICY

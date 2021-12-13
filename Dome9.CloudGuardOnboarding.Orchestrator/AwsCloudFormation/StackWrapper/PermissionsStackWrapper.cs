@@ -22,7 +22,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return new Dictionary<string, string>
             {
                 { "CloudGuardAwsAccountId",  permissionsStackConfig.CloudGuardAwsAccountId },
-                { "RoleExternalTrustSecret", permissionsStackConfig.RoleExternalTrustSecret }             
+                { "RoleExternalTrustSecret", permissionsStackConfig.RoleExternalTrustSecret },           
+                { "UniqueSuffix", permissionsStackConfig.UniqueSuffix }             
             };
         }
     }

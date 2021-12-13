@@ -12,9 +12,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             string stackName,
             string onboardingId,
             string cloudGuardAwsAccountId,
-            string cloudGuardExternalTrustSecret,           
+            string cloudGuardExternalTrustSecret,
+            string uniqueSuffix,
             int executionTimeoutMinutes)
-            : base(onboardingId, templateS3Url, stackName, executionTimeoutMinutes)
+            : base(onboardingId, templateS3Url, stackName, uniqueSuffix, executionTimeoutMinutes)
         {
             CloudGuardAwsAccountId = cloudGuardAwsAccountId;
             RoleExternalTrustSecret = cloudGuardExternalTrustSecret;

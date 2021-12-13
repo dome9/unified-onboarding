@@ -26,3 +26,8 @@ EnableRemoteStackModify:
   AllowedValues:
     - true
     - false
+UniqueSuffix:
+  Description: An optional suffix for all resources
+  Type: String
+  Default: ''
+  MaxLength: 19

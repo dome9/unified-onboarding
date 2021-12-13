@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.CloudFormation;
+using Amazon.CloudFormation.Model;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -59,6 +60,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 default:
                     throw new NotImplementedException($"stackOperation: {stackOperation}");
             }
+        }
+
+        public async Task<Stack> DescribeStackAsync(Enums.Feature feature, string stackName)
+        {
+            return await _cfnWrapper.GetStackDescriptionAsync(feature, stackName);
         }
 
         protected virtual Dictionary<string, string> GetParameters(OnboardingStackConfig onboardingStackConfig) => null;        

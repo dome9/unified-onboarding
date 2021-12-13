@@ -9,14 +9,18 @@ Parameters:
     Type: String
   RoleExternalTrustSecret:    
     Description: CloudGuard generated unique id for assuming external trust
-    Type: String  
+    Type: String
+  UniqueSuffix:
+    Description: An optional suffix for all resources
+    Type: String
+    Default: ''
+    MaxLength: 19
 
 Resources:
   CrossAccountRole:
     Type: AWS::IAM::Role
     Properties:
-      # max 64 chars
-      RoleName: 'CloudGuard-Connect-RO-role'
+      RoleName: !Sub 'CloudGuard-Connect-RO-role${UniqueSuffix}'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -31,5 +35,10 @@ Resources:
         - arn:aws:iam::aws:policy/SecurityAudit
 
       Policies:
-        - PolicyName: CloudGuard-Connect-RO-policy
+        - PolicyName: !Sub 'CloudGuard-Connect-RO-policy${UniqueSuffix}'
           PolicyDocument: REPLACEMENT_READONLY_POLICY
+
+Outputs:
+  CrossAccountRoleArn:
+    Description: The CrossAccount Role Arn
+    Value: !GetAtt CrossAccountRole.Arn

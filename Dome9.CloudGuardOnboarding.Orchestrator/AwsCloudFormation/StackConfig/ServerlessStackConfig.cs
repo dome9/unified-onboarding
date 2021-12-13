@@ -7,9 +7,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public ServerlessStackConfig(
             string templateS3Url, 
             string stackName, 
-            string onboardingId, 
+            string onboardingId,
+            string uniqueSuffix,
             int executionTimeoutMinutes)
-            : base(onboardingId, templateS3Url, stackName, executionTimeoutMinutes)
+            : base(onboardingId, templateS3Url, stackName, uniqueSuffix, executionTimeoutMinutes)
         {
         }
     }

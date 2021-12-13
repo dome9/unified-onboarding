@@ -41,12 +41,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 // 3. get configuration from API
                 var configurationStep = await ExecuteStep(new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version));
                 var configuration = (configurationStep as GetConfigurationStep).Configuration;
+                configuration.SetStackNameSuffix(request.UniqueSuffix);
 
                 // 4. run the Permissions stack (create cross account role for CloudGuard)
-                await ExecuteStep(new PermissionsStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId));
+                var permissionsStackStep = new PermissionsStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix);
+                await ExecuteStep(permissionsStackStep);
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
-                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, request.OnboardingStackModifyRoleArn, request.RootStackId, null, null));
+                await ExecuteStep(new AccountCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.AwsAccountRegion, request.OnboardingId, request.OnboardingStackModifyRoleArn, request.RootStackId, null, null, permissionsStackStep.CrossAccountRoleArn));
 
                 // 6. create Posture policies - create cloud account, rulesets, serverless account if selected
                 await ExecuteStep(new CreatePosturePoliciesStep(_apiProvider, _retryAndBackoffService, request.OnboardingId));
@@ -68,7 +70,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                             await ExecuteStep(new ServerlessAddAccountStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
                             // 8. create serverless protection stack if enabled
-                            await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, configuration.ServerlessTemplateS3Path, configuration.ServerlessStackName));
+                            await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, configuration.ServerlessTemplateS3Path, configuration.ServerlessStackName, request.UniqueSuffix));
                         }
                     }
                     else
@@ -89,7 +91,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         await ExecuteStep(new IntelligenceCloudTrailStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion,
                         request.AwsAccountId, request.OnboardingId, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId,
-                        configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn, configuration.IntelligenceRulesetsIds));
+                        configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn, configuration.IntelligenceRulesetsIds, request.UniqueSuffix));
                     }
                     else
                     {

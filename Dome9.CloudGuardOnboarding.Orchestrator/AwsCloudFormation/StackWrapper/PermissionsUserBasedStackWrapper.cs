@@ -21,7 +21,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
 
             var permissionsStackConfig = onboardingStackConfig as PermissionsUserBasedStackConfig;
-            return new Dictionary<string, string>();
+            return new Dictionary<string, string>
+            {
+                { "UniqueSuffix", permissionsStackConfig.UniqueSuffix }
+            };
         }
 
         public async Task<ApiCredentials> GetAwsUserCredentials()

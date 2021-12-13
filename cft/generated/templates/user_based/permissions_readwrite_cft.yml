@@ -2,6 +2,12 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Creates a R/W cross account user that authorizes access for CloudGuard
 Metadata:
   Version: 2.0.0
+Parameters:
+  UniqueSuffix:
+    Description: An optional suffix for all resources
+    Type: String
+    Default: ''
+    MaxLength: 19
 Resources:
   CrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
@@ -17,11 +23,11 @@ Resources:
   CrossAccountUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: CloudGuard-Connect-RW-user
+      UserName: !Sub CloudGuard-Connect-RW-user${UniqueSuffix}
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
       Policies:
-        - PolicyName: CloudGuard-Connect-RO-policy
+        - PolicyName: !Sub CloudGuard-Connect-RO-policy${UniqueSuffix}
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -83,7 +89,7 @@ Resources:
                 Effect: Allow
                 Resource: !Sub >-
                   arn:${AWS::Partition}:s3:::elasticbeanstalk-env-resources-??*?/*
-        - PolicyName: CloudGuard-Connect-RW-policy
+        - PolicyName: !Sub CloudGuard-Connect-RW-policy${UniqueSuffix}
           PolicyDocument:
             Version: 2012-10-17
             Statement:

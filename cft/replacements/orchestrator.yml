@@ -1,12 +1,12 @@
 CloudGuardOnboardingOrchestrator:
   Type: AWS::Lambda::Function
   Properties:
-    FunctionName: 'CloudGuardOnboardingOrchestrator'
+    FunctionName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
     Runtime: dotnetcore3.1
     Role: !GetAtt CloudGuardLambdaStackCreationRole.Arn
     Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
     Timeout: 900
     Code:
       S3Bucket: !Sub '${S3BucketName}-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX'
-      S3Key: !Sub '${LambdaPkgPath}'
+      S3Key: !Ref LambdaPkgPath
     Description: Invoke a function during stack creation.

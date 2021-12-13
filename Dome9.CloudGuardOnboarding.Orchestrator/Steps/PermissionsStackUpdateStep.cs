@@ -20,6 +20,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string cloudGuardAwsAccountId,
             string cloudGuardExternalTrustId,
             string onboardingId,
+            string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
             _awsStackWrapper = new PermissionsStackWrapper(apiProvider, retryAndBackoffService);
@@ -30,6 +31,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 onboardingId,
                 cloudGuardAwsAccountId,
                 cloudGuardExternalTrustId,
+                uniqueSuffix,
                 stackExecutionTimeoutMinutes);
         }
 
