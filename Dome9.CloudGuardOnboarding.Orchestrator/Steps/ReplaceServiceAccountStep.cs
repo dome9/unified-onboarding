@@ -24,7 +24,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 _apiProvider.SetLocalCredentials(ServiceAccount);
 
                 Console.WriteLine($"[INFO] About to replace service account");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replacing service account")));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Replacing service account", null, null, null)));
 
                 // get new service account
                 try
@@ -49,7 +49,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 // set provider to use new account 
                 _apiProvider.SetLocalCredentials(ServiceAccount);
 
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Replaced service account successfully")));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Replaced service account successfully", null, null, null)));
                 Console.WriteLine($"[INFO] Replaced service account successfully");
 
             }

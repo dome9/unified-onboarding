@@ -28,7 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 await ExecuteStep(initServiceAccountStep);
 
                 Console.WriteLine($"[INFO] Executing onboarding process - OnboardingId: {request?.OnboardingId}");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.PENDING, "Starting onboarding workflow", Enums.Feature.None)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.None, Enums.Status.PENDING, "Starting onboarding workflow", null, null, null)));
 
                 // 1. create new service account and delete initial service account with exposed credentials (stack url containing the credentials could be passed around)               
                 var replaceServiceAccountStep = new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, initServiceAccountStep.ServiceAccount, request.OnboardingId);
@@ -62,7 +62,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                         if (configuration.ServerlessCftRegion != request.AwsAccountRegion)
                         {
                             Console.WriteLine($"[ERROR] Failed handling Serverless protection - can not run Serverless protection CFT in the {request.AwsAccountRegion} region, Serverless protection CFT must run in {configuration.ServerlessCftRegion} region.");
-                            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, $"Can not run Serverless protection CFT in the {request.AwsAccountRegion} region, Serverless protection CFT must run in {configuration.ServerlessCftRegion} region.", Enums.Feature.ServerlessProtection)));
+                            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ERROR, $"Can not run Serverless protection CFT in the {request.AwsAccountRegion} region, Serverless protection CFT must run in {configuration.ServerlessCftRegion} region.", null, null, null)));
                         }
                         else
                         {
@@ -75,13 +75,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     }
                     else
                     {
-                        await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.INACTIVE, "Serverless protection disabled", Enums.Feature.ServerlessProtection)));
+                        await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.ServerlessProtection, Enums.Status.INACTIVE, "Serverless protection disabled", null, null, null)));
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[ERROR] Failed handling Serverless protection. Error={ex}");
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, "Failed to acivate Serverless protection", Enums.Feature.ServerlessProtection)));
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ERROR, "Failed to acivate Serverless protection", null, null, null)));
                 }
 
                 // 9. Intelligence step - do not fail workflow on exceptions
@@ -95,14 +95,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     }
                     else
                     {
-                        await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.INACTIVE, "Intelligence disabled", Enums.Feature.Intelligence)));
+                        await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.Intelligence, Enums.Status.INACTIVE, "Intelligence disabled", null, null, null)));
                     }
 
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[ERROR] Failed handling Intelligence. Error={ex}");
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.ERROR, ex.Message, Enums.Feature.Intelligence)));
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.Intelligence, Enums.Status.ERROR, ex.Message, null, null, null)));
                 }
 
                 // 10. Delete the service account

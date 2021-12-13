@@ -32,13 +32,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public async override Task Execute()
         {
             Console.WriteLine($"[INFO] About to add serverless protection");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Adding serverless protection", Enums.Feature.ServerlessProtection)));
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Creating serverless protection stack", Enums.Feature.ServerlessProtection)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.PENDING, "Adding serverless protection", null, null, null)));
             Console.WriteLine($"[INFO][{nameof(ServerlessStackCreationStep)}.{nameof(Execute)}] RunStackAsync starting");
             await _awsStackWrapper.RunStackAsync(_stackConfig, _stackOperation);
             Console.WriteLine($"[INFO][{nameof(ServerlessStackCreationStep)}.{nameof(Execute)}] RunStackAsync finished");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Created serverless protection stack successfully", Enums.Feature.ServerlessProtection)));
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Added serverless protection successfully", Enums.Feature.ServerlessProtection)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ACTIVE, "Added serverless protection successfully", null, null, null)));
             Console.WriteLine($"[INFO] Successfully added serverless protection");
         }
 

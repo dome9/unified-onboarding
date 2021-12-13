@@ -25,11 +25,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 Console.WriteLine($"[INFO] About to create posture policies");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Creating Posture policies", Enums.Feature.Posture)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Posture, Enums.Status.PENDING, "Creating Posture policies", null, null, null)));
 
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.CreatePosturePolicies(_onboardingId));
 
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Posture policies created successfully", Enums.Feature.Posture)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Posture, Enums.Status.ACTIVE, "Posture policies created successfully", null, null, null)));
 
                 Console.WriteLine($"[INFO] Posture policies created successfully");
             }

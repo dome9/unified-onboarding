@@ -224,7 +224,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public async override Task Execute()
         {
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Adding Intelligence", Enums.Feature.Intelligence)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Adding Intelligence", null, null, null)));
 
             // find all account cloud trails and get bucket name to subscribe
             var chosenCloudTrail = await ChooseCloudTrailToOnboaredIntelligence();
@@ -235,15 +235,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
             // create Intelligence policy and attached to dome9 role                                   
             _stackConfig.CloudtrailS3BucketName = chosenCloudTrail.S3BucketName;
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Creating Intelligence stack", Enums.Feature.Intelligence)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Creating Intelligence stack", null, null, null)));
             await _awsStackWrapper.RunStackAsync(_stackConfig, _stackOperation);
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(_onboardingId, "Created Intelligence stack successfully", Enums.Feature.Intelligence)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Created Intelligence stack successfully", null, null, null)));
 
             // enable Intelligence account in Dome9
             await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new IntelligenceOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true, RulesetsIds = _rulesetsIds }));
 
             Console.WriteLine($"[INFO] finish Intelligence step..");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Added Intelligence successfully", Enums.Feature.Intelligence)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.ACTIVE, "Added Intelligence successfully", null, null, null)));
 
         }
 

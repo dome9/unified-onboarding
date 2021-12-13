@@ -13,7 +13,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             string stackName,
             List<string> capabilities, 
             Dictionary<string, string> parameters, 
-            Action<string> statusUpdate,
+            Action<string, string> statusUpdate,
             int executionTimeoutMinutes);
 
         Task UpdateStackAsync(

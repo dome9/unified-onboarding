@@ -40,7 +40,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             string stackName,
             List<string> capabilities,
             Dictionary<string, string> parameters,
-            Action<string> statusUpdate,
+            Action<string, string> statusUpdate,
             int executionTimeoutMinutes)
         {
 
@@ -462,18 +462,17 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return changeSetInfo;
         }
 
-        private async Task<Stack> PollUntilStackStatusFinal(Enums.Feature feature, string stackName, Action<string> statusUpdate, int executionTimeoutMinutes)
+        private async Task<Stack> PollUntilStackStatusFinal(Enums.Feature feature, string stackName, Action<string, string> statusUpdate, int executionTimeoutMinutes)
         {
             int statusPollCount = 0;
             Stack stackDesc;
             do
             {
-
                 stackDesc = await GetStackDescriptionAsync(feature, stackName);
                 if (stackDesc == null || !stackDesc.StackStatus.IsFinal())
                 {
                     Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll stack status again, {stackDesc?.ToDetailedString()}");
-                    statusUpdate($"{stackDesc.StackStatus}");
+                    statusUpdate(stackDesc.StackStatus, stackDesc.StackStatusReason);
                     await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
                 }
 
@@ -484,6 +483,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 }
             }
             while (stackDesc == null || !stackDesc.StackStatus.IsFinal());
+
+            // update the final status
+            if(stackDesc != null)
+            {
+                statusUpdate(stackDesc.StackStatus, stackDesc.StackStatusReason);
+            }
 
             return stackDesc;
         }

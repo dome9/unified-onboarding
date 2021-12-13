@@ -24,10 +24,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public async override Task Execute()
         {
             Console.WriteLine($"[INFO] About to call serverless add account api");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Adding Serverless protection", Enums.Feature.ServerlessProtection)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.PENDING, "Adding Serverless protection", null, null, null)));
             string accountName = await AwsCredentialUtils.GetAwsAccountNameAsync(_awsAccountId);
             await _retryAndBackoffService.RunAsync(() => _apiProvider.ServerlessAddAccount(new ServelessAddAccountModel(_awsAccountId)));
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.ACTIVE, "Serverless added successfully", Enums.Feature.ServerlessProtection)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ACTIVE, "Serverless added successfully", null, null, null)));
             Console.WriteLine($"[INFO] Serverless add account api call executed successfully");
         }
 

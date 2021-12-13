@@ -46,15 +46,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             switch (stackOperation)
             {
                 case StackOperation.Create:
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(stackConfig.OnboardingId, Enums.Status.PENDING, "Creating stack", Feature)));
-                    await _cfnWrapper.CreateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters, (status) => TryUpdateStackStatus(stackConfig.OnboardingId, status, Feature), stackConfig.ExecutionTimeoutMinutes);
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(stackConfig.OnboardingId, Enums.Status.ACTIVE , "Created stack successfully", Feature)));
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(stackConfig.OnboardingId, Feature, Enums.Status.PENDING, "Creating stack", null, null, null)));
+                    await _cfnWrapper.CreateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters, (status, message) => TryUpdateStackStatus(stackConfig.OnboardingId, status, message), stackConfig.ExecutionTimeoutMinutes);
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(stackConfig.OnboardingId, Feature, Enums.Status.ACTIVE , "Created stack successfully", null, null , null)));
                     break;
 
                 case StackOperation.Update:
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(stackConfig.OnboardingId, Enums.Status.PENDING, "Updating existing stack", Feature)));
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(stackConfig.OnboardingId, Feature, Enums.Status.PENDING, "Updating existing stack", null, null, null)));
                     await _cfnWrapper.UpdateStackAsync(Feature, stackConfig.TemplateS3Url, stackConfig.StackName, stackConfig.Capabilities, parameters, stackConfig.ExecutionTimeoutMinutes);
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(stackConfig.OnboardingId, Enums.Status.ACTIVE, "Updated existing stack successfully", Feature)));
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(stackConfig.OnboardingId, Feature, Enums.Status.ACTIVE, "Updated existing stack successfully", null, null, null)));
                     break;
 
                 default:
@@ -83,7 +83,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 if (isTriggeredByError)
                 {
                     await TryUpdateStatus(stackConfig.OnboardingId, "Delete stack complete", Enums.Status.ERROR);                
-                    await TryUpdateStackStatus(stackConfig.OnboardingId, "Delete stack complete", Feature);
                 }
             }
             catch (Exception e)
@@ -98,7 +97,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             try
             {
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, activeStatus, statusMessage, Feature)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, Feature, activeStatus, statusMessage, null, null, null)));
 
             }
             catch (Exception ex)
@@ -107,11 +106,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        private async Task TryUpdateStackStatus(string onboaringId, string stackStatus, Enums.Feature feature)
+        private async Task TryUpdateStackStatus(string onboaringId, string stackStatus, string stackMessage)
         {
             try
             {
-                await _apiProvider.UpdateOnboardingStatus(StatusModel.CreateStackStatusModel(onboaringId, stackStatus, feature)).ConfigureAwait(false);
+                await _apiProvider.UpdateOnboardingStatus(new StatusModel(onboaringId, Feature, Enums.Status.None, null, stackStatus, stackMessage, null)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

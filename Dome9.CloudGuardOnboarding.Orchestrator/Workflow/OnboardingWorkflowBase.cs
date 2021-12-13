@@ -44,12 +44,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             try
             {
                 // General status error
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, Enums.Status.ERROR, error)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, Enums.Feature.None, Enums.Status.ERROR, error, null, null, null)));
 
                 if (feature != Enums.Feature.None)
                 {
                     // Feature status error (additional to General) 
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, Enums.Status.ERROR, error, feature)));
+                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, feature, Enums.Status.ERROR, error, null, null, null)));
                 }
             }
             catch (Exception ex)

@@ -27,7 +27,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             // just try to report status, but don't propegate error in case of status update failure
             try
             {
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, Enums.Status.ERROR, error, feature)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, feature, Enums.Status.ERROR, error, null, null, null)));
             }
             catch (Exception ex)
             {
@@ -40,7 +40,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             // try to report status msg
             try
             {
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, status, msg, feature)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, feature, status, msg, null, null, null)));
             }
             catch (Exception ex)
             {
@@ -53,7 +53,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             // try to report status msg
             try
             {
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(onboardingId, Enums.Status.WARNING, msg, feature)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, feature, Enums.Status.WARNING, msg, null, null, null)));
             }
             catch (Exception ex)
             {

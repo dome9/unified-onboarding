@@ -27,7 +27,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 await ExecuteStep(initServiceAccountStep);
 
                 Console.WriteLine($"[INFO] Executing onboarding process - OnboardingId: {request?.OnboardingId}");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(request.OnboardingId, Enums.Status.PENDING, "Starting onboarding workflow", Enums.Feature.None)));
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(request.OnboardingId, Enums.Feature.None, Enums.Status.PENDING, "Starting onboarding workflow", null, null, null)));
 
                 // 1. create new service account and delete initial service account with exposed credentials (stack url containing the credentials could be passed around)               
                 var replaceServiceAccountStep = new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, initServiceAccountStep.ServiceAccount, request.OnboardingId);

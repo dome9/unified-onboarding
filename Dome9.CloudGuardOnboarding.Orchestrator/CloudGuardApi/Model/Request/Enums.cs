@@ -5,6 +5,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     {
         public enum Status
         {
+            None,
             INACTIVE,
             ACTIVE,
             PENDING,

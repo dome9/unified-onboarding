@@ -46,7 +46,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public async override Task Execute()
         {
             Console.WriteLine($"[INFO] About to post onboarding request to create cloud account");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Creating cloud account", Enums.Feature.None)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Creating cloud account", null, null, null)));
 
             string accountName = await AwsCredentialUtils.GetAwsAccountNameAsync(_awsAccountId);
 
@@ -62,7 +62,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                     _stackModifyApiCredentials,
                     _crossAccountRoleArn)));
 
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(StatusModel.CreateActiveStatusModel(_onboardingId, Enums.Status.PENDING, "Cloud account created successfully", Enums.Feature.None)));
+            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Cloud account created successfully", null, null, null)));
             Console.WriteLine($"[INFO] Successfully posted onboarding request. Cloud account created successfully.");
         }
 
