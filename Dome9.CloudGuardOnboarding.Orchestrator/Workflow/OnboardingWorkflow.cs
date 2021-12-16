@@ -70,7 +70,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                             await ExecuteStep(new ServerlessAddAccountStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId));
 
                             // 8. create serverless protection stack if enabled
-                            await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.AwsAccountId, request.OnboardingId, configuration.ServerlessTemplateS3Path, configuration.ServerlessStackName, request.UniqueSuffix));
+                            await ExecuteStep(new ServerlessStackCreationStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, request.OnboardingId, configuration.ServerlessTemplateS3Path, configuration.ServerlessStackName, request.UniqueSuffix, configuration.CloudGuardAwsAccountId, configuration.ServerlessStage, configuration.ServerlessCftRegion));
                         }
                     }
                     else

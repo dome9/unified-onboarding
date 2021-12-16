@@ -1,0 +1,31 @@
+- Sid: CloudGuardOnboardingOrchestratorIam
+  Action:
+    - 'iam:GetUser'
+    - 'iam:CreateUser'
+    - 'iam:DeleteUser'
+    - 'iam:PutUserPolicy'
+    - 'iam:DetachUserPolicy'
+    - 'iam:AttachUserPolicy'
+    - 'iam:DeleteUserPolicy'
+    - 'iam:getUserPolicy'
+    - 'iam:CreateAccessKey'
+    - 'iam:DeleteAccessKey'
+    - 'iam:ListAccessKeys'
+  Effect: Allow
+  Resource:
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Connect-RO-user${UniqueSuffix}'
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Connect-RW-user${UniqueSuffix}'
+- Sid: CloudGuardOnboardingOrchestratorSecretsmanagerList
+  Action:
+    - 'secretsmanager:ListSecrets'
+  Effect: Allow
+  Resource: '*'
+- Sid: CloudGuardOnboardingOrchestratorSecretsmanager
+  Action:
+    - 'secretsmanager:GetSecretValue'
+    - 'secretsmanager:CreateSecret'
+    - 'secretsmanager:DeleteSecret'
+  Effect: Allow
+  Resource:
+    - !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:CloudGuardCrossAccountUserCredentials-*'
+    - !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:CloudGuardStackModifyCrossAccountUserCredentials-*'

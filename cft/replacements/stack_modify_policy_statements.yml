@@ -20,7 +20,7 @@
     - iam:DetachRolePolicy
     - iam:DeleteRolePolicy
     - iam:PutRolePolicy
-  Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}'
+  Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}'
 - Sid: LambdaRemovePermission
   Effect: Allow
   Action: lambda:RemovePermission

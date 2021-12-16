@@ -1,0 +1,45 @@
+CloudGuardOrchestratorRole:
+  Type: AWS::IAM::Role
+  DependsOn: StackModifyIfEnabledWaitCondition
+  Properties:
+    RoleName: !Sub 'CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}'
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - 'sts:AssumeRole'
+    Policies:
+      - PolicyName: !Sub 'CloudGuard-Onboarding-Orchestrator-policy${UniqueSuffix}'
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Sid: CloudGuardOnboardingOrchestratorCloudformation
+              Action:
+                - 'cloudformation:CreateStack'
+                - 'cloudformation:DescribeStacks'
+                - 'cloudformation:DeleteStack'
+                - 'cloudformation:CreateChangeSet'
+                - 'cloudformation:ExecuteChangeSet'
+                - 'cloudformation:DeleteChangeSet'
+                - 'cloudformation:DescribeChangeSet'
+              Effect: Allow
+              Resource:
+                - !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CloudGuard-Onboarding*'
+            - Sid: CloudGuardOnboardingOrchestratorCloudformationList
+              Action:
+                - 'cloudformation:ListStacks'
+              Effect: Allow
+              Resource: !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*'
+            - Sid: CloudGuardOnboardingOrchestratorIamListAccount
+              Action:
+                - 'iam:ListAccountAliases'
+              Effect: Allow
+              Resource: '*'
+            - REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS
+
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole

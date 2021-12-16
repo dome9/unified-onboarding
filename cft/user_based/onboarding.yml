@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Check Point CloudGuard Dome9 unified onboarding'
-Metadata:
-  Version: 2.0.0
+REPLACEMENT_METADATA:
 
 Parameters:
   REPLACEMENT_PARAMETERS:
@@ -63,53 +62,14 @@ Resources:
   Waiter: 
     Type: "AWS::CloudFormation::WaitConditionHandle"
 
-  StackModifyCrossAccountUserIfEnabledWaitCondition: 
+  StackModifyIfEnabledWaitCondition:
     Type: "AWS::CloudFormation::WaitCondition"
     Properties: 
       Handle: !If [RemoteStackModifyEnabled, !Ref StackModifyCrossAccountUserWaiter, !Ref Waiter]
       Timeout: '1'
       Count: 0
 
-  CloudGuardLambdaStackCreationRole:
-    Type: AWS::IAM::Role
-    DependsOn: StackModifyCrossAccountUserIfEnabledWaitCondition
-    Properties:
-      RoleName: !Sub 'CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}'
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-
-      Policies:
-
-        - PolicyName: !Sub 'CloudGuard-Lambda-CloudFormation-policy${UniqueSuffix}'
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Sid: CloudGuardLambdaCloudFormation
-                Action:
-                  - '*'
-                Effect: Allow
-                Resource: '*'
-
-        - PolicyName: !Sub 'CloudGuard-Lambda-GetCloudGuardApiKeys-policy${UniqueSuffix}'
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'secretsmanager:*'
-                Resource:
-                  - !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
-                  - !Sub arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
-
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  REPLACEMENT_ORCHESTRATOR_ROLE:
         
   REPLACEMENT_ORCHESTRATOR:
       

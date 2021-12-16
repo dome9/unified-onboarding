@@ -3,7 +3,7 @@ CloudGuardOnboardingOrchestrator:
   Properties:
     FunctionName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
     Runtime: dotnetcore3.1
-    Role: !GetAtt CloudGuardLambdaStackCreationRole.Arn
+    Role: !GetAtt CloudGuardOrchestratorRole.Arn
     Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
     Timeout: 900
     Code:

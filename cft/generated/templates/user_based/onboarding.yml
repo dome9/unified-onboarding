@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Check Point CloudGuard Dome9 unified onboarding
 Metadata:
-  Version: 2.0.0
+  Version: 2.6.0
 Parameters:
   S3BucketName:
     Description: The S3 Bucket
@@ -89,8 +89,9 @@ Resources:
                   - iam:DeleteRole
                   - iam:DetachRolePolicy
                   - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
                 Resource: !Sub >-
-                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}
+                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
               - Sid: LambdaRemovePermission
                 Effect: Allow
                 Action: lambda:RemovePermission
@@ -120,7 +121,7 @@ Resources:
     Type: AWS::CloudFormation::WaitConditionHandle
   Waiter:
     Type: AWS::CloudFormation::WaitConditionHandle
-  StackModifyCrossAccountUserIfEnabledWaitCondition:
+  StackModifyIfEnabledWaitCondition:
     Type: AWS::CloudFormation::WaitCondition
     Properties:
       Handle: !If 
@@ -129,11 +130,11 @@ Resources:
         - !Ref Waiter
       Timeout: '1'
       Count: 0
-  CloudGuardLambdaStackCreationRole:
+  CloudGuardOrchestratorRole:
     Type: AWS::IAM::Role
-    DependsOn: StackModifyCrossAccountUserIfEnabledWaitCondition
+    DependsOn: StackModifyIfEnabledWaitCondition
     Properties:
-      RoleName: !Sub CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}
+      RoleName: !Sub CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -144,27 +145,69 @@ Resources:
             Action:
               - sts:AssumeRole
       Policies:
-        - PolicyName: !Sub CloudGuard-Lambda-CloudFormation-policy${UniqueSuffix}
+        - PolicyName: !Sub CloudGuard-Onboarding-Orchestrator-policy${UniqueSuffix}
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Sid: CloudGuardLambdaCloudFormation
+              - Sid: CloudGuardOnboardingOrchestratorCloudformation
                 Action:
-                  - '*'
+                  - cloudformation:CreateStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:DeleteStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
                 Effect: Allow
-                Resource: '*'
-        - PolicyName: !Sub CloudGuard-Lambda-GetCloudGuardApiKeys-policy${UniqueSuffix}
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:*
                 Resource:
                   - !Sub >-
-                    arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardCrossAccountUserCredentials-*
+                    arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CloudGuard-Onboarding*
+              - Sid: CloudGuardOnboardingOrchestratorCloudformationList
+                Action:
+                  - cloudformation:ListStacks
+                Effect: Allow
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*
+              - Sid: CloudGuardOnboardingOrchestratorIamListAccount
+                Action:
+                  - iam:ListAccountAliases
+                Effect: Allow
+                Resource: '*'
+              - Sid: CloudGuardOnboardingOrchestratorIam
+                Action:
+                  - iam:GetUser
+                  - iam:CreateUser
+                  - iam:DeleteUser
+                  - iam:PutUserPolicy
+                  - iam:DetachUserPolicy
+                  - iam:AttachUserPolicy
+                  - iam:DeleteUserPolicy
+                  - iam:getUserPolicy
+                  - iam:CreateAccessKey
+                  - iam:DeleteAccessKey
+                  - iam:ListAccessKeys
+                Effect: Allow
+                Resource:
                   - !Sub >-
-                    arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Connect-RO-user${UniqueSuffix}
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Connect-RW-user${UniqueSuffix}
+              - Sid: CloudGuardOnboardingOrchestratorSecretsmanagerList
+                Action:
+                  - secretsmanager:ListSecrets
+                Effect: Allow
+                Resource: '*'
+              - Sid: CloudGuardOnboardingOrchestratorSecretsmanager
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:CreateSecret
+                  - secretsmanager:DeleteSecret
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:CloudGuardCrossAccountUserCredentials-*
+                  - !Sub >-
+                    arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
   CloudGuardOnboardingOrchestrator:
@@ -172,7 +215,7 @@ Resources:
     Properties:
       FunctionName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
       Runtime: dotnetcore3.1
-      Role: !GetAtt CloudGuardLambdaStackCreationRole.Arn
+      Role: !GetAtt CloudGuardOrchestratorRole.Arn
       Handler: >-
         Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900

@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Check Point CloudGuard Dome9 unified onboarding
 Metadata:
-  Version: 2.0.0
+  Version: 2.6.0
 Parameters:
   S3BucketName:
     Description: The S3 Bucket
@@ -41,6 +41,9 @@ Parameters:
     Type: String
   CloudGuardAwsAccountNumber:
     Description: The CloudGuard AWS account number
+    Type: String
+  ServerlessStage:
+    Description: The Serverless stage name
     Type: String
 Conditions:
   RemoteStackModifyEnabled: !Equals 
@@ -97,8 +100,9 @@ Resources:
                   - iam:DeleteRole
                   - iam:DetachRolePolicy
                   - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
                 Resource: !Sub >-
-                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}
+                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
               - Sid: LambdaRemovePermission
                 Effect: Allow
                 Action: lambda:RemovePermission
@@ -115,7 +119,7 @@ Resources:
     Type: AWS::CloudFormation::WaitConditionHandle
   Waiter:
     Type: AWS::CloudFormation::WaitConditionHandle
-  StackModifyRoleIfEnabledWaitCondition:
+  StackModifyIfEnabledWaitCondition:
     Type: AWS::CloudFormation::WaitCondition
     Properties:
       Handle: !If 
@@ -124,11 +128,11 @@ Resources:
         - !Ref Waiter
       Timeout: '1'
       Count: 0
-  CloudGuardLambdaStackCreationRole:
+  CloudGuardOrchestratorRole:
     Type: AWS::IAM::Role
-    DependsOn: StackModifyRoleIfEnabledWaitCondition
+    DependsOn: StackModifyIfEnabledWaitCondition
     Properties:
-      RoleName: !Sub CloudGuard-Lambda-CloudFormation-role${UniqueSuffix}
+      RoleName: !Sub CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -139,15 +143,161 @@ Resources:
             Action:
               - sts:AssumeRole
       Policies:
-        - PolicyName: !Sub CloudGuard-Lambda-CloudFormation-policy${UniqueSuffix}
+        - PolicyName: !Sub CloudGuard-Onboarding-Orchestrator-policy${UniqueSuffix}
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Sid: CloudGuardLambdaCloudFormation
+              - Sid: CloudGuardOnboardingOrchestratorCloudformation
                 Action:
-                  - '*'
+                  - cloudformation:CreateStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:DeleteStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CloudGuard-Onboarding*
+              - Sid: CloudGuardOnboardingOrchestratorCloudformationList
+                Action:
+                  - cloudformation:ListStacks
+                Effect: Allow
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*
+              - Sid: CloudGuardOnboardingOrchestratorIamListAccount
+                Action:
+                  - iam:ListAccountAliases
                 Effect: Allow
                 Resource: '*'
+              - Sid: CloudGuardOnboardingOrchestratorIam
+                Action:
+                  - iam:GetRole
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:PutRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:getRolePolicy
+                  - iam:UpdateRole
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:DeleteRolePolicy
+                  - iam:PassRole
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Connect-RO-role${UniqueSuffix}
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Connect-RW-role${UniqueSuffix}
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardFSPLogsSenderRole
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCrossAccountRole
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCodeAnalysisLambdaExecutionRole
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessFSPInjectorLambdaExecutionRole
+              - Sid: CloudGuardOnboardingOrchestratorIntelligenceCloudtrail
+                Action:
+                  - cloudtrail:DescribeTrails
+                Effect: Allow
+                Resource: '*'
+              - Sid: CloudGuardOnboardingOrchestratorIntelligenceS3
+                Action:
+                  - s3:GetBucketLocation
+                  - s3:GetBucketNotification
+                  - s3:PutBucketNotification
+                Effect: Allow
+                Resource: '*'
+              - Sid: CloudGuardOnboardingOrchestratorServelessLambda
+                Action:
+                  - lambda:GetFunction
+                  - lambda:GetFunctionConfiguration
+                  - lambda:TagResource
+                  - lambda:UntagResource
+                  - lambda:CreateFunction
+                  - lambda:DeleteFunction
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:GetFunctionConfiguration
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardNode14CodeAnalysis
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardJavaCodeAnalysis
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardPy3CodeAnalysis
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardCsCodeAnalysis
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardFSPInjector
+              - Sid: CloudGuardOnboardingOrchestratorServelessLambdaTp
+                Action:
+                  - lambda:GetLayerVersion
+                Effect: Allow
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:nodejs12:21
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-csharp:*
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-java:*
+              - Sid: CloudGuardOnboardingOrchestratorServelessLogs
+                Action:
+                  - logs:DescribeLogGroups
+                  - logs:CreateLogGroup
+                  - logs:DeleteLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutRetentionPolicy
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardNode14CodeAnalysis:log-stream:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardJavaCodeAnalysis:log-stream:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardPy3CodeAnalysis:log-stream:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardCsCodeAnalysis:log-stream:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPInjector:log-stream:*
+              - Sid: CloudGuardOnboardingOrchestratorLogsDescribe
+                Action:
+                  - logs:DescribeLogGroups
+                Effect: Allow
+                Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*:'
+              - Sid: CloudGuardOnboardingOrchestratorServelessProtegoS3
+                Action:
+                  - s3:GetObject
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:aws:s3:::${ServerlessStage}-protego/code_analysis_functions/*
+              - Sid: CloudGuardOnboardingOrchestratorServelessS3
+                Action:
+                  - s3:GetBucketPolicy
+                  - s3:CreateBucket
+                  - s3:PutObject
+                  - s3:PutBucketPolicy
+                  - s3:DeleteObject
+                  - s3:DeleteBucketPolicy
+                  - s3:DeleteBucket
+                  - s3:PutEncryptionConfiguration
+                  - s3:PutBucketPublicAccessBlock
+                Effect: Allow
+                Resource:
+                  - !Sub arn:aws:s3:::protego-fsp-${AWS::AccountId}
+                  - !Sub arn:aws:s3:::protego-fsp-${AWS::AccountId}/*
+              - Sid: CloudGuardOnboardingOrchestratorServelessSns
+                Action:
+                  - sns:Publish
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountNumber}:${ServerlessStage}-${AWS::AccountId}-notifications
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
   CloudGuardOnboardingOrchestrator:
@@ -155,7 +305,7 @@ Resources:
     Properties:
       FunctionName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
       Runtime: dotnetcore3.1
-      Role: !GetAtt CloudGuardLambdaStackCreationRole.Arn
+      Role: !GetAtt CloudGuardOrchestratorRole.Arn
       Handler: >-
         Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900

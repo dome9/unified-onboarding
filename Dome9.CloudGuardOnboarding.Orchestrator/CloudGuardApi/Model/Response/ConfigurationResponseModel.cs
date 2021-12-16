@@ -9,6 +9,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public string ServerlessTemplateS3Path { get; set; }
         public bool ServerlessProtectionEnabled { get; set; }
         public string ServerlessCftRegion { get; set; }
+        public string ServerlessStage { get; set; }
         public string IntelligenceStackName { get; set; }
         public string IntelligenceTemplateS3Path { get; set; }
         public bool IntelligenceEnabled { get; set; }
@@ -25,6 +26,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 $"{nameof(PermissionsTemplateS3Path)}='{PermissionsTemplateS3Path}', " +
                 $"{nameof(ServerlessProtectionEnabled)}='{ServerlessProtectionEnabled}', " +
                 $"{nameof(ServerlessCftRegion)}='{ServerlessCftRegion}', " +
+                $"{nameof(ServerlessStage)}='{ServerlessStage}', " +
                 $"{nameof(IntelligenceStackName)}='{IntelligenceStackName}', " +
                 $"{nameof(IntelligenceTemplateS3Path)}='{IntelligenceTemplateS3Path}', " +
                 $"{nameof(IntelligenceEnabled)}='{IntelligenceEnabled}', " +

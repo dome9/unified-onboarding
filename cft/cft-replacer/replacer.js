@@ -38,15 +38,22 @@ let replacer = function () {
         const readonlyPolicy = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
         const readwritePolicy = yamlParse(fs.readFileSync(__dirname + '/../replacements/readwrite_policy.yml', 'utf8'))
         const stackModifyPolicyStatements = yamlParse(fs.readFileSync(__dirname + '/../replacements/stack_modify_policy_statements.yml', 'utf8'))
+        const metadata = yamlParse(fs.readFileSync(__dirname + '/../replacements/metadata.yml', 'utf8'))
+        const userBasedOrchestratorRolePolicies = yamlParse(fs.readFileSync(__dirname + '/../replacements/user_based_orchestrator_role_policy_statements.yml', 'utf8'))
+        const roleBasedOrchestratorRolePolicies = yamlParse(fs.readFileSync(__dirname + '/../replacements/role_based_orchestrator_role_policy_statements.yml', 'utf8'))
 
         writToFile('/generated/templates/policies/readonly_policy.json', JSON.stringify(readonlyPolicy, null, 4))
         writToFile('/generated/templates/policies/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
 
         // role based onboarding
+        let orchestratorRole = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestartor_role.yml', 'utf8'))
         let onboardingJson = yamlParse(fs.readFileSync(__dirname + '/../role_based/onboarding.yml', 'utf8'))
         replaceObjectByPlaceholders(onboardingJson, [
+            {key: 'REPLACEMENT_METADATA', value: metadata},
             {key: 'REPLACEMENT_PARAMETERS', value: parameters},
             {key: 'REPLACEMENT_SATCK_MODIFY_POLICY_STATEMENT', value: stackModifyPolicyStatements},
+            {key: 'REPLACEMENT_ORCHESTRATOR_ROLE', value: orchestratorRole},
+            {key: 'REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS', value: roleBasedOrchestratorRolePolicies},
             {key: 'REPLACEMENT_ORCHESTRATOR', value: orchestrator},
             {key: 'REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES', value: orchestratorInvokeProperties},
             {key: 'REPLACEMENT_BUCKET_SUFFIX', value: bucketSuffix},
@@ -75,12 +82,24 @@ let replacer = function () {
         let intelligence = fs.readFileSync(__dirname + '/../role_based/intelligence_cft.yml', 'utf8')
         writToFile('/generated/templates/role_based/intelligence_cft.yml', intelligence)
 
+        // role based serverless
+        let serverlessJson = yamlParse(fs.readFileSync(__dirname + '/../role_based/serverless_cft.yml', 'utf8'))
+        replaceObjectByPlaceholders(serverlessJson, [
+            {key: 'REPLACEMENT_METADATA', value: metadata},
+        ]);
+        let serverlessYml = yamlDump(serverlessJson)
+        writToFile('/generated/templates/role_based/serverless_cft.yml', serverlessYml)
+
 
         // user based onboarding
+        orchestratorRole = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestartor_role.yml', 'utf8'))
         onboardingJson = yamlParse(fs.readFileSync(__dirname + '/../user_based/onboarding.yml', 'utf8'))
         replaceObjectByPlaceholders(onboardingJson, [
+            {key: 'REPLACEMENT_METADATA', value: metadata},
             {key: 'REPLACEMENT_PARAMETERS', value: parameters},
             {key: 'REPLACEMENT_SATCK_MODIFY_POLICY_STATEMENT', value: stackModifyPolicyStatements},
+            {key: 'REPLACEMENT_ORCHESTRATOR_ROLE', value: orchestratorRole},
+            {key: 'REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS', value: userBasedOrchestratorRolePolicies},
             {key: 'REPLACEMENT_ORCHESTRATOR', value: orchestrator},
             {key: 'REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES', value: orchestratorInvokeProperties},
             {key: 'REPLACEMENT_BUCKET_SUFFIX', value: bucketSuffix},
@@ -151,6 +170,10 @@ function replaceObjectByPlaceholder(element, replacementKey, replacementValue) {
                 element[key] = value.replace(replacementKey, replacementValue)
             } else if (Array.isArray(element)) {
                 element.splice(Number(key), 1);
+                if (replacementValue == null)
+                {
+                    continue;
+                }
                 if (Array.isArray(replacementValue)) {
                     element.push(...replacementValue);
                 } else {
