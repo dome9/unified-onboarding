@@ -36,14 +36,16 @@ let replacer = function () {
         const orchestratorInvokeProperties = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestrator_invoke_properties.yml', 'utf8'))
         const parameters = yamlParse(fs.readFileSync(__dirname + '/../replacements/parameters.yml', 'utf8'))
         const readonlyPolicy = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
+        const readonlyPolicyStatements = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements_cft.yml', 'utf8'))
         const readwritePolicy = yamlParse(fs.readFileSync(__dirname + '/../replacements/readwrite_policy.yml', 'utf8'))
         const stackModifyPolicyStatements = yamlParse(fs.readFileSync(__dirname + '/../replacements/stack_modify_policy_statements.yml', 'utf8'))
         const metadata = yamlParse(fs.readFileSync(__dirname + '/../replacements/metadata.yml', 'utf8'))
         const userBasedOrchestratorRolePolicies = yamlParse(fs.readFileSync(__dirname + '/../replacements/user_based_orchestrator_role_policy_statements.yml', 'utf8'))
         const roleBasedOrchestratorRolePolicies = yamlParse(fs.readFileSync(__dirname + '/../replacements/role_based_orchestrator_role_policy_statements.yml', 'utf8'))
 
-        writToFile('/generated/templates/policies/readonly_policy.json', JSON.stringify(readonlyPolicy, null, 4))
-        writToFile('/generated/templates/policies/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+        replaceObjectByPlaceholders(readonlyPolicy, [
+            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatements},
+        ]);
 
         // role based onboarding
         let orchestratorRole = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestartor_role.yml', 'utf8'))
@@ -123,6 +125,35 @@ let replacer = function () {
         ]);
         permissionsReadwriteYml = yamlDump(permissionsReadwriteJson)
         writToFile('/generated/templates/user_based/permissions_readwrite_cft.yml', permissionsReadwriteYml)
+
+
+        // create policy json files
+        let readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
+        let readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
+        replaceObjectByPlaceholders(readonlyPolicyJson, [
+            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
+            {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws"}
+        ]);
+        writToFile('/generated/templates/policies/aws/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
+        writToFile('/generated/templates/policies/aws/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+
+        readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
+        readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
+        replaceObjectByPlaceholders(readonlyPolicyJson, [
+            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
+            {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws-cn"}
+        ]);
+        writToFile('/generated/templates/policies/awschina/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
+        writToFile('/generated/templates/policies/awschina/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+
+        readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
+        readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
+        replaceObjectByPlaceholders(readonlyPolicyJson, [
+            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
+            {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws-us-gov"}
+        ]);
+        writToFile('/generated/templates/policies/awsgov/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
+        writToFile('/generated/templates/policies/awsgov/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
 
     } catch (e) {
         console.log(e);

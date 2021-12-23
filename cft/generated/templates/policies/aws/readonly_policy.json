@@ -1,0 +1,68 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CloudGuardReadOnly",
+            "Action": [
+                "apigateway:GET",
+                "athena:GetQueryExecution",
+                "athena:GetWorkGroup",
+                "backup:ListBackupVaults",
+                "cognito-identity:DescribeIdentityPool",
+                "cognito-idp:DescribeUserPool",
+                "cognito-idp:DescribeRiskConfiguration",
+                "dynamodb:ListTagsOfResource",
+                "ec2:SearchTransitGatewayRoutes",
+                "elasticfilesystem:Describe*",
+                "elasticache:ListTagsForResource",
+                "es:ListTags",
+                "eks:DescribeNodegroup",
+                "eks:ListNodegroups",
+                "glue:GetConnections",
+                "glue:GetSecurityConfigurations",
+                "kafka:ListClusters",
+                "kinesis:List*",
+                "kinesis:Describe*",
+                "kinesisvideo:Describe*",
+                "kinesisvideo:List*",
+                "logs:Get*",
+                "logs:FilterLogEvents",
+                "logs:ListLogDeliveries",
+                "mq:DescribeBroker",
+                "mq:ListBrokers",
+                "network-firewall:DescribeFirewall",
+                "network-firewall:DescribeLoggingConfiguration",
+                "network-firewall:ListFirewalls",
+                "network-firewall:DescribeRuleGroup",
+                "network-firewall:DescribeFirewallPolicy",
+                "personalize:DescribeDatasetGroup",
+                "personalize:ListDatasetGroups",
+                "s3:List*",
+                "secretsmanager:DescribeSecret",
+                "sns:ListSubscriptions",
+                "sns:ListTagsForResource",
+                "sns:GetPlatformApplicationAttributes",
+                "sns:ListPlatformApplications",
+                "states:DescribeStateMachine",
+                "transcribe:Get*",
+                "transcribe:List*",
+                "translate:GetTerminology",
+                "waf-regional:ListResourcesForWebACL",
+                "wafv2:ListWebACLs",
+                "wafv2:ListResourcesForWebACL",
+                "eks:ListFargateProfiles",
+                "eks:DescribeFargateProfile"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Sid": "ElasticbeanstalkConfigurationSettingsPermission",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::elasticbeanstalk-env-resources-??*?/*"
+        }
+    ]
+}

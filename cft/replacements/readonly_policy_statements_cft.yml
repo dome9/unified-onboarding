@@ -1,0 +1,5 @@
+- Sid: ElasticbeanstalkConfigurationSettingsPermission
+  Action:
+    - 's3:GetObject'
+  Effect: Allow
+  Resource: !Sub 'arn:${AWS::Partition}:s3:::elasticbeanstalk-env-resources-??*?/*'

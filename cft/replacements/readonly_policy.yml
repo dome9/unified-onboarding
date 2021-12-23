@@ -52,8 +52,4 @@ Statement:
       - 'eks:DescribeFargateProfile'
     Effect: Allow
     Resource: '*'
-  - Sid: ElasticbeanstalkConfigurationSettingsPermission
-    Action:
-      - 's3:GetObject'
-    Effect: Allow
-    Resource: !Sub 'arn:${AWS::Partition}:s3:::elasticbeanstalk-env-resources-??*?/*'
+  - REPLACEMENT_READONLY_POLICY_STATEMENTS
