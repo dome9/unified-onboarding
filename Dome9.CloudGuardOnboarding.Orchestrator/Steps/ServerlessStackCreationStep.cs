@@ -40,10 +40,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             Console.WriteLine($"[INFO] Successfully added serverless protection");
         }
 
-        public override Task Rollback()
+        public override async Task Rollback()
         {
-            //TODO: delete cloud account
-            return Task.CompletedTask;
+            Console.WriteLine($"[INFO][{nameof(ServerlessStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync starting");
+            // stack may not have been created, try to delete but do not throw in case of failure
+            await _awsStackWrapper.DeleteStackAsync(_stackConfig, true);
+            Console.WriteLine($"[INFO][{nameof(ServerlessStackCreationStep)}.{nameof(Rollback)}] DeleteStackAsync finished");
         }
     }
 }

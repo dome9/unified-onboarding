@@ -89,7 +89,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
             if (await cfnWrapper.IsStackExist(feature, stackName))
             {
-                await cfnWrapper.DeleteStackAsync(feature, stackName, DELETE_TIMEOUT_MINUTES);
+                await cfnWrapper.DeleteStackAsync(feature, stackName, (s, sm) => Console.WriteLine($"Status={s}, StatusMessage={sm}"), DELETE_TIMEOUT_MINUTES);
             }
             else
             {

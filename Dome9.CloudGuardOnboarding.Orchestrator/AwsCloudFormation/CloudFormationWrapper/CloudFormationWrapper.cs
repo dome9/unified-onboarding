@@ -265,7 +265,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        public async Task DeleteStackAsync(Enums.Feature feature, string stackName, int executionTimeoutMinutes)
+        public async Task DeleteStackAsync(Enums.Feature feature, string stackName, Action<string, string> statusUpdate, int executionTimeoutMinutes)
         {
             var request = new DeleteStackRequest
             {
@@ -283,7 +283,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 var response = await _client.DeleteStackAsync(request);
                 if (response?.HttpStatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    await PollUntilStackIsDeleted(feature, stackName, (s) => Console.WriteLine(s), executionTimeoutMinutes);
+                    await PollUntilStackIsDeleted(feature, stackName, statusUpdate, executionTimeoutMinutes);
                     Console.WriteLine($"[INFO] [{nameof(DeleteStackAsync)}] Success in deleting stack. Feature={feature}, StackName={stackName}.");
                 }
                 else
@@ -493,38 +493,51 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return stackDesc;
         }
 
-        private async Task PollUntilStackIsDeleted(Enums.Feature feature, string stackName, Action<string> statusUpdate, int executionTimeoutMinutes)
+        private async Task PollUntilStackIsDeleted(Enums.Feature feature, string stackName, Action<string, string> statusUpdate, int executionTimeoutMinutes)
         {
-
             int statusPollCount = 0;
             Stack stackDesc = null;
-            do
+            var stackStatusReason = "";
+            try
             {
-                if (!await IsStackExist(feature, stackName))
+                do
                 {
-                    return;
-                }
-                stackDesc = await GetStackDescriptionAsync(feature, stackName, false);
-                if (stackDesc == null || !stackDesc.StackStatus.IsFinal())
-                {
-                    Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll stack status again, {stackDesc?.ToDetailedString()}");
-                    statusUpdate($"{stackDesc.StackStatus}");
-                    await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
-                }
+                    if (!await IsStackExist(feature, stackName))
+                    {
+                        statusUpdate("DELETE_COMPLETE", stackStatusReason);
+                        return;
+                    }
+                    stackDesc = await GetStackDescriptionAsync(feature, stackName, false);
+                    if (stackDesc == null || !stackDesc.StackStatus.IsFinal())
+                    {
+                        Console.WriteLine($"[INFO] [{nameof(PollUntilStackStatusFinal)}] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll stack status again, {stackDesc?.ToDetailedString()}");
+                        stackStatusReason = stackDesc.StackStatusReason;
+                        statusUpdate(stackDesc.StackStatus, stackStatusReason);
+                        await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
+                    }
 
-                if (STATUS_POLLING_INTERVAL_MILLISECONDS * ++statusPollCount > executionTimeoutMinutes * 60 * 1000)
+                    if (STATUS_POLLING_INTERVAL_MILLISECONDS * ++statusPollCount > executionTimeoutMinutes * 60 * 1000)
+                    {
+                        Console.WriteLine($"[WARN] [{nameof(PollUntilStackStatusFinal)}] Execution timeout exceeded. Feature={feature}, StackName={stackName}, ExecutionTimeoutMinutes={executionTimeoutMinutes}.");
+                        break;
+                    }
+                }
+                while (stackDesc == null || !stackDesc.StackStatus.IsFinal());
+
+
+                if (stackDesc == null || !stackDesc.StackStatus.IsFinal() || stackDesc.StackStatus.IsError())
                 {
-                    Console.WriteLine($"[WARN] [{nameof(PollUntilStackStatusFinal)}] Execution timeout exceeded. Feature={feature}, StackName={stackName}, ExecutionTimeoutMinutes={executionTimeoutMinutes}.");
-                    break;
+                    throw new Exception($"Invalid stack status: {stackDesc?.ToDetailedString() ?? $"Unable to get stack summary. Feature={feature}, StackName={stackName}"}.");
                 }
             }
-            while (stackDesc == null || !stackDesc.StackStatus.IsFinal());
-
-
-            if (stackDesc == null || !stackDesc.StackStatus.IsFinal() || stackDesc.StackStatus.IsError())
+            catch (Exception ex)
             {
-                throw new Exception($"Invalid stack status: {stackDesc?.ToDetailedString() ?? $"Unable to get stack summary. Feature={feature}, StackName={stackName}"}.");
+                if (await IsStackExist(feature, stackName))
+                {
+                    throw ex;
+                }
             }
+            statusUpdate("DELETE_COMPLETE", stackStatusReason);
         }
 
         #region User Based Secrets

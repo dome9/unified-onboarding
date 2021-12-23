@@ -71,14 +71,17 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public async Task DeleteStackAsync(OnboardingStackConfig stackConfig, bool isTriggeredByError = false)
         {
+            Action<string, string> statusUpdate = (s, sm) => Console.WriteLine($"Status={s}, StatusMessage={sm}");
+
             try
             {
                 if (isTriggeredByError)
                 {
+                    statusUpdate = async (status, message) => await TryUpdateStackStatus(stackConfig.OnboardingId, status, message);
                     await TryUpdateStatus(stackConfig.OnboardingId, "Deleting stack", Enums.Status.PENDING);
                 }
                 
-                await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName, stackConfig.ExecutionTimeoutMinutes);
+                await _cfnWrapper.DeleteStackAsync(Feature, stackConfig.StackName, statusUpdate, stackConfig.ExecutionTimeoutMinutes);
                 
                 if (isTriggeredByError)
                 {

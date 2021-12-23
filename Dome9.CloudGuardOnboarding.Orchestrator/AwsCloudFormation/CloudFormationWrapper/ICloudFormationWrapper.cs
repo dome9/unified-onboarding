@@ -28,7 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         Task<Stack> GetStackDescriptionAsync(Enums.Feature feature, string stackName, bool filterDeleted = true);
 
-        Task DeleteStackAsync(Enums.Feature feature, string stackName, int executionTimeoutMinutes);
+        Task DeleteStackAsync(Enums.Feature feature, string stackName, Action<string, string> statusUpdate, int executionTimeoutMinutes);
         Task<bool> IsStackExist(Enums.Feature feature, string stackName);
 
         Task<ApiCredentials> GetCredentialsFromSecretsManager(string key);
