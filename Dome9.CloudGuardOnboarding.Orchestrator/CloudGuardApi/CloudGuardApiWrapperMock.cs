@@ -52,6 +52,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             return Task.CompletedTask;
         }
 
+        public Task UpdateOnboardingVersion(string onboardingId, string version)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task ValidateOnboardingId(string onboardingId)
         {
             return Task.CompletedTask;

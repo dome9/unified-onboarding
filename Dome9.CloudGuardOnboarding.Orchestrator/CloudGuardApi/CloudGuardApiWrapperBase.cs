@@ -208,8 +208,30 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Error] [{nameof(GetConfiguration)} failed. Error={ex}]");
+                Console.WriteLine($"[Error] [{nameof(CreatePosturePolicies)} failed. Error={ex}]");
                 throw new OnboardingException(ex.Message, Enums.Feature.Posture);
+            }
+        }
+
+        public async Task UpdateOnboardingVersion(string onboardingId, string version)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/UpdateOnboardingVarsion/{onboardingId}/{version}", null);
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    string errorMessage = $"Failed to update onboarding version. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'";
+                    if (response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new CloudGuardUnauthorizedException(errorMessage);
+                    }
+                    throw new Exception(errorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(UpdateOnboardingVersion)} failed. Error={ex}]");
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
 

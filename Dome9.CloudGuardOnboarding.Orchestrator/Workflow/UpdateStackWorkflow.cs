@@ -63,6 +63,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
                     // wait until all the update tasks are finished
                     await Task.WhenAll(tasks);
+
+                    var updateOnboardingVersionStep = new UpdateOnboardingVersionStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version);
+                    await ExecuteStep(updateOnboardingVersionStep);
                 }
                 catch (CloudGuardUnauthorizedException ex)
                 {

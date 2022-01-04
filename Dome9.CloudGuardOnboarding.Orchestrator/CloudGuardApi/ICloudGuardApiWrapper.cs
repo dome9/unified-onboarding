@@ -15,5 +15,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         Task<ConfigurationResponseModel> GetConfiguration(ConfigurationRequestModel model);
         Task OnboardIntelligence(IntelligenceOnboardingModel data);
         Task CreatePosturePolicies(string onboardingId);
+        Task UpdateOnboardingVersion(string onboardingId, string version);
     }
 }
