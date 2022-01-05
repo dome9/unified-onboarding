@@ -108,7 +108,7 @@ Resources:
                 Action: lambda:RemovePermission
                 Resource: !Sub >-
                   arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}
-              - Sid: GetLmabdaCode
+              - Sid: GetLambdaCode
                 Effect: Allow
                 Action:
                   - s3:GetObject
