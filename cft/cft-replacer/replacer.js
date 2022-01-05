@@ -126,7 +126,6 @@ let replacer = function () {
         permissionsReadwriteYml = yamlDump(permissionsReadwriteJson)
         writToFile('/generated/templates/user_based/permissions_readwrite_cft.yml', permissionsReadwriteYml)
 
-
         // create policy json files
         let readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
         let readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
@@ -154,7 +153,6 @@ let replacer = function () {
         ]);
         writToFile('/generated/templates/policies/awsgov/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
         writToFile('/generated/templates/policies/awsgov/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
-
     } catch (e) {
         console.log(e);
         throw e;
