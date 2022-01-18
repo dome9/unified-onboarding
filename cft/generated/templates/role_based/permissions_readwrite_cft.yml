@@ -54,8 +54,8 @@ Resources:
                   - eks:ListNodegroups
                   - glue:GetConnections
                   - glue:GetSecurityConfigurations
-                  - inspector2:List*
-                  - inspector2:Read*
+                  - inspector2:ListFindings
+                  - inspector2:BatchGetAccountStatus
                   - kafka:ListClusters
                   - kinesis:List*
                   - kinesis:Describe*
