@@ -217,7 +217,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             try
             {
-                var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/UpdateOnboardingVarsion/{onboardingId}/{version}", null);
+                var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/UpdateOnboardingVersion/{onboardingId}/{version}", null);
                 if (response == null || !response.IsSuccessStatusCode)
                 {
                     string errorMessage = $"Failed to update onboarding version. Reponse StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'";

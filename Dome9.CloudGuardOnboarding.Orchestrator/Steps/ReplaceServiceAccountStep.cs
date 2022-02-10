@@ -24,7 +24,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 _apiProvider.SetLocalCredentials(ServiceAccount);
 
                 Console.WriteLine($"[INFO] About to replace service account");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Replacing service account", null, null, null)));
 
                 // get new service account
                 try

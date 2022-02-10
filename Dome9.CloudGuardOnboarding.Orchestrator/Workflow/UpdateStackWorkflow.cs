@@ -51,7 +51,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 try
                 {
-                    _apiProvider.SetLocalCredentials(new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl));
+                    var serviceAccount = new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl);
+                    var replaceServiceAccountStep = new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, serviceAccount, request.OnboardingId);
+                    await ExecuteStep(replaceServiceAccountStep);
+
                     var configStep = new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version);
                     await ExecuteStep(configStep);
 
@@ -90,9 +93,22 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 }
                 finally
                 {
+                    await TryDeleteServiceAccount(request.OnboardingId);
                     await customResourceResponseHandler.PostbackSuccess();
                 }
             }
-        }       
+        }
+
+        private async Task TryDeleteServiceAccount(string onboardingId)
+        {
+            try
+            {
+                // Delete the service account if possible
+                await ExecuteStep(new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, onboardingId));
+            }
+            catch 
+            {
+            }
+        }
     }
 }
