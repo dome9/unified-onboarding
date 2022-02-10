@@ -42,6 +42,9 @@ let replacer = function () {
         const metadata = yamlParse(fs.readFileSync(__dirname + '/../replacements/metadata.yml', 'utf8'))
         const userBasedOrchestratorRolePolicies = yamlParse(fs.readFileSync(__dirname + '/../replacements/user_based_orchestrator_role_policy_statements.yml', 'utf8'))
         const roleBasedOrchestratorRolePolicies = yamlParse(fs.readFileSync(__dirname + '/../replacements/role_based_orchestrator_role_policy_statements.yml', 'utf8'))
+        const sns = yamlParse(fs.readFileSync(__dirname + '/../replacements/sns.yml', 'utf8'))
+        const helperLambda = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestrator_helper.yml', 'utf8'))
+        const conditions = yamlParse(fs.readFileSync(__dirname + '/../replacements/conditions.yml', 'utf8'))
 
         replaceObjectByPlaceholders(readonlyPolicy, [
             {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatements},
@@ -53,10 +56,13 @@ let replacer = function () {
         replaceObjectByPlaceholders(onboardingJson, [
             {key: 'REPLACEMENT_METADATA', value: metadata},
             {key: 'REPLACEMENT_PARAMETERS', value: parameters},
+            {key: 'REPLACEMENT_CONDITIONS', value: conditions},
             {key: 'REPLACEMENT_SATCK_MODIFY_POLICY_STATEMENT', value: stackModifyPolicyStatements},
+            {key: 'REPLACEMENT_SNS', value: sns},
             {key: 'REPLACEMENT_ORCHESTRATOR_ROLE', value: orchestratorRole},
             {key: 'REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS', value: roleBasedOrchestratorRolePolicies},
             {key: 'REPLACEMENT_ORCHESTRATOR', value: orchestrator},
+            {key: 'REPLACEMENT_ORCHESTRATOR_HELPER', value: helperLambda},
             {key: 'REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES', value: orchestratorInvokeProperties},
             {key: 'REPLACEMENT_BUCKET_SUFFIX', value: bucketSuffix},
         ]);
@@ -99,10 +105,13 @@ let replacer = function () {
         replaceObjectByPlaceholders(onboardingJson, [
             {key: 'REPLACEMENT_METADATA', value: metadata},
             {key: 'REPLACEMENT_PARAMETERS', value: parameters},
+            {key: 'REPLACEMENT_CONDITIONS', value: conditions},
             {key: 'REPLACEMENT_SATCK_MODIFY_POLICY_STATEMENT', value: stackModifyPolicyStatements},
+            {key: 'REPLACEMENT_SNS', value: sns},
             {key: 'REPLACEMENT_ORCHESTRATOR_ROLE', value: orchestratorRole},
             {key: 'REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS', value: userBasedOrchestratorRolePolicies},
             {key: 'REPLACEMENT_ORCHESTRATOR', value: orchestrator},
+            {key: 'REPLACEMENT_ORCHESTRATOR_HELPER', value: helperLambda},
             {key: 'REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES', value: orchestratorInvokeProperties},
             {key: 'REPLACEMENT_BUCKET_SUFFIX', value: bucketSuffix},
         ]);

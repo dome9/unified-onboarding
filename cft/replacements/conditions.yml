@@ -1,0 +1,7 @@
+Conditions:
+  RemoteStackModifyEnabled: !Equals
+    - !Ref EnableRemoteStackModify
+    - true
+  DeleteEvent: !Equals
+    - !Ref DeleteInnerResources
+    - true

@@ -11,7 +11,13 @@
     - lambda:UpdateFunctionCode
     - lambda:InvokeFunction
     - lambda:DeleteFunction
-  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}'
+    - lambda:RemovePermission
+    - lambda:GetFunction
+    - lambda:CreateFunction
+    - lambda:RemovePermission
+    - lambda:AddPermission
+  Resource:
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator*'
 - Sid: ModifyRole
   Effect: Allow
   Action:
@@ -20,13 +26,22 @@
     - iam:DetachRolePolicy
     - iam:DeleteRolePolicy
     - iam:PutRolePolicy
-  Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}'
-- Sid: LambdaRemovePermission
-  Effect: Allow
-  Action: lambda:RemovePermission
-  Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}'
+    - iam:PassRole
+  Resource:
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}'
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-helper-role${UniqueSuffix}'
 - Sid: GetLambdaCode
   Effect: Allow
   Action:
     - s3:GetObject
-  Resource: !Sub 'arn:${AWS::Partition}:s3:::${S3BucketName}-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX/*'
+  Resource: !Sub 'arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX/*'
+- Sid: ModifySns
+  Effect: Allow
+  Action:
+    - SNS:DeleteTopic
+    - SNS:Unsubscribe
+    - SNS:SetTopicAttributes
+    - SNS:GetTopicAttributes
+    - SNS:Subscribe
+    - SNS:Publish
+  Resource: !Sub 'arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:CloudGuardOnboardingOrchestrator${UniqueSuffix}'

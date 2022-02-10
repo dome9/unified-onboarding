@@ -1,6 +1,3 @@
-S3BucketName:
-  Description: The S3 Bucket
-  Type: String
 OnboardingId:
   Description: The id of the onboarding process
   Type: String
@@ -12,9 +9,6 @@ CloudGuardApiKeyId:
   Type: String
 CloudGuardApiKeySecret:
   Description: The CloudGuard service account API Key secret
-  Type: String
-LambdaPkgPath:
-  Description: The CloudGuard onboarding Lambda package path
   Type: String
 Version:
   Description: The CloudGuard onboarding version
@@ -31,3 +25,10 @@ UniqueSuffix:
   Type: String
   Default: ''
   MaxLength: 19
+DeleteInnerResources:
+  Description: Whether to delete Lambda inner resources
+  Type: String
+  Default: false
+  AllowedValues:
+    - true
+    - false

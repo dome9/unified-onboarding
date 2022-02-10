@@ -5,10 +5,7 @@ REPLACEMENT_METADATA:
 Parameters:
   REPLACEMENT_PARAMETERS:
 
-Conditions:
-  RemoteStackModifyEnabled: !Equals
-    - !Ref EnableRemoteStackModify
-    - true
+REPLACEMENT_CONDITIONS:
 
 Resources:
   CloudGuardOnboardingStackModifyCrossAccountUser:
@@ -45,14 +42,13 @@ Resources:
     Properties: 
       Status: Active
       UserName: !Ref CloudGuardOnboardingStackModifyCrossAccountUser
-          
+
   StackModifyCrossAccountUserCredentialsStored:
     Type: AWS::SecretsManager::Secret
     Condition: RemoteStackModifyEnabled
     Properties:
       Name: CloudGuardStackModifyCrossAccountUserCredentials
-      SecretString: !Sub '{"ACCESS_KEY":"${StackModifyCrossAccountUserCredentials}","SECRET_KEY":"${StackModifyCrossAccountUserCredentials.SecretAccessKey}"}'       
-
+      SecretString: !Sub '{"ACCESS_KEY":"${StackModifyCrossAccountUserCredentials}","SECRET_KEY":"${StackModifyCrossAccountUserCredentials.SecretAccessKey}"}'
 
   StackModifyCrossAccountUserWaiter: 
     Condition: RemoteStackModifyEnabled
@@ -69,11 +65,21 @@ Resources:
       Timeout: '1'
       Count: 0
 
+  REPLACEMENT_SNS:
+
   REPLACEMENT_ORCHESTRATOR_ROLE:
         
   REPLACEMENT_ORCHESTRATOR:
+
+  REPLACEMENT_ORCHESTRATOR_HELPER:
       
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
+    DependsOn:
+      - CloudGuardOnboardingSnsPolicy
+      - OrchestratorInvokePermission
+      - OrchestratorSubscription
+      - OrchestratorHelperInvokePermission
+      - OrchestratorHelperSubscription
     Properties:
       REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES:

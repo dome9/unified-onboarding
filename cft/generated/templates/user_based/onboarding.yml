@@ -3,9 +3,6 @@ Description: Check Point CloudGuard Dome9 unified onboarding
 Metadata:
   Version: 2.6.0
 Parameters:
-  S3BucketName:
-    Description: The S3 Bucket
-    Type: String
   OnboardingId:
     Description: The id of the onboarding process
     Type: String
@@ -17,9 +14,6 @@ Parameters:
     Type: String
   CloudGuardApiKeySecret:
     Description: The CloudGuard service account API Key secret
-    Type: String
-  LambdaPkgPath:
-    Description: The CloudGuard onboarding Lambda package path
     Type: String
   Version:
     Description: The CloudGuard onboarding version
@@ -36,9 +30,19 @@ Parameters:
     Type: String
     Default: ''
     MaxLength: 19
+  DeleteInnerResources:
+    Description: Whether to delete Lambda inner resources
+    Type: String
+    Default: false
+    AllowedValues:
+      - true
+      - false
 Conditions:
   RemoteStackModifyEnabled: !Equals 
     - !Ref EnableRemoteStackModify
+    - true
+  DeleteEvent: !Equals 
+    - !Ref DeleteInnerResources
     - true
 Resources:
   CloudGuardOnboardingStackModifyCrossAccountUser:
@@ -80,8 +84,14 @@ Resources:
                   - lambda:UpdateFunctionCode
                   - lambda:InvokeFunction
                   - lambda:DeleteFunction
-                Resource: !Sub >-
-                  arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}
+                  - lambda:RemovePermission
+                  - lambda:GetFunction
+                  - lambda:CreateFunction
+                  - lambda:RemovePermission
+                  - lambda:AddPermission
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator*
               - Sid: ModifyRole
                 Effect: Allow
                 Action:
@@ -90,18 +100,29 @@ Resources:
                   - iam:DetachRolePolicy
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
-                Resource: !Sub >-
-                  arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
-              - Sid: LambdaRemovePermission
-                Effect: Allow
-                Action: lambda:RemovePermission
-                Resource: !Sub >-
-                  arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator${UniqueSuffix}
+                  - iam:PassRole
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-Orchestrator-helper-role${UniqueSuffix}
               - Sid: GetLambdaCode
                 Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !Sub arn:${AWS::Partition}:s3:::${S3BucketName}-${AWS::Region}/*
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}/*
+              - Sid: ModifySns
+                Effect: Allow
+                Action:
+                  - SNS:DeleteTopic
+                  - SNS:Unsubscribe
+                  - SNS:SetTopicAttributes
+                  - SNS:GetTopicAttributes
+                  - SNS:Subscribe
+                  - SNS:Publish
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:CloudGuardOnboardingOrchestrator${UniqueSuffix}
   StackModifyCrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
     Condition: RemoteStackModifyEnabled
@@ -130,6 +151,29 @@ Resources:
         - !Ref Waiter
       Timeout: '1'
       Count: 0
+  CloudGuardOnboardingSns:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
+      TopicName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
+  CloudGuardOnboardingSnsPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Id: !Sub CloudGuardOnboardingOrchestratorSnsPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowCFTInvokeSNS
+            Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref CloudGuardOnboardingSns
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref AWS::StackId
+      Topics:
+        - !Ref CloudGuardOnboardingSns
   CloudGuardOrchestratorRole:
     Type: AWS::IAM::Role
     DependsOn: StackModifyIfEnabledWaitCondition
@@ -173,6 +217,29 @@ Resources:
                   - iam:ListAccountAliases
                 Effect: Allow
                 Resource: '*'
+              - Sid: CloudGuardOnboardingOrchestratorSelfDistruction
+                Action:
+                  - lambda:DeleteFunction
+                Effect: Allow
+                Resource: !Join 
+                  - '-'
+                  - - !Sub >-
+                      arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator
+                    - !If 
+                      - DeleteEvent
+                      - Delete
+                      - ''
+                    - !Select 
+                      - 3
+                      - !Split 
+                        - '-'
+                        - !Ref CloudGuardApiKeyId
+              - Sid: >-
+                  CloudGuardOnboardingOrchestratorSelfDistructionDeleteSubscription
+                Action:
+                  - SNS:Unsubscribe
+                Effect: Allow
+                Resource: !Ref CloudGuardOnboardingSns
               - Sid: CloudGuardOnboardingOrchestratorIam
                 Action:
                   - iam:GetUser
@@ -213,29 +280,101 @@ Resources:
   CloudGuardOnboardingOrchestrator:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
+      FunctionName: !Join 
+        - '-'
+        - - CloudGuardOnboardingOrchestrator
+          - !If 
+            - DeleteEvent
+            - Delete
+            - ''
+          - !Select 
+            - 3
+            - !Split 
+              - '-'
+              - !Ref CloudGuardApiKeyId
       Runtime: dotnetcore3.1
       Role: !GetAtt CloudGuardOrchestratorRole.Arn
       Handler: >-
         Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
       Timeout: 900
       Code:
-        S3Bucket: !Sub ${S3BucketName}-${AWS::Region}
-        S3Key: !Ref LambdaPkgPath
-      Description: Invoke a function during stack creation.
+        S3Bucket: !Sub cloudguard-unified-onboarding-${AWS::Region}
+        S3Key: !Sub ${Version}/lambda/orchestrator/publish.zip
+      Description: Invoke a function during stack creation
+  OrchestratorInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref CloudGuardOnboardingSns
+      FunctionName: !Ref CloudGuardOnboardingOrchestrator
+  OrchestratorSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+      Protocol: lambda
+      TopicArn: !Ref CloudGuardOnboardingSns
+  CloudGuardOrchestratorHelperRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub CloudGuard-Onboarding-Orchestrator-helper-role${UniqueSuffix}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  CloudGuardOrchestratorHelper:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub CloudGuardOnboardingOrchestrator-Helper${UniqueSuffix}
+      Runtime: nodejs14.x
+      Role: !GetAtt CloudGuardOrchestratorHelperRole.Arn
+      Handler: index.handler
+      Timeout: 300
+      Code:
+        S3Bucket: !Sub cloudguard-unified-onboarding-${AWS::Region}
+        S3Key: !Sub ${Version}/lambda/orchestrator/helper/publish.zip
+  OrchestratorHelperInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref CloudGuardOnboardingSns
+      FunctionName: !Ref CloudGuardOrchestratorHelper
+  OrchestratorHelperSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt CloudGuardOrchestratorHelper.Arn
+      Protocol: lambda
+      TopicArn: !Ref CloudGuardOnboardingSns
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
+    DependsOn:
+      - CloudGuardOnboardingSnsPolicy
+      - OrchestratorInvokePermission
+      - OrchestratorSubscription
+      - OrchestratorHelperInvokePermission
+      - OrchestratorHelperSubscription
     Properties:
-      ServiceToken: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+      ServiceToken: !Ref CloudGuardOnboardingSns
       OnboardingId: !Ref OnboardingId
       ApiBaseUrl: !Ref ApiBaseUrl
       CloudGuardApiKeyId: !Ref CloudGuardApiKeyId
       CloudGuardApiKeySecret: !Ref CloudGuardApiKeySecret
       AwsAccountId: !Ref AWS::AccountId
       AwsPartition: !Ref AWS::Partition
-      S3BucketName: !Sub ${S3BucketName}-${AWS::Region}
+      S3BucketName: !Sub cloudguard-unified-onboarding-${AWS::Region}
       AwsAccountRegion: !Ref AWS::Region
       EnableRemoteStackModify: !Ref EnableRemoteStackModify
       RootStackId: !Ref AWS::StackId
       Version: !Ref Version
       UniqueSuffix: !Ref UniqueSuffix
+      Self: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+      Subscription: !Ref OrchestratorSubscription
+      DeleteInnerResources: !Ref DeleteInnerResources

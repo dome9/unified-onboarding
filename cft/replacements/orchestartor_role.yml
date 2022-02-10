@@ -39,6 +39,16 @@ CloudGuardOrchestratorRole:
                 - 'iam:ListAccountAliases'
               Effect: Allow
               Resource: '*'
+            - Sid: CloudGuardOnboardingOrchestratorSelfDistruction
+              Action:
+                - 'lambda:DeleteFunction'
+              Effect: Allow
+              Resource: !Join ["-", [!Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator', !If [DeleteEvent, Delete, ''], !Select [3, !Split ['-', !Ref CloudGuardApiKeyId]]]]
+            - Sid: CloudGuardOnboardingOrchestratorSelfDistructionDeleteSubscription
+              Action:
+                - 'SNS:Unsubscribe'
+              Effect: Allow
+              Resource: !Ref CloudGuardOnboardingSns
             - REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS
 
     ManagedPolicyArns:

@@ -1,6 +1,10 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Amazon.Lambda;
 using Amazon.Lambda.Core;
+using Amazon.Lambda.SNSEvents;
+using Amazon.SimpleNotificationService;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -19,8 +23,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         /// </summary>
         /// <param name="cloudFormationRequest"></param>
         /// <returns></returns>
-        public async Task FunctionHandler(CloudFormationRequest cloudFormationRequest, ILambdaContext context)
+        public async Task FunctionHandler(SNSEvent snsEvent, ILambdaContext context)
         {
+            var message = snsEvent.Records[0].Sns.Message;
+            Console.WriteLine($"[INFO] snsEvent={snsEvent}");
+            var cloudFormationRequest = JsonSerializer.Deserialize<CloudFormationRequest>(message);
+            Console.WriteLine($"[INFO] cloudFormationRequest={cloudFormationRequest}");
+
             Console.WriteLine("[INFO] Function Handler start");
 
             #region param logging            
@@ -34,11 +43,35 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
             #endregion
 
-            await WorkflowFactory.Create(cloudFormationRequest)
+            try
+            {
+                await WorkflowFactory.Create(cloudFormationRequest)
                 .RunAsync(
                     cloudFormationRequest.ResourceProperties,
                     new LambdaCustomResourceResponseHandler(cloudFormationRequest, context));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[ERROR] failed to run onboarding. CloudFormationRequest={cloudFormationRequest}, error={e}");
+            }
+            Console.WriteLine($"[INFO] succeed to run onboarding. CloudFormationRequest={cloudFormationRequest}.");
 
+            try
+            {
+                Console.WriteLine($"[INFO] Deleting Subscription {cloudFormationRequest.ResourceProperties.Subscription}");
+                var snsClient = new AmazonSimpleNotificationServiceClient();
+                await snsClient.UnsubscribeAsync(cloudFormationRequest.ResourceProperties.Subscription);
+
+                Console.WriteLine($"[INFO] Deleting self {cloudFormationRequest.ResourceProperties.Self}");
+                var lambdaClient = new AmazonLambdaClient();
+                await lambdaClient.DeleteFunctionAsync(cloudFormationRequest.ResourceProperties.Self);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[INFO] failed to delete sns or lambda. CloudFormationRequest={cloudFormationRequest}, error ={e}");
+                throw;
+            }
+            
             Console.WriteLine("[INFO] Function Handler end");
         }
     }

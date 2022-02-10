@@ -1,12 +1,27 @@
 CloudGuardOnboardingOrchestrator:
   Type: AWS::Lambda::Function
   Properties:
-    FunctionName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
+    FunctionName: !Join ["-", ['CloudGuardOnboardingOrchestrator', !If [DeleteEvent, Delete, ''], !Select [3, !Split ['-', !Ref CloudGuardApiKeyId]]]]
     Runtime: dotnetcore3.1
     Role: !GetAtt CloudGuardOrchestratorRole.Arn
     Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
     Timeout: 900
     Code:
-      S3Bucket: !Sub '${S3BucketName}-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX'
-      S3Key: !Ref LambdaPkgPath
-    Description: Invoke a function during stack creation.
+      S3Bucket: !Sub 'cloudguard-unified-onboarding-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX'
+      S3Key: !Sub '${Version}/lambda/orchestrator/publish.zip'
+    Description: Invoke a function during stack creation
+
+OrchestratorInvokePermission:
+  Type: AWS::Lambda::Permission
+  Properties:
+    Action: lambda:InvokeFunction
+    Principal: sns.amazonaws.com
+    SourceArn: !Ref CloudGuardOnboardingSns
+    FunctionName: !Ref CloudGuardOnboardingOrchestrator
+
+OrchestratorSubscription:
+  Type: AWS::SNS::Subscription
+  Properties:
+    Endpoint: !GetAtt CloudGuardOnboardingOrchestrator.Arn
+    Protocol: lambda
+    TopicArn: !Ref CloudGuardOnboardingSns

@@ -14,10 +14,7 @@ Parameters:
     Description: The Serverless stage name
     Type: String
 
-Conditions:
-  RemoteStackModifyEnabled: !Equals
-    - !Ref EnableRemoteStackModify
-    - true
+REPLACEMENT_CONDITIONS:
 
 Resources:
 
@@ -49,8 +46,9 @@ Resources:
                   - iam:GetRole
                   - iam:DeleteRolePolicy
                   - iam:DeleteRole
+                  - iam:DetachRolePolicy
+                  - iam:PutRolePolicy
                 Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role${UniqueSuffix}'
-
 
   StackModifyRoleWaiter: 
     Condition: RemoteStackModifyEnabled
@@ -67,20 +65,22 @@ Resources:
       Timeout: '1'
       Count: 0
 
+  REPLACEMENT_SNS:
+
   REPLACEMENT_ORCHESTRATOR_ROLE:
 
   REPLACEMENT_ORCHESTRATOR:
 
-  CloudGuardOnboardingOrchestratorLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-        FunctionName: !GetAtt CloudGuardOnboardingOrchestrator.Arn
-        Action: lambda:InvokeFunction
-        Principal: !Ref CloudGuardAwsAccountNumber
+  REPLACEMENT_ORCHESTRATOR_HELPER:
 
   CloudGuardOnboardingOrchestratorInvoke:
     Type: AWS::CloudFormation::CustomResource
-    DependsOn: CloudGuardOnboardingOrchestratorLambdaPermission
+    DependsOn:
+      - CloudGuardOnboardingSnsPolicy
+      - OrchestratorInvokePermission
+      - OrchestratorSubscription
+      - OrchestratorHelperInvokePermission
+      - OrchestratorHelperSubscription
     Properties:
       REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES:
       OnboardingStackModifyRoleArn: !If [RemoteStackModifyEnabled, !GetAtt CloudGuardOnboardingStackModifyRole.Arn, '']

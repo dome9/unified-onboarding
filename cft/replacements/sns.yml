@@ -1,0 +1,24 @@
+CloudGuardOnboardingSns:
+  Type: AWS::SNS::Topic
+  Properties:
+    DisplayName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
+    TopicName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
+
+CloudGuardOnboardingSnsPolicy:
+  Type: AWS::SNS::TopicPolicy
+  Properties:
+    PolicyDocument:
+      Id: !Sub 'CloudGuardOnboardingOrchestratorSnsPolicy'
+      Version: '2012-10-17'
+      Statement:
+        - Sid: AllowCFTInvokeSNS
+          Effect: Allow
+          Principal:
+            Service: cloudformation.amazonaws.com
+          Action: sns:Publish
+          Resource: !Ref CloudGuardOnboardingSns
+          Condition:
+            ArnEquals:
+              aws:SourceArn: !Ref AWS::StackId
+    Topics:
+      - !Ref CloudGuardOnboardingSns

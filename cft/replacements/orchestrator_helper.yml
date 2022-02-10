@@ -1,0 +1,43 @@
+CloudGuardOrchestratorHelperRole:
+  Type: AWS::IAM::Role
+  Properties:
+    RoleName: !Sub 'CloudGuard-Onboarding-Orchestrator-helper-role${UniqueSuffix}'
+    AssumeRolePolicyDocument:
+      Version: 2012-10-17
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+CloudGuardOrchestratorHelper:
+  Type: AWS::Lambda::Function
+  Properties:
+    FunctionName: !Sub 'CloudGuardOnboardingOrchestrator-Helper${UniqueSuffix}'
+    Runtime: nodejs14.x
+    Role: !GetAtt CloudGuardOrchestratorHelperRole.Arn
+    Handler: index.handler
+    Timeout: 300
+    Code:
+      S3Bucket: !Sub 'cloudguard-unified-onboarding-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX'
+      S3Key: !Sub '${Version}/lambda/orchestrator/helper/publish.zip'
+
+OrchestratorHelperInvokePermission:
+  Type: AWS::Lambda::Permission
+  Properties:
+    Action: lambda:InvokeFunction
+    Principal: sns.amazonaws.com
+    SourceArn: !Ref CloudGuardOnboardingSns
+    FunctionName: !Ref CloudGuardOrchestratorHelper
+
+
+OrchestratorHelperSubscription:
+  Type: AWS::SNS::Subscription
+  Properties:
+    Endpoint: !GetAtt CloudGuardOrchestratorHelper.Arn
+    Protocol: lambda
+    TopicArn: !Ref CloudGuardOnboardingSns

@@ -1,4 +1,6 @@
-﻿namespace Dome9.CloudGuardOnboarding.Orchestrator
+﻿using Dome9.CloudGuardOnboarding.Orchestrator.Workflow;
+
+namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public static class WorkflowFactory
     {
@@ -6,11 +8,15 @@
         {
             if (cloudFormationRequest.RequestType.ToLower().Equals("delete"))
             {
-                return new DeleteStackWorkflow(cloudFormationRequest.IsUserBased());
+                return new EmptyWorkflow();
             }
-            
+
             if (cloudFormationRequest.RequestType.ToLower().Equals("update"))
             {
+                if (cloudFormationRequest.ResourceProperties.DeleteInnerResources.ToLower().Equals("true"))
+                {
+                    return new DeleteStackWorkflow(cloudFormationRequest.IsUserBased());
+                }
                 return new UpdateStackWorkflow(
                     new CloudGuardApiWrapperSilent(),
                     new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()),
