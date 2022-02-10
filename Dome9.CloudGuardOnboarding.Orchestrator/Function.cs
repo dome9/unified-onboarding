@@ -37,9 +37,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             Console.WriteLine("[INFO] CloudFormationRequest start");
             Console.WriteLine($"[INFO] {cloudFormationRequest}");
             Console.WriteLine("[INFO] CloudFormationRequest end");
-            Console.WriteLine("[INFO] ILambdaContext start");
-            Console.WriteLine($"[INFO] {context}");
-            Console.WriteLine("[INFO] ILambdaContext end");
 
             #endregion
 
