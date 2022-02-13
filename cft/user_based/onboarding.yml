@@ -43,27 +43,12 @@ Resources:
       Status: Active
       UserName: !Ref CloudGuardOnboardingStackModifyCrossAccountUser
 
-  StackModifyCrossAccountUserCredentialsStored:
+  CloudGuardOnboardingStackModifyPermissions:
     Type: AWS::SecretsManager::Secret
     Condition: RemoteStackModifyEnabled
     Properties:
       Name: CloudGuardStackModifyCrossAccountUserCredentials
       SecretString: !Sub '{"ACCESS_KEY":"${StackModifyCrossAccountUserCredentials}","SECRET_KEY":"${StackModifyCrossAccountUserCredentials.SecretAccessKey}"}'
-
-  StackModifyCrossAccountUserWaiter: 
-    Condition: RemoteStackModifyEnabled
-    DependsOn: StackModifyCrossAccountUserCredentialsStored
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  Waiter: 
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  StackModifyIfEnabledWaitCondition:
-    Type: "AWS::CloudFormation::WaitCondition"
-    Properties: 
-      Handle: !If [RemoteStackModifyEnabled, !Ref StackModifyCrossAccountUserWaiter, !Ref Waiter]
-      Timeout: '1'
-      Count: 0
 
   REPLACEMENT_SNS:
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.Retry
 {
     public class RetryAndBackoffServiceMock : IRetryAndBackoffService
     {

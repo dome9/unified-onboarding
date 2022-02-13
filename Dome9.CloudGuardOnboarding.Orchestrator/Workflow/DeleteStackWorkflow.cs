@@ -19,8 +19,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             _onboardingType = isUserBased ? OnboardingType.UserBased : OnboardingType.RoleBased;
         }
 
-        public async Task RunAsync(OnboardingRequest request, LambdaCustomResourceResponseHandler customResourceResponseHandler)
+        public async Task RunAsync(CloudFormationRequest cloudFormationRequest, LambdaCustomResourceResponseHandler customResourceResponseHandler)
         {
+            var request = cloudFormationRequest.ResourceProperties;
             using (CancellationTokenSource tokenSource = new CancellationTokenSource())
             {
                 var cfnWrapper = CloudFormationWrapper.Get();

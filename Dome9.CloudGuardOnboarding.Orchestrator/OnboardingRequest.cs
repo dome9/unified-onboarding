@@ -39,9 +39,10 @@
         public string ResourceType { get; set; }
         public string LogicalResourceId { get; set; }
         public OnboardingRequest ResourceProperties { get; set; }
+        public OnboardingRequest OldResourceProperties { get; set; }
         public override string ToString()
         {
-            return $"CloudFormationRequest: [RequestType={RequestType}], [ResponseURL={ResponseURL}], [StackId={StackId}], [RequestId={RequestId}], [ResourceType={ResourceType}], [LogicalResourceId={LogicalResourceId}] >> Nested ResourceProperties: {ResourceProperties}";
+            return $"CloudFormationRequest: [RequestType={RequestType}], [ResponseURL={ResponseURL}], [StackId={StackId}], [RequestId={RequestId}], [ResourceType={ResourceType}], [LogicalResourceId={LogicalResourceId}], [ResourceProperties={ResourceProperties}], [OldResourceProperties={OldResourceProperties}]";
         }
     }   
 }

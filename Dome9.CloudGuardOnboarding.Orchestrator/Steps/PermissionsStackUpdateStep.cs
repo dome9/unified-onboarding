@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +13,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly PermissionsStackConfig _stackConfig;
 
         public PermissionsStackUpdateStep(
-            ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
             string cftS3Buckets,
             string region,
             string stackName,
@@ -23,7 +23,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
-            _awsStackWrapper = new PermissionsStackWrapper(apiProvider, retryAndBackoffService);
+            _awsStackWrapper = new PermissionsStackWrapper(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get());
             var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
             _stackConfig = new PermissionsStackConfig(
                 s3Url,

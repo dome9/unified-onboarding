@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
 {
     public interface ICloudGuardApiWrapper
     {
@@ -16,5 +16,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         Task OnboardIntelligence(IntelligenceOnboardingModel data);
         Task CreatePosturePolicies(string onboardingId);
         Task UpdateOnboardingVersion(string onboardingId, string version);
+        Task SwitchManagedMode(SwitchManagedModeRequestModel model);
     }
 }

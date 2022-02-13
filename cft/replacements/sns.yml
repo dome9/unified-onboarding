@@ -3,6 +3,9 @@ CloudGuardOnboardingSns:
   Properties:
     DisplayName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
     TopicName: !Sub 'CloudGuardOnboardingOrchestrator${UniqueSuffix}'
+    Tags:
+      - Key: ConditionalDependsOn
+        Value: !If [ RemoteStackModifyEnabled, !Ref CloudGuardOnboardingStackModifyPermissions, Ignored ]
 
 CloudGuardOnboardingSnsPolicy:
   Type: AWS::SNS::TopicPolicy

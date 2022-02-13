@@ -1,4 +1,6 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.Workflow;
+﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
+using Dome9.CloudGuardOnboarding.Orchestrator.Workflow;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
@@ -17,10 +19,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 {
                     return new DeleteStackWorkflow(cloudFormationRequest.IsUserBased());
                 }
-                return new UpdateStackWorkflow(
-                    new CloudGuardApiWrapperSilent(),
-                    new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()),
-                    cloudFormationRequest.IsUserBased());
+                CloudGuardApiWrapperFactory.Init(cloudFormationRequest.ResourceProperties.CloudGuardApiKeyId, cloudFormationRequest.ResourceProperties.CloudGuardApiKeySecret, cloudFormationRequest.ResourceProperties.ApiBaseUrl, "silent");
+                RetryAndBackoffServiceFactory.Init();
+                return new UpdateStackWorkflow(cloudFormationRequest.IsUserBased());
             }
 
             if (cloudFormationRequest.IsUserBased())

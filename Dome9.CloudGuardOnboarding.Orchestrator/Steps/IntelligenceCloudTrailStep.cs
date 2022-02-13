@@ -12,6 +12,8 @@ using Falconetix.Model.Entities.Cloud.Trail;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
 using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {

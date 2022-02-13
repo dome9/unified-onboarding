@@ -129,33 +129,24 @@ Resources:
     Properties:
       Status: Active
       UserName: !Ref CloudGuardOnboardingStackModifyCrossAccountUser
-  StackModifyCrossAccountUserCredentialsStored:
+  CloudGuardOnboardingStackModifyPermissions:
     Type: AWS::SecretsManager::Secret
     Condition: RemoteStackModifyEnabled
     Properties:
       Name: CloudGuardStackModifyCrossAccountUserCredentials
       SecretString: !Sub >-
         {"ACCESS_KEY":"${StackModifyCrossAccountUserCredentials}","SECRET_KEY":"${StackModifyCrossAccountUserCredentials.SecretAccessKey}"}
-  StackModifyCrossAccountUserWaiter:
-    Condition: RemoteStackModifyEnabled
-    DependsOn: StackModifyCrossAccountUserCredentialsStored
-    Type: AWS::CloudFormation::WaitConditionHandle
-  Waiter:
-    Type: AWS::CloudFormation::WaitConditionHandle
-  StackModifyIfEnabledWaitCondition:
-    Type: AWS::CloudFormation::WaitCondition
-    Properties:
-      Handle: !If 
-        - RemoteStackModifyEnabled
-        - !Ref StackModifyCrossAccountUserWaiter
-        - !Ref Waiter
-      Timeout: '1'
-      Count: 0
   CloudGuardOnboardingSns:
     Type: AWS::SNS::Topic
     Properties:
       DisplayName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
       TopicName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
+      Tags:
+        - Key: ConditionalDependsOn
+          Value: !If 
+            - RemoteStackModifyEnabled
+            - !Ref CloudGuardOnboardingStackModifyPermissions
+            - Ignored
   CloudGuardOnboardingSnsPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
@@ -176,7 +167,6 @@ Resources:
         - !Ref CloudGuardOnboardingSns
   CloudGuardOrchestratorRole:
     Type: AWS::IAM::Role
-    DependsOn: StackModifyIfEnabledWaitCondition
     Properties:
       RoleName: !Sub CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
       AssumeRolePolicyDocument:
@@ -277,6 +267,12 @@ Resources:
                     arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: ConditionalDependsOn
+          Value: !If 
+            - RemoteStackModifyEnabled
+            - !Ref CloudGuardOnboardingStackModifyPermissions
+            - Ignored
   CloudGuardOnboardingOrchestrator:
     Type: AWS::Lambda::Function
     Properties:
@@ -329,6 +325,12 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: ConditionalDependsOn
+          Value: !If 
+            - RemoteStackModifyEnabled
+            - !Ref CloudGuardOnboardingStackModifyPermissions
+            - Ignored
   CloudGuardOrchestratorHelper:
     Type: AWS::Lambda::Function
     Properties:

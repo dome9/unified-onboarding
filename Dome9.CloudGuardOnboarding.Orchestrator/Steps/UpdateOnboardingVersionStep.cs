@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,14 +14,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public UpdateOnboardingVersionStep
         (
-            ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
             string onboardingId,
             string version
         )
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _onboardingId = onboardingId;
             _version = version;
         }

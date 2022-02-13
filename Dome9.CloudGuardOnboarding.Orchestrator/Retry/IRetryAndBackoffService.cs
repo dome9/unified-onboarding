@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.Retry
 {
     public interface IRetryAndBackoffService
     {

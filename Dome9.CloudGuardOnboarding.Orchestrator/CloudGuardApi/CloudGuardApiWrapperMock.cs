@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
 {
     public class CloudGuardApiWrapperMock : ICloudGuardApiWrapper
     {
@@ -45,6 +45,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public void SetLocalCredentials(ServiceAccount cloudGuardServiceAccount)
         {
+        }
+
+        public Task SwitchManagedMode(SwitchManagedModeRequestModel model)
+        {
+            throw new NotImplementedException();
         }
 
         public Task UpdateOnboardingStatus(StatusModel model)

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using Dome9.CloudGuardOnboarding.Orchestrator.Steps;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -17,7 +19,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             _retryAndBackoffService = retryAndBackoffService;
         }
 
-        public abstract Task RunAsync(OnboardingRequest request, LambdaCustomResourceResponseHandler customResourceResponseHandler);
+        public abstract Task RunAsync(CloudFormationRequest cloudFormationRequest, LambdaCustomResourceResponseHandler customResourceResponseHandler);
 
         protected async Task<IStep> ExecuteStep(IStep step)
         {
@@ -39,7 +41,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         }
 
-        protected async Task TryUpdateStatusFailureInDynamo(string onboardingId, string error, Enums.Feature feature = Enums.Feature.None)
+        protected async Task TryUpdateStatusFailure(string onboardingId, string error, Enums.Feature feature = Enums.Feature.None)
         {
             try
             {
@@ -54,7 +56,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] during {nameof(TryUpdateStatusFailureInDynamo)}. Error={ex}");
+                Console.WriteLine($"[ERROR] during {nameof(TryUpdateStatusFailure)}. Error={ex}");
             }
 
         }

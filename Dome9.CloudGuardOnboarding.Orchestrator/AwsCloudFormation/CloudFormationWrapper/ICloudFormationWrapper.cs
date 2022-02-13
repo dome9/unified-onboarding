@@ -30,7 +30,5 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         Task DeleteStackAsync(Enums.Feature feature, string stackName, Action<string, string> statusUpdate, int executionTimeoutMinutes);
         Task<bool> IsStackExist(Enums.Feature feature, string stackName);
-
-        Task<ApiCredentials> GetCredentialsFromSecretsManager(string key);
     }
 }

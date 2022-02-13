@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.Retry
 {
     public class SimpleExponentialRetryIntervalProvider : IRetryIntervalProvider
     {

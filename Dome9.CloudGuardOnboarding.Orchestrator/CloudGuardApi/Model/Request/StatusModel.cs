@@ -1,11 +1,19 @@
 ﻿namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
+    public enum OnboardingAction
+    {
+        Create,
+        Update,
+        Delete,
+    }
+
     public class StatusModel
     {
         public StatusModel()
         {
         }
 
+        public string Action { get; set; }
         public string OnboardingId { get; set; }
         public string Feature { get; set; }
         public string Status { get; set; }
@@ -26,8 +34,9 @@
                 $"{nameof(RemediationRecommendation)}: '{RemediationRecommendation}'";
         }
 
-        public StatusModel(string onboardingId, Enums.Feature feature, Enums.Status status, string message, string stackStatus, string stackMessage, string remediationRecommendation)
+        public StatusModel(string onboardingId, Enums.Feature feature, Enums.Status status, string message, string stackStatus, string stackMessage, string remediationRecommendation, OnboardingAction action = OnboardingAction.Create)
         {
+            Action = action.ToString();
             OnboardingId = onboardingId;
             Feature = feature.ToString();
             Status = status == Enums.Status.None ? null : status.ToString();            
@@ -47,6 +56,7 @@
             var other = obj as StatusModel;
             
             return
+                Action == other.Action &&
                 OnboardingId == other.OnboardingId &&
                 Feature == other.Feature &&
                 Status == other.Status &&

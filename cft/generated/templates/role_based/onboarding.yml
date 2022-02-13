@@ -54,7 +54,7 @@ Conditions:
     - !Ref DeleteInnerResources
     - true
 Resources:
-  CloudGuardOnboardingStackModifyRole:
+  CloudGuardOnboardingStackModifyPermissions:
     Type: AWS::IAM::Role
     Condition: RemoteStackModifyEnabled
     Properties:
@@ -136,26 +136,17 @@ Resources:
                   - SNS:Publish
                 Resource: !Sub >-
                   arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:CloudGuardOnboardingOrchestrator${UniqueSuffix}
-  StackModifyRoleWaiter:
-    Condition: RemoteStackModifyEnabled
-    DependsOn: CloudGuardOnboardingStackModifyRole
-    Type: AWS::CloudFormation::WaitConditionHandle
-  Waiter:
-    Type: AWS::CloudFormation::WaitConditionHandle
-  StackModifyIfEnabledWaitCondition:
-    Type: AWS::CloudFormation::WaitCondition
-    Properties:
-      Handle: !If 
-        - RemoteStackModifyEnabled
-        - !Ref StackModifyRoleWaiter
-        - !Ref Waiter
-      Timeout: '1'
-      Count: 0
   CloudGuardOnboardingSns:
     Type: AWS::SNS::Topic
     Properties:
       DisplayName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
       TopicName: !Sub CloudGuardOnboardingOrchestrator${UniqueSuffix}
+      Tags:
+        - Key: ConditionalDependsOn
+          Value: !If 
+            - RemoteStackModifyEnabled
+            - !Ref CloudGuardOnboardingStackModifyPermissions
+            - Ignored
   CloudGuardOnboardingSnsPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
@@ -176,7 +167,6 @@ Resources:
         - !Ref CloudGuardOnboardingSns
   CloudGuardOrchestratorRole:
     Type: AWS::IAM::Role
-    DependsOn: StackModifyIfEnabledWaitCondition
     Properties:
       RoleName: !Sub CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}
       AssumeRolePolicyDocument:
@@ -369,6 +359,12 @@ Resources:
                     arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountNumber}:${ServerlessStage}-${AWS::AccountId}-notifications
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: ConditionalDependsOn
+          Value: !If 
+            - RemoteStackModifyEnabled
+            - !Ref CloudGuardOnboardingStackModifyPermissions
+            - Ignored
   CloudGuardOnboardingOrchestrator:
     Type: AWS::Lambda::Function
     Properties:
@@ -421,6 +417,12 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: ConditionalDependsOn
+          Value: !If 
+            - RemoteStackModifyEnabled
+            - !Ref CloudGuardOnboardingStackModifyPermissions
+            - Ignored
   CloudGuardOrchestratorHelper:
     Type: AWS::Lambda::Function
     Properties:
@@ -472,5 +474,5 @@ Resources:
       DeleteInnerResources: !Ref DeleteInnerResources
       OnboardingStackModifyRoleArn: !If 
         - RemoteStackModifyEnabled
-        - !GetAtt CloudGuardOnboardingStackModifyRole.Arn
+        - !GetAtt CloudGuardOnboardingStackModifyPermissions.Arn
         - ''

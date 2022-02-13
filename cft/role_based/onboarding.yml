@@ -18,7 +18,7 @@ REPLACEMENT_CONDITIONS:
 
 Resources:
 
-  CloudGuardOnboardingStackModifyRole:
+  CloudGuardOnboardingStackModifyPermissions:
     Type: AWS::IAM::Role
     Condition: RemoteStackModifyEnabled
     Properties:
@@ -50,21 +50,6 @@ Resources:
                   - iam:PutRolePolicy
                 Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Onboarding-StackModify-role${UniqueSuffix}'
 
-  StackModifyRoleWaiter: 
-    Condition: RemoteStackModifyEnabled
-    DependsOn: CloudGuardOnboardingStackModifyRole
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  Waiter: 
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  StackModifyIfEnabledWaitCondition:
-    Type: "AWS::CloudFormation::WaitCondition"
-    Properties: 
-      Handle: !If [RemoteStackModifyEnabled, !Ref StackModifyRoleWaiter, !Ref Waiter]
-      Timeout: '1'
-      Count: 0
-
   REPLACEMENT_SNS:
 
   REPLACEMENT_ORCHESTRATOR_ROLE:
@@ -83,5 +68,5 @@ Resources:
       - OrchestratorHelperSubscription
     Properties:
       REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES:
-      OnboardingStackModifyRoleArn: !If [RemoteStackModifyEnabled, !GetAtt CloudGuardOnboardingStackModifyRole.Arn, '']
+      OnboardingStackModifyRoleArn: !If [RemoteStackModifyEnabled, !GetAtt CloudGuardOnboardingStackModifyPermissions.Arn, '']
   

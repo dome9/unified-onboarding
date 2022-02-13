@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Dome9.CloudGuardOnboarding.Orchestrator.AwsSecretsManager;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,8 +9,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     class PermissionsUserBasedStackWrapper : StackWrapperBase
     {
+        private readonly ISecretsManagerWrapper _secretsManagerWrapper;
         public PermissionsUserBasedStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService)
         {
+            _secretsManagerWrapper = SecretsManagerWrapper.Get();
         }
 
         protected override Enums.Feature Feature => Enums.Feature.Permissions;
@@ -29,12 +34,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public async Task<ApiCredentials> GetAwsUserCredentials()
         {
-            return await _cfnWrapper.GetCredentialsFromSecretsManager("CrossAccountUserCredentialsStored");
+            return await _secretsManagerWrapper.GetCredentialsFromSecretsManager("CrossAccountUserCredentialsStored");
         }
 
         public async Task<ApiCredentials> GetStackModifyUserCredentials()
         {
-            return await _cfnWrapper.GetCredentialsFromSecretsManager("StackModifyCrossAccountUserCredentialsStored");
+            return await _secretsManagerWrapper.GetCredentialsFromSecretsManager("CloudGuardOnboardingStackModifyPermissions");
         }
     }
 }

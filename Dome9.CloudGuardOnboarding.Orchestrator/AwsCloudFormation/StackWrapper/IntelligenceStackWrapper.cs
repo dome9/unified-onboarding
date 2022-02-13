@@ -1,4 +1,6 @@
 ﻿using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using System;
 using System.Collections.Generic;
 

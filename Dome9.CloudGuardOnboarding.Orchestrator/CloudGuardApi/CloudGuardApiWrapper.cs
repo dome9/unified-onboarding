@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
 {
     public class CloudGuardApiWrapper : CloudGuardApiWrapperBase
     {
+        public CloudGuardApiWrapper() { }
+
+        public CloudGuardApiWrapper(string cloudGuardApiKeyId, string cloudGuardApiKeySecret, string apiBaseUrl)
+        {
+            var serviceAccount = new ServiceAccount(cloudGuardApiKeyId, cloudGuardApiKeySecret, apiBaseUrl);
+            SetLocalCredentials(serviceAccount);
+        }
 
         public async override Task UpdateOnboardingStatus(StatusModel model)
         {

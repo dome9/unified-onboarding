@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Dome9.CloudGuardOnboarding.Orchestrator.Steps;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
+using Dome9.CloudGuardOnboarding.Orchestrator.AwsSecretsManager;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class UpdateStackWorkflow : OnboardingWorkflowBase
     {
         private readonly OnboardingType _onboardingType;
-        public UpdateStackWorkflow(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, bool isUserBased) 
-            : base(apiProvider, retryAndBackoffService)
+        private readonly bool _isUserBased;
+        public UpdateStackWorkflow(bool isUserBased) 
+            : base(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get())
         {
             _onboardingType = isUserBased ? OnboardingType.UserBased : OnboardingType.RoleBased;
+            _isUserBased = isUserBased;
         }
        
         private IStep CreateStep(ConfigurationResponseModel configuration, Enums.Feature feature, OnboardingRequest request)
@@ -22,12 +27,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 case Enums.Feature.Permissions:
                     if (_onboardingType == OnboardingType.RoleBased)
                     {
-                        return new PermissionsStackUpdateStep(_apiProvider, _retryAndBackoffService, request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix);
+                        return new PermissionsStackUpdateStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix);
 
                     }
                     else if (_onboardingType == OnboardingType.UserBased)
                     {
-                        return new PermissionsUserBasedStackUpdateStep(_apiProvider, _retryAndBackoffService, configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition, request.UniqueSuffix);
+                        return new PermissionsUserBasedStackUpdateStep(configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition, request.UniqueSuffix);
                     }
                     else
                     {
@@ -45,17 +50,33 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        public override async Task RunAsync(OnboardingRequest request, LambdaCustomResourceResponseHandler customResourceResponseHandler)
+        public override async Task RunAsync(CloudFormationRequest cloudFormationRequest, LambdaCustomResourceResponseHandler customResourceResponseHandler)
         {
-            var cfnWrapper = CloudFormationWrapper.Get();
+            var request = cloudFormationRequest.ResourceProperties;
+            var oldRequest = cloudFormationRequest.OldResourceProperties;
+            using (var cfnWrapper = CloudFormationWrapper.Get())
             {
                 try
                 {
                     var serviceAccount = new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl);
-                    var replaceServiceAccountStep = new ReplaceServiceAccountStep(_apiProvider, _retryAndBackoffService, serviceAccount, request.OnboardingId);
+                    var replaceServiceAccountStep = new ReplaceServiceAccountStep(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get(), serviceAccount, request.OnboardingId);
                     await ExecuteStep(replaceServiceAccountStep);
 
-                    var configStep = new GetConfigurationStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version);
+                    if (oldRequest != null)
+                    {
+                        if (oldRequest.EnableRemoteStackModify != request.EnableRemoteStackModify)
+                        {
+                            ApiCredentials cred = null;
+                            if (_isUserBased)
+                            {
+                                cred = await SecretsManagerWrapper.Get().GetCredentialsFromSecretsManager("CloudGuardOnboardingStackModifyPermissions");
+                            }
+                            var switchModeStep = new SwitchManagedModeStep(request.OnboardingId, bool.Parse(request.EnableRemoteStackModify), request.OnboardingStackModifyRoleArn, cred);
+                            await ExecuteStep(switchModeStep);
+                        }
+                    }
+
+                    var configStep = new GetConfigurationStep(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get(), request.OnboardingId, request.Version);
                     await ExecuteStep(configStep);
 
                     var configuration = configStep.Configuration;
@@ -67,7 +88,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     // wait until all the update tasks are finished
                     await Task.WhenAll(tasks);
 
-                    var updateOnboardingVersionStep = new UpdateOnboardingVersionStep(_apiProvider, _retryAndBackoffService, request.OnboardingId, request.Version);
+                    var updateOnboardingVersionStep = new UpdateOnboardingVersionStep(request.OnboardingId, request.Version);
                     await ExecuteStep(updateOnboardingVersionStep);
                 }
                 catch (CloudGuardUnauthorizedException ex)
@@ -104,7 +125,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             try
             {
                 // Delete the service account if possible
-                await ExecuteStep(new DeleteServiceAccountStep(_apiProvider, _retryAndBackoffService, onboardingId));
+                await ExecuteStep(new DeleteServiceAccountStep(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get(), onboardingId));
             }
             catch 
             {

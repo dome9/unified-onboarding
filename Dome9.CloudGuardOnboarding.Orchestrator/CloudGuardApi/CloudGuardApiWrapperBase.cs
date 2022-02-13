@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi.Model.Request;
 
-namespace Dome9.CloudGuardOnboarding.Orchestrator
+namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
 {
     public abstract class CloudGuardApiWrapperBase : ICloudGuardApiWrapper, IDisposable
     {
@@ -235,6 +235,43 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
+        public async Task OnboardIntelligence(IntelligenceOnboardingModel data)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"{INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND}", HttpClientUtils.GetContent(data, HttpClientUtils.SerializationOptionsType.CamelCase));
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Intelligence {INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND} failed. could not enable account to Intelligence. Response StatusCode:{response?.StatusCode}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
+                throw;
+            }
+        }
+
+        public async Task SwitchManagedMode(SwitchManagedModeRequestModel model)
+        {
+            string methodRoute = "SwitchManagedMode";
+            try
+            {
+                Console.WriteLine($"[INFO] [{nameof(SwitchManagedMode)}] POST method:{methodRoute}, OnboardingId:{model?.OnboardingId}");
+
+                var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/{methodRoute}", HttpClientUtils.GetContent(model, HttpClientUtils.SerializationOptionsType.CamelCase));
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Reponse StatusCode:{response?.StatusCode} Reason:{response?.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] {nameof(SwitchManagedMode)} failed. Error={ex}");
+                throw;
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -253,23 +290,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
-        }
-
-        public async Task OnboardIntelligence(IntelligenceOnboardingModel data)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsync($"{INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND}", HttpClientUtils.GetContent(data, HttpClientUtils.SerializationOptionsType.CamelCase));
-                if (response == null || !response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Intelligence {INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND} failed. could not enable account to Intelligence. Response StatusCode:{response?.StatusCode}.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
-                throw;
-            }
         }
     }
 }

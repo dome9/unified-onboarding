@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Amazon.CloudFormation;
 using Amazon.CloudFormation.Model;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackConfig;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {

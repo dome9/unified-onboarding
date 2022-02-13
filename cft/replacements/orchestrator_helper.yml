@@ -13,6 +13,9 @@ CloudGuardOrchestratorHelperRole:
             - sts:AssumeRole
     ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Tags:
+      - Key: ConditionalDependsOn
+        Value: !If [ RemoteStackModifyEnabled, !Ref CloudGuardOnboardingStackModifyPermissions, Ignored ]
 
 CloudGuardOrchestratorHelper:
   Type: AWS::Lambda::Function

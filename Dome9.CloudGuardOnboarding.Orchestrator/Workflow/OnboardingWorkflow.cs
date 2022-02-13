@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
+using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using Dome9.CloudGuardOnboarding.Orchestrator.Steps;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -9,8 +11,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     {
         public OnboardingWorkflow(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService) { }
 
-        public override async Task RunAsync(OnboardingRequest request, LambdaCustomResourceResponseHandler customResourceResponseHandler)
+        public override async Task RunAsync(CloudFormationRequest cloudFormationRequest, LambdaCustomResourceResponseHandler customResourceResponseHandler)
         {
+            var request = cloudFormationRequest.ResourceProperties;
             try
             {
                 if (request == null)
@@ -117,7 +120,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Failed onboarding process. Error={ex}");
-                await TryUpdateStatusFailureInDynamo(request.OnboardingId, ex.ToString(), ex is OnboardingException ? (ex as OnboardingException).Feature : Enums.Feature.None);
+                await TryUpdateStatusFailure(request.OnboardingId, ex.ToString(), ex is OnboardingException ? (ex as OnboardingException).Feature : Enums.Feature.None);
                 await TryRollback();                
                 await TryPostCustomResourceFailureResultToS3(customResourceResponseHandler, ex.ToString());
 

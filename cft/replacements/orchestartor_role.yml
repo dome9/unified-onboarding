@@ -1,6 +1,5 @@
 CloudGuardOrchestratorRole:
   Type: AWS::IAM::Role
-  DependsOn: StackModifyIfEnabledWaitCondition
   Properties:
     RoleName: !Sub 'CloudGuard-Onboarding-Orchestrator-role${UniqueSuffix}'
     AssumeRolePolicyDocument:
@@ -53,3 +52,6 @@ CloudGuardOrchestratorRole:
 
     ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Tags:
+      - Key: ConditionalDependsOn
+        Value: !If [ RemoteStackModifyEnabled, !Ref CloudGuardOnboardingStackModifyPermissions, Ignored ]
