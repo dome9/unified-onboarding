@@ -2,6 +2,7 @@ Version: 2012-10-17
 Statement:
   - Sid: CloudGuardReadOnly
     Action:
+      - 'account:GetAlternateContact'
       - 'apigateway:GET'
       - 'athena:GetQueryExecution'
       - 'athena:GetWorkGroup'

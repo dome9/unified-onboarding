@@ -33,6 +33,7 @@ Resources:
             Statement:
               - Sid: CloudGuardReadOnly
                 Action:
+                  - account:GetAlternateContact
                   - apigateway:GET
                   - athena:GetQueryExecution
                   - athena:GetWorkGroup
