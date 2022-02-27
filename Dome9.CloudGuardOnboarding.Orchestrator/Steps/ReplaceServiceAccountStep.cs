@@ -10,21 +10,20 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         public ServiceAccount ServiceAccount { get; private set; }
         private readonly string _onboardingId;
+        private readonly OnboardingAction _action;
 
-        public ReplaceServiceAccountStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, ServiceAccount serviceAccount, string onboardingId)
+        public ReplaceServiceAccountStep(ServiceAccount serviceAccount, string onboardingId, OnboardingAction action)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             ServiceAccount = serviceAccount;
             _onboardingId = onboardingId;
+            _action = action;
         }
         public override async Task Execute()
         {
             try
             {
-                // set initially received account from Lambda funciton
-                _apiProvider.SetLocalCredentials(ServiceAccount);
-
                 Console.WriteLine($"[INFO] About to replace service account");
 
                 // get new service account
@@ -50,14 +49,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 // set provider to use new account 
                 _apiProvider.SetLocalCredentials(ServiceAccount);
 
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Replaced service account successfully", null, null, null)));
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Replaced service account successfully", _action));
                 Console.WriteLine($"[INFO] Replaced service account successfully");
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] Failed to execute {nameof(ReplaceServiceAccountStep)} step. Error={ex}");
-                await TryUpdateStatusError(_onboardingId, "Failed to replace service account", Enums.Feature.None);
+                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, "Failed to replace service account", _action));
                 if(ex is OnboardingException)
                 {
                     throw;

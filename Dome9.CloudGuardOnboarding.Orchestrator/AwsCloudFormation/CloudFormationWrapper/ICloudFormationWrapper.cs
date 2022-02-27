@@ -22,6 +22,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             string stackName,
             List<string> capabilities, 
             Dictionary<string, string> parameters,
+            Action<string, string> statusUpdate,
             int executionTimeoutMinutes);
 
         Task<string> GetStackTemplateAsync(Enums.Feature feature, string stackName);

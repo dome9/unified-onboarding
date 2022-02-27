@@ -7,7 +7,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class PermissionsStackWrapper : StackWrapperBase
     {
-        public PermissionsStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base (apiProvider, retryAndBackoffService)
+        public PermissionsStackWrapper(StackOperation stackOperation) : base(stackOperation)
         { 
         }
 

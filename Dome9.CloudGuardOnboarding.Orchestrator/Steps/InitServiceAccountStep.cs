@@ -17,16 +17,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public ServiceAccount ServiceAccount { get; set; }
 
         public InitServiceAccountStep(
-            ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
             string onboardingId,
             string cloudGuardApiKeyId,
             string cloudGuardApiKeySecret,
             string apiBaseUrl)
         {
             _onboardingId = onboardingId;
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _cloudGuardApiKeyId = cloudGuardApiKeyId;
             _cloudGuardApiKeySecret = cloudGuardApiKeySecret;
             _apiBaseUrl = apiBaseUrl;
@@ -49,7 +47,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 Console.WriteLine($"[INFO] [{nameof(InitServiceAccountStep)}.{nameof(Rollback)}] About to delete service account");
-                // await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, "Deleting service account", null, null, null)));
                 // must let all the statuses get posted before we delete the service account
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.DeleteServiceAccount(new CredentialsModel { OnboardingId = _onboardingId }));
                 // can't write to dynamo anymore since we just deleted the service account 

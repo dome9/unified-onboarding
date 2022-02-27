@@ -13,8 +13,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     {
         private readonly OnboardingType _onboardingType;
         private readonly bool _isUserBased;
-        public UpdateStackWorkflow(bool isUserBased) 
-            : base(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get())
+        public UpdateStackWorkflow(bool isUserBased)
         {
             _onboardingType = isUserBased ? OnboardingType.UserBased : OnboardingType.RoleBased;
             _isUserBased = isUserBased;
@@ -59,7 +58,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 try
                 {
                     var serviceAccount = new ServiceAccount(request.CloudGuardApiKeyId, request.CloudGuardApiKeySecret, request.ApiBaseUrl);
-                    var replaceServiceAccountStep = new ReplaceServiceAccountStep(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get(), serviceAccount, request.OnboardingId);
+                    var replaceServiceAccountStep = new ReplaceServiceAccountStep(serviceAccount, request.OnboardingId, OnboardingAction.Update);
                     await ExecuteStep(replaceServiceAccountStep);
 
                     if (oldRequest != null)
@@ -76,7 +75,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                         }
                     }
 
-                    var configStep = new GetConfigurationStep(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get(), request.OnboardingId, request.Version);
+                    var configStep = new GetConfigurationStep(request.OnboardingId, request.Version, OnboardingAction.Update);
                     await ExecuteStep(configStep);
 
                     var configuration = configStep.Configuration;
@@ -88,7 +87,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     // wait until all the update tasks are finished
                     await Task.WhenAll(tasks);
 
-                    var updateOnboardingVersionStep = new UpdateOnboardingVersionStep(request.OnboardingId, request.Version);
+                    var updateOnboardingVersionStep = new UpdateOnboardingVersionStep(request.OnboardingId, request.Version, OnboardingAction.Update);
                     await ExecuteStep(updateOnboardingVersionStep);
                 }
                 catch (CloudGuardUnauthorizedException ex)
@@ -125,7 +124,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             try
             {
                 // Delete the service account if possible
-                await ExecuteStep(new DeleteServiceAccountStep(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get(), onboardingId));
+                await ExecuteStep(new DeleteServiceAccountStep(onboardingId, OnboardingAction.Update));
             }
             catch 
             {

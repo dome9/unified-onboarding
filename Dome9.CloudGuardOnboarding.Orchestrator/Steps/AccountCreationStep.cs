@@ -17,8 +17,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly string _crossAccountRoleArn;
 
 
-        public AccountCreationStep(ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
+        public AccountCreationStep(
             string awsAccountId,
             string awsRegion,
             string onboardingId,            
@@ -28,8 +27,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             ApiCredentials stackModifyApiCredentials,
             string crossAccountRoleArn)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _awsAccountId = awsAccountId;
             _awsRegion = awsRegion;
             _onboardingId = onboardingId;
@@ -48,10 +47,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public async override Task Execute()
         {
             Console.WriteLine($"[INFO] About to post onboarding request to create cloud account");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Creating cloud account", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Creating cloud account"));
 
             string accountName = await AwsCredentialUtils.GetAwsAccountNameAsync(_awsAccountId);
-
             await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardAccount(
                 new AccountModel(
                     _onboardingId,
@@ -64,7 +62,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                     _stackModifyApiCredentials,
                     _crossAccountRoleArn)));
 
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Cloud account created successfully", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Cloud account created successfully"));
             Console.WriteLine($"[INFO] Successfully posted onboarding request. Cloud account created successfully.");
         }
 

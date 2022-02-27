@@ -14,8 +14,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public string CrossAccountRoleArn {get;set;}
 
         public PermissionsStackCreationStep(
-            ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
             string cftS3Buckets,
             string region,
             string stackName,
@@ -26,7 +24,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
-            _awsStackWrapper = new PermissionsStackWrapper(apiProvider, retryAndBackoffService);
+            _awsStackWrapper = new PermissionsStackWrapper(StackOperation.Create);
             var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
             _stackConfig = new PermissionsStackConfig(
                 s3Url, 
@@ -41,7 +39,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public override async Task Execute()
         {
             Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync starting");
-            await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Create);
+            await _awsStackWrapper.RunStackAsync(_stackConfig);
             Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunCreateStackAsync finished");
 
             var stack = await _awsStackWrapper.DescribeStackAsync(Enums.Feature.Permissions, _stackConfig.StackName);

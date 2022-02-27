@@ -11,10 +11,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         private readonly string _onboardingId;
 
-        public CreatePosturePoliciesStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, string onboardingId)
+        public CreatePosturePoliciesStep(string onboardingId)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _onboardingId = onboardingId;
         }
         public override Task Cleanup()
@@ -27,12 +27,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 Console.WriteLine($"[INFO] About to create posture policies");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Posture, Enums.Status.PENDING, "Creating Posture policies", null, null, null)));
-
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Posture, Enums.Status.PENDING, "Creating Posture policies"));
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.CreatePosturePolicies(_onboardingId));
-
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Posture, Enums.Status.ACTIVE, "Posture policies created successfully", null, null, null)));
-
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Posture, Enums.Status.ACTIVE, "Posture policies created successfully"));
                 Console.WriteLine($"[INFO] Posture policies created successfully");
             }
             catch (Exception ex)

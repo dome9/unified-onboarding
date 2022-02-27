@@ -23,7 +23,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string uniqueSuffix,
             int stackExecutionTimeoutMinutes = 35)
         {
-            _awsStackWrapper = new PermissionsStackWrapper(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get());
+            _awsStackWrapper = new PermissionsStackWrapper(StackOperation.Update);
             var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
             _stackConfig = new PermissionsStackConfig(
                 s3Url,
@@ -38,7 +38,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public override async Task Execute()
         {
             Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync starting");
-            await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Update);
+            await _awsStackWrapper.RunStackAsync(_stackConfig);
             Console.WriteLine($"[INFO][{nameof(PermissionsStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync finished");
         }
 

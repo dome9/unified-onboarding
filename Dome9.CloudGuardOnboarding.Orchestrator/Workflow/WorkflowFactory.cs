@@ -17,23 +17,23 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 if (cloudFormationRequest.ResourceProperties.DeleteInnerResources.ToLower().Equals("true"))
                 {
+                    RetryAndBackoffServiceFactory.Init();
                     return new DeleteStackWorkflow(cloudFormationRequest.IsUserBased());
                 }
-                CloudGuardApiWrapperFactory.Init(cloudFormationRequest.ResourceProperties.CloudGuardApiKeyId, cloudFormationRequest.ResourceProperties.CloudGuardApiKeySecret, cloudFormationRequest.ResourceProperties.ApiBaseUrl, "silent");
+                CloudGuardApiWrapperFactory.Init(cloudFormationRequest.ResourceProperties.CloudGuardApiKeyId, cloudFormationRequest.ResourceProperties.CloudGuardApiKeySecret, cloudFormationRequest.ResourceProperties.ApiBaseUrl);
                 RetryAndBackoffServiceFactory.Init();
                 return new UpdateStackWorkflow(cloudFormationRequest.IsUserBased());
             }
 
+            CloudGuardApiWrapperFactory.Init(cloudFormationRequest.ResourceProperties.CloudGuardApiKeyId, cloudFormationRequest.ResourceProperties.CloudGuardApiKeySecret, cloudFormationRequest.ResourceProperties.ApiBaseUrl);
+            RetryAndBackoffServiceFactory.Init();
+
             if (cloudFormationRequest.IsUserBased())
             {
-                return new UserBasedOnboardingWorkflow(
-                    new CloudGuardApiWrapper(),
-                    new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()));
+                return new UserBasedOnboardingWorkflow();
             }
 
-            return new OnboardingWorkflow(
-                new CloudGuardApiWrapper(),
-                new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider()));
+            return new OnboardingWorkflow();
                       
         }
         

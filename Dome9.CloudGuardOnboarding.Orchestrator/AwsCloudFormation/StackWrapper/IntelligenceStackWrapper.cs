@@ -8,7 +8,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper
 {
     public class IntelligenceStackWrapper : StackWrapperBase
     {
-        public IntelligenceStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService)
+        public IntelligenceStackWrapper(StackOperation stackOperation) : base(stackOperation)
         {
 
         }

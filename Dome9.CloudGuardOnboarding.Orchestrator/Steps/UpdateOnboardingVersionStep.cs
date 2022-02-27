@@ -11,23 +11,23 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         private readonly string _onboardingId;
         private readonly string _version;
+        private readonly OnboardingAction _action;
 
-        public UpdateOnboardingVersionStep
-        (
-            string onboardingId,
-            string version
-        )
+        public UpdateOnboardingVersionStep(string onboardingId, string version, OnboardingAction action)
         {
             _apiProvider = CloudGuardApiWrapperFactory.Get();
             _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _onboardingId = onboardingId;
             _version = version;
+            _action = action;
         }
 
         public override async Task Execute()
         {
             Console.WriteLine($"[INFO] About to update onboarding version. version={_version}");
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, $"About to update version", _action));
             await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingVersion(_onboardingId, _version));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, $"Updated version successfully", _action));
             Console.WriteLine($"[INFO] updated onboarding version successfully, version={_version}");
         }
 

@@ -7,7 +7,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class ServerlessStackWrapper : StackWrapperBase
     {
-        public ServerlessStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService)
+        public ServerlessStackWrapper(StackOperation stackOperation) : base(stackOperation)
         {
         }
 

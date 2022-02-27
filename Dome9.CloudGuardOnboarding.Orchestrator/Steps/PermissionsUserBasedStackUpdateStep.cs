@@ -23,14 +23,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             int stackExecutionTimeoutMinutes = 35)
         {
             var s3Url = $"https://{cftS3BucketName}.s3.{region}.{GetDomain(awsPartition)}/{templateS3Path}";
-            _awsStackWrapper = new PermissionsUserBasedStackWrapper(CloudGuardApiWrapperFactory.Get(), RetryAndBackoffServiceFactory.Get());
+            _awsStackWrapper = new PermissionsUserBasedStackWrapper(StackOperation.Update);
             _stackConfig = new PermissionsUserBasedStackConfig(s3Url, stackName, onboardingId, uniqueSuffix, stackExecutionTimeoutMinutes);
         }
 
         public override async Task Execute()
         {
             Console.WriteLine($"[INFO][{nameof(PermissionsUserBasedStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync starting");
-            await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Update);
+            await _awsStackWrapper.RunStackAsync(_stackConfig);
             Console.WriteLine($"[INFO][{nameof(PermissionsUserBasedStackCreationStep)}.{nameof(Execute)}] RunUpdateStackAsync finished");
         }
 

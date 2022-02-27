@@ -46,6 +46,30 @@
             RemediationRecommendation = remediationRecommendation;            
         }
 
+        public StatusModel(string onboardingId, Enums.Feature feature, Enums.Status status, string message, OnboardingAction action = OnboardingAction.Create)
+        {
+            Action = action.ToString();
+            OnboardingId = onboardingId;
+            Feature = feature.ToString();
+            Status = status == Enums.Status.None ? null : status.ToString();
+            Message = message;
+            StackStatus = null;
+            StackMessage = null;
+            RemediationRecommendation = null;
+        }
+
+        public StatusModel(string onboardingId, Enums.Feature feature, string stackStatus, string stackMessage, OnboardingAction action = OnboardingAction.Create)
+        {
+            Action = action.ToString();
+            OnboardingId = onboardingId;
+            Feature = feature.ToString();
+            Status = null;
+            Message = null;
+            StackStatus = stackStatus;
+            StackMessage = stackMessage;
+            RemediationRecommendation = null;
+        }
+
         public override bool Equals(object obj)
         {
             if(obj == null)

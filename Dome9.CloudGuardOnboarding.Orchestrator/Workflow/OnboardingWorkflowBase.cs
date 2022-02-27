@@ -13,10 +13,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         protected readonly IRetryAndBackoffService _retryAndBackoffService;
         protected static readonly ConcurrentStack<IStep> Steps = new ConcurrentStack<IStep>();
 
-        public OnboardingWorkflowBase(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService)
+        public OnboardingWorkflowBase()
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
         }
 
         public abstract Task RunAsync(CloudFormationRequest cloudFormationRequest, LambdaCustomResourceResponseHandler customResourceResponseHandler);
@@ -37,26 +37,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] during {nameof(TryPostCustomResourceFailureResultToS3)}. Error={ex}");
-            }
-
-        }
-
-        protected async Task TryUpdateStatusFailure(string onboardingId, string error, Enums.Feature feature = Enums.Feature.None)
-        {
-            try
-            {
-                // General status error
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, Enums.Feature.None, Enums.Status.ERROR, error, null, null, null)));
-
-                if (feature != Enums.Feature.None)
-                {
-                    // Feature status error (additional to General) 
-                    await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(onboardingId, feature, Enums.Status.ERROR, error, null, null, null)));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] during {nameof(TryUpdateStatusFailure)}. Error={ex}");
             }
 
         }

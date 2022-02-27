@@ -10,10 +10,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly string _awsAccountId;
         private readonly string _onboardingId;
 
-        public ServerlessAddAccountStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, string awsAccountId, string onboardingId)
+        public ServerlessAddAccountStep(string awsAccountId, string onboardingId)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _awsAccountId = awsAccountId;
             _onboardingId = onboardingId;
         }
@@ -26,10 +26,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public async override Task Execute()
         {
             Console.WriteLine($"[INFO] About to call serverless add account api");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.PENDING, "Adding Serverless protection", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.PENDING, "Adding Serverless protection"));
             string accountName = await AwsCredentialUtils.GetAwsAccountNameAsync(_awsAccountId);
             await _retryAndBackoffService.RunAsync(() => _apiProvider.ServerlessAddAccount(new ServelessAddAccountModel(_awsAccountId)));
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ACTIVE, "Serverless added successfully", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ACTIVE, "Serverless added successfully"));
             Console.WriteLine($"[INFO] Serverless add account api call executed successfully");
         }
 

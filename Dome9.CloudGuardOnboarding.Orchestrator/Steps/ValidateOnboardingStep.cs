@@ -9,15 +9,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {       
         private readonly string _onboardingId;
 
-        public ValidateOnboardingStep
-        (
-            ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
-            string onboardingId
-        )
+        public ValidateOnboardingStep(string onboardingId)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _onboardingId = onboardingId;
         }
 
@@ -31,14 +26,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 Console.WriteLine($"[INFO] About to validate onboarding id");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Validating onboarding id",  null, null, null)));
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Validating onboarding id"));
                 await _retryAndBackoffService.RunAsync(() => _apiProvider.ValidateOnboardingId(_onboardingId));
                 Console.WriteLine($"[INFO] Validated onboarding id successfully");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Validated onboarding id successfully", null, null, null)));
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Validated onboarding id successfully"));
             }
             catch (Exception ex)
             {
-                await TryUpdateStatusError(_onboardingId, ex.Message, Enums.Feature.Permissions);
+                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, ex.Message));
                 throw;
             }        
         }

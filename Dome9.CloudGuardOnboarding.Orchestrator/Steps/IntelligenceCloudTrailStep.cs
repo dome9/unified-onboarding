@@ -34,19 +34,19 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly List<long> _rulesetsIds;
         private readonly StackOperation _stackOperation;
 
-        public IntelligenceCloudTrailStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService,
+        public IntelligenceCloudTrailStep(
             string cftS3Buckets, string region, string awsAccountId, string OnboardingId, string roleName, string cloudGuardAwsAccountId,
             string intelligenceTemplateS3Url, string stackName, string snsTopicArn, List<long> rulesetsIds, string uniqueSuffix,
             StackOperation stackOperation = StackOperation.Create)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _awsAccountId = awsAccountId;
             _onboardingId = OnboardingId;
             _cloudGuardAwsAccountId = cloudGuardAwsAccountId;
             _cloudGuardRoleName = roleName.Contains("readonly") ? "CloudGuard-Connect-RO-role" : "CloudGuard-Connect-RW-role";
             _cloudGuardRoleName += uniqueSuffix;
-            _awsStackWrapper = new IntelligenceStackWrapper(apiProvider, retryAndBackoffService);
+            _awsStackWrapper = new IntelligenceStackWrapper(StackOperation.Create);
             _intelligenceTemplateS3Url = intelligenceTemplateS3Url;
             _intelligenceStackName = stackName;
             _s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{intelligenceTemplateS3Url}";
@@ -73,7 +73,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
                 if (withoutSubscription.Count > 1)
                 {
-                    await TryUpdateStatusWarning(_stackConfig.OnboardingId, $"{withoutSubscription[0].S3BucketName} was onboarded. Additional S3 Bucket(s) with CloudTrail were found.", Enums.Feature.Intelligence);
+                    await StatusHelper.TryUpdateStatusAsync(new StatusModel(_stackConfig.OnboardingId, Enums.Feature.Intelligence, Enums.Status.WARNING, $"{withoutSubscription[0].S3BucketName} was onboarded. Additional S3 Bucket(s) with CloudTrail were found."));
                 }
                 return withoutSubscription[0];
             }
@@ -187,7 +187,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             trails = trails.Where(c => c.BucketIsAccessible == true).ToList();
             if (trails.Count == 0)
             {
-                await TryUpdateStatusWarning(_stackConfig.OnboardingId, "Could not find any S3 bucket with access permissions.", Enums.Feature.Intelligence);
+                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_stackConfig.OnboardingId, Enums.Feature.Intelligence, Enums.Status.WARNING, "Could not find any S3 bucket with access permissions."));
                 throw new Exception("Could not find any S3 bucket with access permissions.");
             }
             return trails;
@@ -226,7 +226,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
         public async override Task Execute()
         {
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Adding Intelligence", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Adding Intelligence"));
 
             // find all account cloud trails and get bucket name to subscribe
             var chosenCloudTrail = await ChooseCloudTrailToOnboaredIntelligence();
@@ -237,16 +237,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 
             // create Intelligence policy and attached to dome9 role                                   
             _stackConfig.CloudtrailS3BucketName = chosenCloudTrail.S3BucketName;
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Creating Intelligence stack", null, null, null)));
-            await _awsStackWrapper.RunStackAsync(_stackConfig, _stackOperation);
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Created Intelligence stack successfully", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Creating Intelligence stack"));
+            await _awsStackWrapper.RunStackAsync(_stackConfig);
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Created Intelligence stack successfully"));
 
             // enable Intelligence account in Dome9
             await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new IntelligenceOnboardingModel { BucketName = chosenCloudTrail.S3BucketName, CloudAccountId = _awsAccountId, IsUnifiedOnboarding = true, RulesetsIds = _rulesetsIds }));
 
-            Console.WriteLine($"[INFO] finish Intelligence step..");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.ACTIVE, "Added Intelligence successfully", null, null, null)));
-
+            Console.WriteLine($"[INFO] finish Intelligence step.");
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.ACTIVE, "Added Intelligence successfully"));
         }
 
         public override async Task Rollback()

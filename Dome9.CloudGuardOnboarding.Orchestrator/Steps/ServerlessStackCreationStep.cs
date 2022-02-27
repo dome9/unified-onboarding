@@ -12,15 +12,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         private readonly ServerlessStackWrapper _awsStackWrapper;
         private readonly ServerlessStackConfig _stackConfig;
 
-        public ServerlessStackCreationStep(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService, 
-            string cftS3Buckets, string region,
+        public ServerlessStackCreationStep(string cftS3Buckets, string region,
             string onboardingId, string templateS3Path, string serverlessStackName, string uniqueSuffix,
             string cloudGuardAwsAccountId, string serverlessStage, string serverlessRegion)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _onboardingId = onboardingId;
-            _awsStackWrapper = new ServerlessStackWrapper(apiProvider, retryAndBackoffService);
+            _awsStackWrapper = new ServerlessStackWrapper(StackOperation.Create);
             var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
             _stackConfig = new ServerlessStackConfig(s3Url, serverlessStackName, onboardingId, uniqueSuffix, 30, cloudGuardAwsAccountId, serverlessStage, serverlessRegion);
 
@@ -34,11 +33,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public async override Task Execute()
         {
             Console.WriteLine($"[INFO] About to add serverless protection");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.PENDING, "Adding serverless protection", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.PENDING, "Adding serverless protection"));
             Console.WriteLine($"[INFO][{nameof(ServerlessStackCreationStep)}.{nameof(Execute)}] RunStackAsync starting");
-            await _awsStackWrapper.RunStackAsync(_stackConfig, StackOperation.Create);
+            await _awsStackWrapper.RunStackAsync(_stackConfig);
             Console.WriteLine($"[INFO][{nameof(ServerlessStackCreationStep)}.{nameof(Execute)}] RunStackAsync finished");
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ACTIVE, "Added serverless protection successfully", null, null, null)));
+            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.ServerlessProtection, Enums.Status.ACTIVE, "Added serverless protection successfully"));
             Console.WriteLine($"[INFO] Successfully added serverless protection");
         }
 

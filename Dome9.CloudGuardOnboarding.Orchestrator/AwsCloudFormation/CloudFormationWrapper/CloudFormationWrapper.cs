@@ -97,6 +97,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             string stackName,
             List<string> capabilities,
             Dictionary<string, string> parameters,
+            Action<string, string> statusUpdate,
             int executionTimeoutMinutes)
         {
             Console.WriteLine($"[INFO] [{nameof(UpdateStackAsync)}] starting with params {nameof(feature)}='{feature}'" +
@@ -114,7 +115,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
                 var changeSetId = await CreateChangeSet(feature, stackTemplateS3Url, stackName, capabilities, parameters);
 
-                var changesetCreatedState = await PollUntilChangeSetStatusFinal(feature, changeSetId, (s) => Console.WriteLine(s), executionTimeoutMinutes);
+                var changesetCreatedState = await PollUntilChangeSetStatusFinal(feature, changeSetId, statusUpdate, executionTimeoutMinutes);
 
                 if (changesetCreatedState.ChangeSetStatus != null && changesetCreatedState.ChangeSetStatus == "FAILED")
                 {
@@ -122,6 +123,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     if (changesetCreatedState.StatusReason == NO_CHANGES_STATUS_REASON)
                     {
                         Console.WriteLine($"[INFO] [{nameof(UpdateStackAsync)}] No changes detected, nothing to be applied.");
+                        statusUpdate("", "");
                         await DeleteChangeSet(stackName, changeSetId);
                         return;
                     }
@@ -142,7 +144,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
 
                 // wait until ok to start execution
-                var changesetReadyState = await PollUntilExecutionStatusFinal(feature, changeSetId, (s) => Console.WriteLine(s), executionTimeoutMinutes);
+                var changesetReadyState = await PollUntilExecutionStatusFinal(feature, changeSetId, statusUpdate, executionTimeoutMinutes);
 
                 if (changesetReadyState == null || !changesetReadyState.ExecutionStatus.IsReady())
                 {
@@ -153,10 +155,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 if (!changesetReadyState.HasChanges.HasValue || changesetReadyState.HasChanges == false)
                 {
                     Console.WriteLine($"[INFO] [{nameof(UpdateStackAsync)}] No changes detected, nothing to be applied.");
+                    statusUpdate("", "");
                     return;
                 }
 
-                var changeSetExecutionStatus = await ExecuteChangeSet(feature, stackName, changeSetId, executionTimeoutMinutes);
+                var changeSetExecutionStatus = await ExecuteChangeSet(feature, stackName, changeSetId, statusUpdate, executionTimeoutMinutes);
                 if (changeSetExecutionStatus == null || changeSetExecutionStatus.ExecutionStatus != "EXECUTE_COMPLETE")
                 {
                     Console.WriteLine($"[ERROR] [{nameof(UpdateStackAsync)}] Failed to excute ChangeSet. Feature={feature}, StackName={stackName}, ChangeSetId={changeSetId}, ChangeSetStatus={changesetReadyState.ChangeSetStatus}, ChangeSetExecutionStatus={changesetReadyState.ExecutionStatus}");
@@ -384,7 +387,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
         
-        private async Task<CloudGuardChangeSetStatus> ExecuteChangeSet(Enums.Feature feature, string stackName, string changeSetId, int executionTimeoutMinutes)
+        private async Task<CloudGuardChangeSetStatus> ExecuteChangeSet(Enums.Feature feature, string stackName, string changeSetId, Action<string, string> statusUpdate, int executionTimeoutMinutes)
         {
             var executeChangeSetRequest = new ExecuteChangeSetRequest()
             {
@@ -395,7 +398,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             var execChangeSetResponse = await _client.ExecuteChangeSetAsync(executeChangeSetRequest);
             if (execChangeSetResponse?.HttpStatusCode == System.Net.HttpStatusCode.OK)
             {
-                return await PollUntilExecutionStatusFinal(feature, changeSetId, (s) => Console.WriteLine(s), executionTimeoutMinutes, true);
+                return await PollUntilExecutionStatusFinal(feature, changeSetId, statusUpdate, executionTimeoutMinutes, true);
             }
             else
             {
@@ -403,7 +406,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
         }
 
-        private async Task<CloudGuardChangeSetStatus> PollUntilChangeSetStatusFinal(Enums.Feature feature, string stackName, Action<string> statusUpdate, int executionTimeoutMinutes)
+        private async Task<CloudGuardChangeSetStatus> PollUntilChangeSetStatusFinal(Enums.Feature feature, string stackName, Action<string, string> statusUpdate, int executionTimeoutMinutes)
         {
             int statusPollCount = 0;
             ChangeSetStatus changeSetStatus;
@@ -413,10 +416,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 changeSetInfo = await GetChangeSetStatusAsync(feature, stackName);
                 changeSetStatus = changeSetInfo.ChangeSetStatus;
+
                 if (changeSetStatus == null || !changeSetStatus.IsFinal())
                 {
                     Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll change set status again, {nameof(ChangeSetStatus)}={changeSetStatus}");
-                    statusUpdate($"{nameof(ChangeSetStatus)}='{changeSetStatus}'");
+                    statusUpdate("ChangeSet " + changeSetStatus.Value, changeSetInfo.StatusReason);
                     await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
                 }
 
@@ -428,10 +432,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             }
             while (changeSetStatus == null || !changeSetStatus.IsFinal());
 
+            if (changeSetStatus != null)
+            {
+                statusUpdate("ChangeSet " + changeSetStatus.Value, changeSetInfo.StatusReason);
+            }
+
             return changeSetInfo;
         }
 
-        private async Task<CloudGuardChangeSetStatus> PollUntilExecutionStatusFinal(Enums.Feature feature, string changeSetId, Action<string> statusUpdate, int executionTimeoutMinutes, bool checkForSuccess = false)
+        private async Task<CloudGuardChangeSetStatus> PollUntilExecutionStatusFinal(Enums.Feature feature, string changeSetId, Action<string, string> statusUpdate, int executionTimeoutMinutes, bool checkForSuccess = false)
         {
             int statusPollCount = 0;
             ExecutionStatus executionStatus;
@@ -447,7 +456,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 if (executionStatus == null || !executionStatus.IsFinal() || !isExecutionSuccess)
                 {
                     Console.WriteLine($"[INFO] Waiting {STATUS_POLLING_INTERVAL_MILLISECONDS}ms to poll change set status again, {nameof(ExecutionStatus)}:{executionStatus}");
-                    statusUpdate($"{nameof(ChangeSetStatus)}: '{executionStatus}'");
+                    statusUpdate("ChangeSetExecution " + executionStatus.Value, changeSetInfo.StatusReason);
                     await Task.Delay(STATUS_POLLING_INTERVAL_MILLISECONDS);
                 }
 
@@ -458,6 +467,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 }
             }
             while (executionStatus == null || !executionStatus.IsFinal() || !isExecutionSuccess);
+
+            if (executionStatus != null)
+            {
+                statusUpdate("ChangeSetExecution " + executionStatus.Value, changeSetInfo.StatusReason);
+            }
 
             return changeSetInfo;
         }

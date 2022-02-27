@@ -10,7 +10,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     class PermissionsUserBasedStackWrapper : StackWrapperBase
     {
         private readonly ISecretsManagerWrapper _secretsManagerWrapper;
-        public PermissionsUserBasedStackWrapper(ICloudGuardApiWrapper apiProvider, IRetryAndBackoffService retryAndBackoffService) : base(apiProvider, retryAndBackoffService)
+        public PermissionsUserBasedStackWrapper(StackOperation stackOperation) : base(stackOperation)
         {
             _secretsManagerWrapper = SecretsManagerWrapper.Get();
         }

@@ -28,7 +28,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
             var api = new CloudGuardApiWrapper();
             var retry = new RetryAndBackoffService(new SimpleExponentialRetryIntervalProvider());
-            await new UserBasedOnboardingWorkflow(api, retry).RunAsync(cloudForamtionRequst, null);
+            await new UserBasedOnboardingWorkflow().RunAsync(cloudForamtionRequst, null);
 
 
 

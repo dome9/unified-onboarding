@@ -9,20 +9,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
     {
         private readonly string _onboardingId;
         private readonly string _version;
+        private readonly OnboardingAction _action;
         public ConfigurationResponseModel Configuration { get; set; }
 
-        public GetConfigurationStep
-        (
-            ICloudGuardApiWrapper apiProvider,
-            IRetryAndBackoffService retryAndBackoffService,
-            string onboardingId,
-            string version
-        )
+        public GetConfigurationStep(string onboardingId, string version, OnboardingAction action)
         {
-            _apiProvider = apiProvider;
-            _retryAndBackoffService = retryAndBackoffService;
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _onboardingId = onboardingId;
             _version = version;
+            _action = action;
         }
 
         public override async Task Execute()
@@ -30,14 +26,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             try
             {
                 Console.WriteLine($"[INFO] About to get configuration. version={_version}");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Getting configuration from CloudGuard", null, null, null)));
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Getting configuration from CloudGuard", _action));
                 Configuration = await _retryAndBackoffService.RunAsync(() => _apiProvider.GetConfiguration(new ConfigurationRequestModel(_onboardingId, _version)));
                 Console.WriteLine($"[INFO] Got configuration successfully, {nameof(Configuration)}=[{Configuration}]");
-                await _retryAndBackoffService.RunAsync(() => _apiProvider.UpdateOnboardingStatus(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Successfully got configuration from CloudGuard", null, null, null)));
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.PENDING, "Successfully got configuration from CloudGuard", _action));
             }
             catch (Exception ex)
             {
-                await TryUpdateStatusError(_onboardingId, ex.Message, Enums.Feature.None);
+                Console.WriteLine($"[INFO] Failed to got configuration, error={ex}");
+                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, "Failed to get configuration", _action));
                 throw;
             }
         }
