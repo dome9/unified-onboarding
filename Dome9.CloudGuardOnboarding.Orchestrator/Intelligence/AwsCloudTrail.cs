@@ -1,4 +1,4 @@
-﻿namespace Falconetix.Model.Entities.Cloud.Trail
+﻿namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
 {
     public class AwsCloudTrail
     {
@@ -8,7 +8,7 @@
         public string TrailArn { get; set; }
         public string ExternalId { get; set; }
         public string BucketRegion { get; set; }
-        public bool BucketHasSubscribtions { get; set; }
+        public bool BucketHasSubscriptions { get; set; }
         public bool BucketIsAccessible { get; set; }
 
         public AwsCloudTrail()
@@ -22,16 +22,21 @@
             S3BucketName = s3BucketName;
             TrailArn = trailArn;
             ExternalId = externalId;
-            BucketHasSubscribtions = false;
+            BucketHasSubscriptions = false;
             BucketIsAccessible = false;
-
         }
 
         public override string ToString()
         {
-            return $"[HomeRegion={HomeRegion}, S3BucketName={S3BucketName}, IsMultiRegionTrail={IsMultiRegionTrail}, " +
-                $"TrailArn={TrailArn}, ExternalId={ExternalId}, BucketRegion={BucketRegion}, " +
-                $"BucketHasSubscribtions={BucketHasSubscribtions}, BucketIsAccessible={BucketIsAccessible}]";
+            return 
+                $"{nameof(HomeRegion)}='{HomeRegion}', " +
+                $"{nameof(S3BucketName)}='{S3BucketName}', " +
+                $"{nameof(IsMultiRegionTrail)}='{IsMultiRegionTrail}', " +
+                $"{nameof(TrailArn)}='{TrailArn}', " +
+                $"{nameof(ExternalId)}='{ExternalId}', " +
+                $"{nameof(BucketRegion)}='{BucketRegion}', " +
+                $"{nameof(BucketHasSubscriptions)}='{BucketHasSubscriptions}', " +
+                $"{nameof(BucketIsAccessible)}='{BucketIsAccessible}'";
         }
     }  
 }

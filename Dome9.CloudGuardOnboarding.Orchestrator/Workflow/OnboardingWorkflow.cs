@@ -99,13 +99,13 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         await StatusHelper.UpdateStatusAsync(new StatusModel(request.OnboardingId, Enums.Feature.Intelligence, Enums.Status.INACTIVE, "Intelligence disabled"));
                     }
-
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[ERROR] Failed handling Intelligence. Error={ex}");
-                    await StatusHelper.UpdateStatusAsync(new StatusModel(request.OnboardingId, Enums.Feature.Intelligence, Enums.Status.ERROR, "Failed to acivate Intelligence"));
-                }
+                    string error =  ex is OnboardingException ?  ex.Message : "Failed to activate Intelligence";                   
+                    await StatusHelper.UpdateStatusAsync(new StatusModel(request.OnboardingId, Enums.Feature.Intelligence, Enums.Status.ERROR, error));
+                }                
 
                 // 10. Delete the service account
                 await ExecuteStep(new DeleteServiceAccountStep(request.OnboardingId, OnboardingAction.Create));
