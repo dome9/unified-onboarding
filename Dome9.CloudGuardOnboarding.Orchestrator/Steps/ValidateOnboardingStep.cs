@@ -33,8 +33,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             }
             catch (Exception ex)
             {
-                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, ex.Message));
-                throw;
+                string message = "Failed to validate onboarding";
+                Console.WriteLine($"[ERROR] [{nameof(ValidateOnboardingStep)}.{nameof(Execute)}] {message}. Error={ex}");
+                throw new OnboardingException(message, Enums.Feature.None);
             }        
         }
 

@@ -71,13 +71,20 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 Console.WriteLine($"[ERROR] Failed onboarding process. Error={ex}");
 
                 var feature = ex is OnboardingException ? (ex as OnboardingException).Feature : Enums.Feature.None;
-                await StatusHelper.TryUpdateStatusAsync(new StatusModel(request.OnboardingId, Enums.Feature.None, Enums.Status.ERROR, ex.ToString()));
+                string message = ex is OnboardingException ? ex.Message : ex.ToString();
+
+                // update 'General' onboarding failure status
+                await StatusHelper.TryUpdateStatusAsync(new StatusModel(request.OnboardingId, Enums.Feature.None, Enums.Status.ERROR, message));
+
+                // update sepcific feature error status if exists
                 if (feature != Enums.Feature.None)
                 {
-                    await StatusHelper.TryUpdateStatusAsync(new StatusModel(request.OnboardingId, feature, Enums.Status.ERROR, ex.ToString()));
+                    await StatusHelper.TryUpdateStatusAsync(new StatusModel(request.OnboardingId, feature, Enums.Status.ERROR, message));
                 }
+
                 await TryRollback();
                 await TryPostCustomResourceFailureResultToS3(customResourceResponseHandler, ex.ToString());
+
                 throw;
             }
             finally

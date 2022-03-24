@@ -55,14 +55,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Error] Failed to execute {nameof(ReplaceServiceAccountStep)} step. Error={ex}");
-                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, "Failed to replace service account", _action));
-                if(ex is OnboardingException)
+                string message = "Failed to replace service account";
+                Console.WriteLine($"[ERROR] [{nameof(ReplaceServiceAccountStep)}.{nameof(Execute)}] {message}. Error={ex}");
+
+                if (ex is OnboardingException)
                 {
                     throw;
                 }
                
-                throw new OnboardingException(ex.Message, Enums.Feature.None);                                                
+                throw new OnboardingException(message, Enums.Feature.None);                                                
             }
         }        
 

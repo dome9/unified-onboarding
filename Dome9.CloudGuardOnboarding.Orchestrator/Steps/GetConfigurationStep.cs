@@ -33,9 +33,9 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[INFO] Failed to got configuration, error={ex}");
-                await StatusHelper.TryUpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.None, Enums.Status.ERROR, "Failed to get configuration", _action));
-                throw;
+                string message = "Failed to get configuration";
+                Console.WriteLine($"[ERROR] [{nameof(GetConfigurationStep)}.{nameof(Execute)}] {message}. Error={ex}");
+                throw new OnboardingException(message, Enums.Feature.None);
             }
         }
 

@@ -38,8 +38,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to Switched managed mode {managedStr}. error={ex}");
-                await StatusHelper.UpdateStatusAsync(new StatusModel(_request.OnboardingId, Enums.Feature.None, Enums.Status.ERROR, $"Failed to switch {managedStr}", OnboardingAction.Update));
+                string message = $"Failed to Switched managed mode '{managedStr}'";
+                Console.WriteLine($"[ERROR] [{nameof(SwitchManagedModeStep)}.{nameof(Execute)}] {message}. Error={ex}");
+                
+                // Update flow does not post status on error
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_request.OnboardingId, Enums.Feature.None, Enums.Status.ERROR, message, OnboardingAction.Update));
                 throw;
             }
         }

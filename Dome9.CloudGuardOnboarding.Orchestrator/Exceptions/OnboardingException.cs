@@ -9,5 +9,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             Feature = feature;
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(OnboardingException)} with {nameof(Feature)}='{Feature}'. {base.ToString()}";
+        }
     }
 }

@@ -119,22 +119,22 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
                 if (!response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content?.ReadAsStringAsync();
-                    throw new OnboardAccountException($"OnboardAccount failed. Reponse StatusCode:{response.StatusCode}, ReasonPhrase:'{response.ReasonPhrase}', Content:'{responseContent}'")
-                    {
-                        ReasonPhrase = response?.ReasonPhrase,
-                        HttpStatusCode = response.StatusCode,
-                        Content = responseContent
-                    };
+                    throw new OnboardAccountException(
+                                "OnboardAccount failed",
+                                response.ReasonPhrase,
+                                response.StatusCode,
+                                responseContent,
+                                Enums.Feature.None);
                 }
             }
             catch (OnboardAccountException ex)
             {
-                Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
+                Console.WriteLine($"[Error] [{nameof(OnboardAccount)}] failed. ex={ex}]");
                 throw;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
+                Console.WriteLine($"[Error] [{nameof(OnboardAccount)}] failed. ex={ex}]");
                 throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }
