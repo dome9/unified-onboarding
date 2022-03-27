@@ -7,6 +7,7 @@ Statement:
       - 'athena:GetQueryExecution'
       - 'athena:GetWorkGroup'
       - 'backup:ListBackupVaults'
+      - 'backup:ListTags'
       - 'cognito-identity:DescribeIdentityPool'
       - 'cognito-idp:DescribeUserPool'
       - 'cognito-idp:DescribeRiskConfiguration'
