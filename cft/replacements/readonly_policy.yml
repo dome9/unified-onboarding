@@ -11,6 +11,7 @@ Statement:
       - 'cognito-identity:DescribeIdentityPool'
       - 'cognito-idp:DescribeUserPool'
       - 'cognito-idp:DescribeRiskConfiguration'
+      - 'macie2:DescribeBuckets'
       - 'dynamodb:ListTagsOfResource'
       - 'ec2:SearchTransitGatewayRoutes'
       - 'elasticfilesystem:Describe*'
