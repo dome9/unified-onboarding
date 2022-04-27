@@ -40,8 +40,6 @@ Resources:
               StringEquals:
                 sts:ExternalId:
                   Fn::Base64: !Sub ${AWS::AccountId}
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/ReadOnlyAccess
 
       Policies:
         - PolicyName: CrossAccountCustomerRO
@@ -77,6 +75,46 @@ Resources:
                   - !Join [ ":", [ !GetAtt ProtegoFSPInjectorFunction.Arn,"*"]]
                   - !Sub 'arn:aws:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
                   - !Sub 'arn:aws:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
+
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${ServerlessStage}-protego/*'
+
+
+              - Effect: Allow
+                Action:
+                  - iam:GetPolicy
+                  - iam:GetRole
+                  - iam:GetPolicyVersion
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                  - iam:SimulatePrincipalPolicy
+                  - cloudwatch:GetMetricData
+                  - cloudwatch:GetMetricStatistics
+                  - dynamodb:ListTables
+                  - kinesis:ListStreams
+                  - events:ListRuleNamesByTarget
+                  - apigateway:GET
+                  - s3:GetBucketNotification
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketLocation
+                  - s3:GetBucketAcl
+                  - s3:GetBucketPolicy
+                  - cloudformation:GetTemplate
+                  - lambda:ListEventSourceMappings
+                  - lambda:ListFunctions
+                  - lambda:GetFunction
+                  - lambda:GetFunctionConfiguration
+                  - lambda:GetPolicy
+                  - lambda:ListAliases
+                  - lambda:ListTags
+                  - lambda:ListVersionsByFunction
+                  - lambda:GetLayerVersion
+                  - sns:ListSubscriptionsByTopic
+                  - ec2:DescribeRegions
+                Resource: '*'
 
   ##
   # Protego is installing on your account a Code - Analysis Lambda for each runtime language
@@ -446,7 +484,7 @@ Resources:
       ServiceToken: !Sub "arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 23
+      CFTemplateVersion: 24
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -463,7 +501,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 23
+      CFTemplateVersion: 24
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:

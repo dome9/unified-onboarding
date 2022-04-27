@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a cross account role that authorizes access for Cloudguard BE.
 Metadata:
-  Version: 2.6.0
+  Version: 3.6.0
 Parameters:
   CloudGuardAwsAccountId:
     Description: CloudGuard instance AWS AccountId that is requiring external trust
@@ -36,8 +36,6 @@ Resources:
               StringEquals:
                 sts:ExternalId: !Base64 
                   Fn::Sub: ${AWS::AccountId}
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/ReadOnlyAccess
       Policies:
         - PolicyName: CrossAccountCustomerRO
           PolicyDocument:
@@ -87,6 +85,43 @@ Resources:
                     arn:aws:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*
                   - !Sub >-
                     arn:aws:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub arn:aws:s3:::${ServerlessStage}-protego/*
+              - Effect: Allow
+                Action:
+                  - iam:GetPolicy
+                  - iam:GetRole
+                  - iam:GetPolicyVersion
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                  - iam:SimulatePrincipalPolicy
+                  - cloudwatch:GetMetricData
+                  - cloudwatch:GetMetricStatistics
+                  - dynamodb:ListTables
+                  - kinesis:ListStreams
+                  - events:ListRuleNamesByTarget
+                  - apigateway:GET
+                  - s3:GetBucketNotification
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketLocation
+                  - s3:GetBucketAcl
+                  - s3:GetBucketPolicy
+                  - cloudformation:GetTemplate
+                  - lambda:ListEventSourceMappings
+                  - lambda:ListFunctions
+                  - lambda:GetFunction
+                  - lambda:GetFunctionConfiguration
+                  - lambda:GetPolicy
+                  - lambda:ListAliases
+                  - lambda:ListTags
+                  - lambda:ListVersionsByFunction
+                  - lambda:GetLayerVersion
+                  - sns:ListSubscriptionsByTopic
+                  - ec2:DescribeRegions
+                Resource: '*'
   ProtegoPython3CodeAnalysisLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -441,7 +476,7 @@ Resources:
         arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 23
+      CFTemplateVersion: 24
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
     Version: '1.0'
@@ -457,7 +492,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 23
+      CFTemplateVersion: 24
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
       Features:
         ProtegoBase: true
