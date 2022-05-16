@@ -230,6 +230,12 @@ Resources:
                   - SNS:Unsubscribe
                 Effect: Allow
                 Resource: !Ref CloudGuardOnboardingSns
+              - Sid: GetTemplate
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub >-
+                  arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}/*
               - Sid: CloudGuardOnboardingOrchestratorIam
                 Action:
                   - iam:GetRole
