@@ -6,6 +6,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper
 {
     public class IntelligenceStackWrapper : StackWrapperBase
     {
+        public IntelligenceStackWrapper(StackOperation stackOperation, string region) : base(stackOperation, region)
+        {
+        }
+        
         public IntelligenceStackWrapper(StackOperation stackOperation) : base(stackOperation)
         {
         }
@@ -24,7 +28,10 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation.StackWrapper
             {
                 { "CloudtrailS3BucketName",  inelligenceStackConfig.CloudtrailS3BucketName},
                 { "CloudGuardRoleName", inelligenceStackConfig.CloudGuardRoleName },
-                { "UniqueSuffix", inelligenceStackConfig.UniqueSuffix }
+                { "UniqueSuffix", inelligenceStackConfig.UniqueSuffix },
+                {"IntelligenceSubscriptionEndpoint", inelligenceStackConfig.IntelligenceSubscriptionEndpoint },
+                {"IntelligenceAwsAccountId", inelligenceStackConfig.IntelligenceAwsAccountId },
+                {"CloudTrailKmsArn", inelligenceStackConfig.CloudTrailKmsArn }
             };
         }
     }

@@ -9,6 +9,7 @@ using Amazon.CloudTrail.Model;
 using Amazon.S3.Model;
 using RegionEndpoint = Amazon.RegionEndpoint;
 using System.Linq;
+using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
 {
@@ -29,57 +30,61 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
         };
 
         private const int MAX_PARALLEL_AWS_CLIENT_REQUESTS = 3;
-
-        /// <summary>
-        /// Find all account cloud trails, get choose bucket to subscribe and add subscribtion to this bucket
-        /// </summary>
-        /// <param name="snsTopicArn"></param>
-        /// <returns></returns>
-        public static async Task<string> SubscribeBucket(string snsTopicArn, string awsAccountId)
-        {
-            // find all account cloud trails and get bucket name to subscribe
-            var chosenCloudTrail = await ChooseCloudTrailToOnboardIntelligence(awsAccountId);
-
-            // adding subscribtion to bucket
-            var topic = snsTopicArn.Replace("REGION", chosenCloudTrail.HomeRegion);
-            await PutIntelligenceSubscriptionInBucket(chosenCloudTrail, topic);
-            return chosenCloudTrail.S3BucketName;
-        }
-
-        private static async Task PutIntelligenceSubscriptionInBucket(AwsCloudTrail chosenCloudTrail, string topic)
+        
+        public static async Task PutIntelligenceSubscriptionInBucket(AwsCloudTrail chosenCloudTrail, string topicArn, string s3IntelligenceBucketTopicPrefix, string suffix)
         {
             var bucketClient = new AmazonS3Client(RegionEndpoint.GetBySystemName(chosenCloudTrail.BucketRegion));
-            var S3BucketTopicPrefix = $"AWSLogs/{chosenCloudTrail.ExternalId}/CloudTrail";
-            var currentRule = new List<AwsS3FilterRule>
+            var currentRule = new List<AwsS3FilterRule> { new AwsS3FilterRule("prefix", s3IntelligenceBucketTopicPrefix) };
+            var topicConfiguration = new List<TopicConfiguration> { GenerateS3BucketFiltersList($"cloudtrail_{chosenCloudTrail.ExternalId}_{suffix}", topicArn, currentRule) };
+            if (chosenCloudTrail.BucketTopicConfiguration.Any())
             {
-                new AwsS3FilterRule("prefix", S3BucketTopicPrefix)
-            };
-            var existingTopics = new List<TopicConfiguration> { GenerateS3BucketFiltersList($"cloudtrail_{chosenCloudTrail.ExternalId}", topic, currentRule) };
-            
+                // so we will not delete existing topic configuration on topic
+                topicConfiguration.AddRange(chosenCloudTrail.BucketTopicConfiguration); 
+            }
+
             Console.WriteLine($"[INFO] [{nameof(PutIntelligenceSubscriptionInBucket)}] Start putting notification to bucket='{chosenCloudTrail.S3BucketName}'");
-            
-            await bucketClient.PutBucketNotificationAsync(new PutBucketNotificationRequest() { BucketName = chosenCloudTrail.S3BucketName, TopicConfigurations = existingTopics });
-            
+            await bucketClient.PutBucketNotificationAsync(new PutBucketNotificationRequest() { BucketName = chosenCloudTrail.S3BucketName, TopicConfigurations = topicConfiguration, QueueConfigurations = chosenCloudTrail.BucketQueueConfiguration, LambdaFunctionConfigurations = chosenCloudTrail.BucketLambdaConfiguration});
             Console.WriteLine($"[INFO] [{nameof(PutIntelligenceSubscriptionInBucket)}] Finished putting notification to bucket='{chosenCloudTrail.S3BucketName}'");
+            
         }
 
-
-        private static async Task<AwsCloudTrail> ChooseCloudTrailToOnboardIntelligence(string awsAccountId)
+        public static async Task<AwsCloudTrail> ChooseCloudTrailToOnboaredIntelligence(string awsAccountId, AwsS3.AwsS3 awsS3, string s3IntelligenceBucketTopicPrefix, string onboardingId)
         {
             var trails = await FindAccountCloudTrails(awsAccountId);
-            var trailsWithBucketDetails = await FindCloudTrailsStorageDetails(trails);
-            return ChooseCloudTrail(trailsWithBucketDetails);
+            var trailsWithBucketDetails = await FindCloudTrailsStorageDetails(trails, awsS3);
+            return await ChoseBucketDetails(trailsWithBucketDetails, s3IntelligenceBucketTopicPrefix, onboardingId);
         }
-
-        private static AwsCloudTrail ChooseCloudTrail(List<AwsCloudTrail> cloudTrails)
+        
+        private static async Task<AwsCloudTrail> ChoseBucketDetails(List<AwsCloudTrail> trailDetails, string s3IntelligenceBucketTopicPrefix, string onboardingId)
         {
             try
             {
-                var withoutSubscription = cloudTrails.Where(c => c.BucketHasSubscriptions == false);
+                List<AwsCloudTrail> withoutSubscription = new List<AwsCloudTrail>();
+                foreach (var trail in trailDetails)
+                {
+                    var addTrailToWithoutSubscription = true;
+                    foreach (var notification in trail.BucketEventNotification)
+                    {
+                        if (notification.EventTypes.Any(eventType => eventType == new EventType("s3:ObjectCreated:Put") || eventType == new EventType("s3:ObjectCreated:*")))
+                        {
+                            // if we have put or * with same prefix we cant create what we need for intelligence in this bucket
+                            var notificationWithIntelligencePrefix = notification.FilterRules.Any(filterRule => filterRule.Name.ToLower() == "prefix" && (filterRule.Value == "" || filterRule.Value.StartsWith(s3IntelligenceBucketTopicPrefix) || s3IntelligenceBucketTopicPrefix.StartsWith(filterRule.Value)));
+                            if (notificationWithIntelligencePrefix)
+                            {
+                                addTrailToWithoutSubscription = false;
+                            }
+                        }
+                    }
+                    if (addTrailToWithoutSubscription)
+                    {
+                        withoutSubscription.Add(trail);
+                    }
+                }
+
                 if (!withoutSubscription.Any())
                 {
-                    Console.WriteLine($"[ERROR] [{nameof(ChooseCloudTrail)}] Failed. Event Notification is already configured on S3 Bucket(s) with CloudTrail.");
-                    throw new OnboardingException("CloudTrail S3 bucket already has event notification configured, cannot configure new notification.", Enums.Feature.Intelligence);
+                    Console.WriteLine($"[ERROR] [{nameof(ChoseBucketDetails)}] Failed. Event Notification is already configured on S3 Bucket(s) with CloudTrail.");
+                    throw new OnboardingException("Event Notification is already configured on S3 Bucket(s) with CloudTrail, cannot configure new notification.", Enums.Feature.Intelligence);
                 }
 
                 var onlyGlobals = withoutSubscription.Where(c => c.IsMultiRegionTrail);
@@ -88,14 +93,15 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
                     return onlyGlobals.First();
                 }
 
-                if (withoutSubscription.Any())
+                if (withoutSubscription.Count > 1)
                 {
                     // TODO: Does this message need to get posted to the CG onboarding status api?
                     // If so, we must add more data to the return value of the above public SubscribeBucket method
-                    Console.WriteLine($"[WARN] [{nameof(ChooseCloudTrail)}] Bucket '{withoutSubscription.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found.");
+                    Console.WriteLine($"[WARN] [{nameof(ChoseBucketDetails)}] Bucket '{withoutSubscription.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found.");
+                    await StatusHelper.UpdateStatusAsync(new StatusModel(onboardingId, Enums.Feature.Intelligence, Enums.Status.WARNING, $"[WARN] [{nameof(ChoseBucketDetails)}] Bucket '{withoutSubscription.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found."));
                 }
-                return withoutSubscription.First();
-            }            
+                return withoutSubscription[0];
+            }
             catch (Exception ex)
             {
                 if(ex is OnboardingException)
@@ -103,11 +109,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
                     throw;
                 }
 
-                Console.WriteLine($"[ERROR] [{nameof(ChooseCloudTrail)}] failed. Error={ex}");
+                Console.WriteLine($"[ERROR] [{nameof(ChoseBucketDetails)}] failed. Error={ex}");
                 throw new OnboardingException("Failed to choose a bucket for trail", Enums.Feature.Intelligence);
             }
         }
-
+        
         private static async Task<List<AwsCloudTrail>> FindAccountCloudTrails(string awsAccountId)
         {
             var allRegion = RegionEndpoint.EnumerableAllRegions.Select(t => t.SystemName);
@@ -137,7 +143,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
                                                                                     S3BucketName = t.S3BucketName,
                                                                                     IsMultiRegionTrail = t.IsMultiRegionTrail,
                                                                                     TrailArn = t.TrailARN,
-                                                                                    ExternalId = awsAccountId
+                                                                                    ExternalId = awsAccountId,
+                                                                                    KmsKeyArn = t.KmsKeyId
                                                                                 }));
                         }
                         catch (Exception ex)
@@ -150,7 +157,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
                         }
                     }));
                 }
-
                 await Task.WhenAll(tasks);
             }
 
@@ -167,7 +173,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
             return trails;
         }
 
-        private static async Task<List<AwsCloudTrail>> FindCloudTrailsStorageDetails(List<AwsCloudTrail> trails)
+        private static async Task<List<AwsCloudTrail>> FindCloudTrailsStorageDetails(List<AwsCloudTrail> trails, AwsS3.AwsS3 awsS3)
         {
             var tasks = new List<Task>();
             using (SemaphoreSlim throttler = new SemaphoreSlim(MAX_PARALLEL_AWS_CLIENT_REQUESTS))
@@ -183,13 +189,16 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
                             {
                                 var s3RegionRes = await bucketClient.GetBucketLocationAsync(new GetBucketLocationRequest() { BucketName = trail.S3BucketName });
                                 // according to aws sdk documentation if the bucket is located in "us-east-1" than the location returned is an empty string
-                                var s3Region = s3RegionRes.Location.Value == "" ? "us-east-1" : s3RegionRes.Location.Value;
-                                Console.WriteLine($"[INFO] [{nameof(FindCloudTrailsStorageDetails)}] s3Region={s3Region}, trail=[{trail}]");
-                                trail.BucketRegion = s3Region;
-                                using var bucketClientWithRegion = new AmazonS3Client(RegionEndpoint.GetBySystemName(s3Region));
+                                trail.BucketRegion = s3RegionRes.Location.Value == "" ? "us-east-1" : s3RegionRes.Location.Value;
+                                Console.WriteLine($"[INFO] [{nameof(FindCloudTrailsStorageDetails)}] s3Region={trail.BucketRegion}, trail=[{trail}]");
+                                using var bucketClientWithRegion = new AmazonS3Client(RegionEndpoint.GetBySystemName(trail.BucketRegion));
                                 var s3Subscriptions = await bucketClientWithRegion.GetBucketNotificationAsync(new GetBucketNotificationRequest() { BucketName = trail.S3BucketName });
-                                trail.BucketHasSubscriptions = s3Subscriptions?.TopicConfigurations?.Any() ?? false;
                                 trail.BucketIsAccessible = true;
+                                trail.BucketEventNotification = s3Subscriptions?.TopicConfigurations?.Select(topic => awsS3.CreateS3EventNotifications(topic)).ToList();
+                                trail.BucketTopicConfiguration = s3Subscriptions?.TopicConfigurations;
+                                trail.BucketLambdaConfiguration = s3Subscriptions?.LambdaFunctionConfigurations;
+                                trail.BucketQueueConfiguration = s3Subscriptions?.QueueConfigurations;
+                                
                             }
                         }
                         catch (Exception ex)
@@ -218,10 +227,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
             {
                 string error = "Could not find any S3 bucket with access permissions";
                 Console.WriteLine($"[WARN] [{nameof(FindCloudTrailsStorageDetails)}] Failed. {error}");
-
                 throw new OnboardingException(error, Enums.Feature.Intelligence);
             }
-
             return trails;
         }
         private static TopicConfiguration GenerateS3BucketFiltersList(string id, string topic, List<AwsS3FilterRule> ruleList)

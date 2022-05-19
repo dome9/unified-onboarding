@@ -105,3 +105,15 @@
   Effect: Allow
   Resource:
     - !Sub 'arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountNumber}:${ServerlessStage}-${AWS::AccountId}-notifications'
+- Sid: CloudGuardOnboardingOrchestratorIntelligenceSns
+  Action:
+    - sns:GetTopicAttributes
+    - sns:CreateTopic
+    - sns:Publish
+    - sns:Subscribe
+    - sns:Unsubscribe
+    - sns:SetTopicAttributes
+    - sns:DeleteTopic
+  Effect: Allow
+  Resource:
+    - !Sub 'arn:aws:sns:*:${AWS::AccountId}:Intelligence-Log-Delivery${UniqueSuffix}'

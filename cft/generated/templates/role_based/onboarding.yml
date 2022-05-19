@@ -195,13 +195,13 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !Sub >-
-                    arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CloudGuard-Onboarding*
+                    arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/CloudGuard-Onboarding*
               - Sid: CloudGuardOnboardingOrchestratorCloudformationList
                 Action:
                   - cloudformation:ListStacks
                 Effect: Allow
                 Resource: !Sub >-
-                  arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*
+                  arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/*/*
               - Sid: CloudGuardOnboardingOrchestratorIamListAccount
                 Action:
                   - iam:ListAccountAliases
@@ -363,6 +363,19 @@ Resources:
                 Resource:
                   - !Sub >-
                     arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountNumber}:${ServerlessStage}-${AWS::AccountId}-notifications
+              - Sid: CloudGuardOnboardingOrchestratorIntelligenceSns
+                Action:
+                  - sns:GetTopicAttributes
+                  - sns:CreateTopic
+                  - sns:Publish
+                  - sns:Subscribe
+                  - sns:Unsubscribe
+                  - sns:SetTopicAttributes
+                  - sns:DeleteTopic
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:aws:sns:*:${AWS::AccountId}:Intelligence-Log-Delivery${UniqueSuffix}
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Tags:

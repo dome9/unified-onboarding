@@ -195,13 +195,13 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !Sub >-
-                    arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CloudGuard-Onboarding*
+                    arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/CloudGuard-Onboarding*
               - Sid: CloudGuardOnboardingOrchestratorCloudformationList
                 Action:
                   - cloudformation:ListStacks
                 Effect: Allow
                 Resource: !Sub >-
-                  arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*
+                  arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/*/*
               - Sid: CloudGuardOnboardingOrchestratorIamListAccount
                 Action:
                   - iam:ListAccountAliases

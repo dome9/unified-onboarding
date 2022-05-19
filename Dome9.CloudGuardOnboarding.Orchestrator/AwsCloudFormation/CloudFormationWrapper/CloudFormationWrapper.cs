@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.CloudFormation;
 using Amazon.CloudFormation.Model;
@@ -15,23 +17,59 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
     /// </summary>
     public class CloudFormationWrapper : ICloudFormationWrapper
     {
+        // clients per region
+        private static readonly ConcurrentDictionary<string, Lazy<ICloudFormationWrapper>> _wrappersByRegion = new ConcurrentDictionary<string, Lazy<ICloudFormationWrapper>>();
         private readonly AmazonCloudFormationClient _client;
         private static ICloudFormationWrapper _cfnWrapper = null;
         private static readonly object _instanceLock = new object();
         private const int STATUS_POLLING_INTERVAL_MILLISECONDS = 500;
         private bool _disposed = false;
-
-        private CloudFormationWrapper()
+        private CloudFormationWrapper(AmazonCloudFormationClient client)
         {
-            _client = new AmazonCloudFormationClient();
+            _client = client;
         }
 
-        public static ICloudFormationWrapper Get()
+        public static ICloudFormationWrapper Get(string region = "")
         {
-            lock (_instanceLock)
+            var lazyResult = _wrappersByRegion.GetOrAdd(region, k => new Lazy<ICloudFormationWrapper>(() => CreateWrapper(k), LazyThreadSafetyMode.ExecutionAndPublication));
+
+            ICloudFormationWrapper wrapper = lazyResult.Value;
+            if (wrapper == null)
             {
-                return _cfnWrapper ??= new CloudFormationWrapper();
+                throw new Exception($"Unable to create an ICloudFormationWrapper for region '{region}'");
             }
+
+            return wrapper;
+        }
+        
+        private static CloudFormationWrapper CreateWrapper(string region)
+        {
+            var client = CreateClient(region);
+            if (client == null)
+            {
+                return null;
+            }
+            return new CloudFormationWrapper(client);
+        }
+
+        private static AmazonCloudFormationClient CreateClient(string region)
+        {
+            if (string.IsNullOrWhiteSpace(region))
+            {
+                return new AmazonCloudFormationClient();
+            }
+
+            try
+            {
+                var regionEndpoint = Amazon.RegionEndpoint.GetBySystemName(region);
+                return new AmazonCloudFormationClient(regionEndpoint);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unable to create region endpoint from string '{region}'. Error={ex}");
+            }
+            return null;
+
         }
 
         public async Task<string> CreateStackAsync(

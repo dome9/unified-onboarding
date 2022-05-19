@@ -62,6 +62,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
             throw new NotImplementedException();
         }
 
+        public Task UpdateIntelligenceRegion(string onboardingId, string region)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task ValidateOnboardingId(string onboardingId)
         {
             return Task.CompletedTask;

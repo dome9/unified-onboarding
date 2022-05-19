@@ -17,7 +17,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
         protected bool disposedValue;
         protected static StatusModel _lastStatus = new StatusModel();
         protected static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
-        protected const string INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND = "/v2/view/magellan/magellan-cloudtrail-onboarding";
+        protected const string INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND = "/v2/view/magellan/magellan-custom-onboarding";
 
         public void SetLocalCredentials(ServiceAccount cloudGuardServiceAccount)
         {
@@ -231,6 +231,28 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(UpdateOnboardingVersion)} failed. Error={ex}]");
+                throw new OnboardingException(ex.Message, Enums.Feature.None);
+            }
+        }
+        
+        public async Task UpdateIntelligenceRegion(string onboardingId, string region)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"{CONTROLLER_ROUTE}/UpdateIntelligenceRegion/{onboardingId}/{region}", null);
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    string errorMessage = $"Failed to update Intelligence region. Response StatusCode:{response?.StatusCode}, ReasonPhrase:'{response?.ReasonPhrase}'";
+                    if (response?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new CloudGuardUnauthorizedException(errorMessage);
+                    }
+                    throw new Exception(errorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(UpdateIntelligenceRegion)} failed. Error={ex}]");
                 throw new OnboardingException(ex.Message, Enums.Feature.None);
             }
         }

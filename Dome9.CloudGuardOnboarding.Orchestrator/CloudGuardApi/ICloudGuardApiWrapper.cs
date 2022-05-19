@@ -14,6 +14,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
         Task ServerlessAddAccount(ServelessAddAccountModel model);
         Task<ConfigurationResponseModel> GetConfiguration(ConfigurationRequestModel model);
         Task OnboardIntelligence(IntelligenceOnboardingModel data);
+        Task UpdateIntelligenceRegion(string onboardingId, string region);
         Task CreatePosturePolicies(string onboardingId);
         Task UpdateOnboardingVersion(string onboardingId, string version);
         Task SwitchManagedMode(SwitchManagedModeRequestModel model);

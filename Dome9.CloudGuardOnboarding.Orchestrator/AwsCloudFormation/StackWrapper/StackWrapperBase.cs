@@ -32,6 +32,14 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
             _stackOperation = stackOperation;
         }
+        
+        public StackWrapperBase(StackOperation stackOperation, string region)
+        {
+            _cfnWrapper = CloudFormationWrapper.Get(region);
+            _apiProvider = CloudGuardApiWrapperFactory.Get();
+            _retryAndBackoffService = RetryAndBackoffServiceFactory.Get();
+            _stackOperation = stackOperation;
+        }
 
         protected abstract Enums.Feature Feature { get; }
 

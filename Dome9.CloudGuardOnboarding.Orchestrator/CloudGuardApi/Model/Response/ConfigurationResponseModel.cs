@@ -17,6 +17,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         public List<long> IntelligenceRulesetsIds { get; set; }
         public string CloudGuardAwsAccountId { get; set; }
         public string RoleExternalTrustSecret { get; set; }
+        public string IntelligenceStackRegion { get; set; }
 
         public override string ToString()
         {

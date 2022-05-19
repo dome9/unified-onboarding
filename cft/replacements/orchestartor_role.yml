@@ -27,12 +27,12 @@ CloudGuardOrchestratorRole:
                 - 'cloudformation:DescribeChangeSet'
               Effect: Allow
               Resource:
-                - !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CloudGuard-Onboarding*'
+                - !Sub 'arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/CloudGuard-Onboarding*'
             - Sid: CloudGuardOnboardingOrchestratorCloudformationList
               Action:
                 - 'cloudformation:ListStacks'
               Effect: Allow
-              Resource: !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*'
+              Resource: !Sub 'arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/*/*'
             - Sid: CloudGuardOnboardingOrchestratorIamListAccount
               Action:
                 - 'iam:ListAccountAliases'

@@ -4,7 +4,7 @@ Metadata:
   Version: 2.0.0
 
 Parameters: 
-  CloudtrailS3BucketName:    
+  CloudtrailS3BucketName:   
     Description: Name of s3 bucket connected to cloudtrail
     Type: String
   CloudGuardRoleName:
@@ -15,22 +15,91 @@ Parameters:
     Type: String
     Default: ''
     MaxLength: 19
+  IntelligenceSubscriptionEndpoint:
+    Description: ARN to a resource in the Intelligence instance AWS AccountId that is the subscription endpoint
+    Type: String
+  IntelligenceAwsAccountId:
+    Description: Aws Account Id to a resource that is the subscription endpoint
+    Type: String
+  CloudTrailKmsArn:
+    Description: Cloud Trail KmsArn, in case the cloud trail is encripted
+    Type: String
 
 Resources:
+  ClientSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'Intelligence-Log-Delivery${UniqueSuffix}'
+    DeletionPolicy: Retain # Do not delete on stack deletion
+  ClientSnsTopicSubscription:
+    Type: AWS::SNS::Subscription
+    DependsOn: ClientSnsTopic
+    Properties:
+      Protocol: sqs
+      TopicArn: !Ref ClientSnsTopic
+      Endpoint: !Sub '${IntelligenceSubscriptionEndpoint}'
+  SnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    DependsOn: ClientSnsTopic
+    DeletionPolicy: Retain # Do not delete on stack deletion
+    Properties:
+      Topics:
+        - !Ref ClientSnsTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLogBucketToSendNotifications
+            Effect: Allow
+            Action:
+              - sns:Publish
+            Resource: !Ref ClientSnsTopic
+            Principal:
+              Service:
+                - s3.amazonaws.com
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:s3:::${CloudtrailS3BucketName}'
+              StringEquals:
+                aws:SourceAccount: !Sub '${AWS::AccountId}'
+          - Sid: AllowOnlyIntelligenceSubscription
+            Effect: Allow
+            Action:
+              - sns:Subscribe
+            Resource: !Ref ClientSnsTopic
+            Principal:
+              Service:
+                - sqs.amazonaws.com
+            Condition:
+              ForAnyValue:StringEquals:
+                sns:Endpoint:
+                  - !Sub '${IntelligenceSubscriptionEndpoint}'
+              StringEquals:
+                sns:Protocol: sqs
   IntelligencePolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub 'CloudGuard-for-intelligence${UniqueSuffix}'
+      PolicyName: !Sub 'CloudGuard-for-intelligence${UniqueSuffix}-${AWS::Region}'
+      Roles:
+        - !Ref CloudGuardRoleName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Sid: Dome9S3ForLogic
+          - Sid: IntelligenceRequiredBucketPermissions
             Action:
               - 's3:GetObject'
-              - 's3:PutBucketNotification'                
+              - 's3:PutBucketNotification'
+              - 's3:GetBucketNotification'
             Effect: Allow
             Resource:
               - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}"
-              - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}/*"                     
-      Roles:
-        - !Ref CloudGuardRoleName
+              - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}/*"
+          - Sid: IntelligenceUsageEnforcementRequiredSnsPermissions
+            Action:
+              - sns:Subscribe
+              - sns:Unsubscribe
+            Effect: Allow
+            Resource: !Ref ClientSnsTopic
+          - Sid: IntelligenceRequiredCloudTrailDecryptPermissions
+            Action: kms:Decrypt
+            Effect: Allow
+            Resource: !Ref CloudTrailKmsArn

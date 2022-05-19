@@ -1,4 +1,8 @@
-﻿namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
+﻿using System.Collections.Generic;
+using Amazon.S3.Model;
+using Dome9.CloudGuardOnboarding.Orchestrator.AwsS3;
+
+namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
 {
     public class AwsCloudTrail
     {
@@ -10,12 +14,18 @@
         public string BucketRegion { get; set; }
         public bool BucketHasSubscriptions { get; set; }
         public bool BucketIsAccessible { get; set; }
+        public string KmsKeyArn { get; set; }
+        public List<TopicConfiguration> BucketTopicConfiguration { get; set; }
+        public List<AwsS3EventNotification> BucketEventNotification { get; set; }
+        public  List<LambdaFunctionConfiguration> BucketLambdaConfiguration { get; set; }
+        public  List<QueueConfiguration> BucketQueueConfiguration { get; set; }
 
         public AwsCloudTrail()
         {
+            BucketEventNotification = new List<AwsS3EventNotification>();
         }
 
-        public AwsCloudTrail(string homeRegion, bool isMultiRegionTrail, string s3BucketName, string trailArn, string externalId)
+        public AwsCloudTrail(string homeRegion, bool isMultiRegionTrail, string s3BucketName, string trailArn, string externalId, List<TopicConfiguration> bucketTopicConfiguration)
         {
             HomeRegion = homeRegion;
             IsMultiRegionTrail = isMultiRegionTrail;
@@ -24,6 +34,8 @@
             ExternalId = externalId;
             BucketHasSubscriptions = false;
             BucketIsAccessible = false;
+            BucketEventNotification = new List<AwsS3EventNotification>();
+            BucketTopicConfiguration = bucketTopicConfiguration;
         }
 
         public override string ToString()
