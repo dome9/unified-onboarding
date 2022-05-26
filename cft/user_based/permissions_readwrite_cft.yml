@@ -31,10 +31,20 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
 
-      Policies:
-        - PolicyName: !Sub 'CloudGuard-Connect-RO-policy${UniqueSuffix}'
-          PolicyDocument: REPLACEMENT_READONLY_POLICY
-        - PolicyName: !Sub 'CloudGuard-Connect-RW-policy${UniqueSuffix}'
-          PolicyDocument: REPLACEMENT_READWRITE_POLICY
+  CrossAccountReadOnlyPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: !Sub 'CloudGuard-Connect-RO-policy${UniqueSuffix}'
+      PolicyDocument: REPLACEMENT_READONLY_POLICY
+      Users:
+        - !Ref CrossAccountUser
+
+  CrossAccountReadWritePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: !Sub 'CloudGuard-Connect-RW-policy${UniqueSuffix}'
+      PolicyDocument: REPLACEMENT_READWRITE_POLICY
+      Users:
+        - !Ref CrossAccountUser
 
  

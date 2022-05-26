@@ -63,6 +63,7 @@ Resources:
                   - iam:DeleteUser
                   - iam:DeleteAccessKey
                   - iam:ListAccessKeys
+                  - iam:PutUserPolicy
                 Resource: !Sub >-
                   arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Onboarding-StackModify-user${UniqueSuffix}
               - Sid: DeleteSecret
@@ -70,7 +71,7 @@ Resources:
                 Action:
                   - secretsmanager:DeleteSecret
                 Resource: !Sub >-
-                  arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*
+                  arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials*
               - Sid: ModifyStack
                 Effect: Allow
                 Action:
@@ -110,8 +111,7 @@ Resources:
                 Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !Sub >-
-                  arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}/*
+                Resource: !Sub arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding*
               - Sid: ModifySns
                 Effect: Allow
                 Action:
@@ -236,6 +236,20 @@ Resources:
                   - s3:GetObject
                 Resource: !Sub >-
                   arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}/*
+              - Sid: CloudGuardOnboardingOrchestratorIamPolicy
+                Action:
+                  - iam:GetPolicy
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:ListPolicyVersions
+                  - iam:CreatePolicyVersion
+                  - iam:DeletePolicyVersion
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RO-policy${UniqueSuffix}
+                  - !Sub >-
+                    arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RW-policy${UniqueSuffix}
               - Sid: CloudGuardOnboardingOrchestratorIam
                 Action:
                   - iam:GetUser

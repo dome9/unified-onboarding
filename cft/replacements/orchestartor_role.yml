@@ -53,6 +53,18 @@ CloudGuardOrchestratorRole:
               Action:
                 - s3:GetObject
               Resource: !Sub 'arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX/*'
+            - Sid: CloudGuardOnboardingOrchestratorIamPolicy
+              Action:
+                - 'iam:GetPolicy'
+                - 'iam:CreatePolicy'
+                - 'iam:DeletePolicy'
+                - 'iam:ListPolicyVersions'
+                - 'iam:CreatePolicyVersion'
+                - 'iam:DeletePolicyVersion'
+              Effect: Allow
+              Resource:
+                - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RO-policy${UniqueSuffix}'
+                - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RW-policy${UniqueSuffix}'
             - REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS
 
     ManagedPolicyArns:

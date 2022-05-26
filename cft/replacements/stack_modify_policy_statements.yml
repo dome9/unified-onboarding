@@ -34,7 +34,7 @@
   Effect: Allow
   Action:
     - s3:GetObject
-  Resource: !Sub 'arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding-${AWS::Region}REPLACEMENT_BUCKET_SUFFIX/*'
+  Resource: !Sub 'arn:${AWS::Partition}:s3:::cloudguard-unified-onboarding*'
 - Sid: ModifySns
   Effect: Allow
   Action:

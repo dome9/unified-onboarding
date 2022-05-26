@@ -28,13 +28,14 @@ Resources:
                   - iam:DeleteUser
                   - iam:DeleteAccessKey
                   - iam:ListAccessKeys
+                  - iam:PutUserPolicy
                 Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:user/CloudGuard-Onboarding-StackModify-user${UniqueSuffix}'
 
               - Sid: DeleteSecret
                 Effect: Allow
                 Action:
                   - secretsmanager:DeleteSecret 
-                Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials-*'
+                Resource: !Sub 'arn:${AWS::Partition}:secretsmanager:*:*:secret:CloudGuardStackModifyCrossAccountUserCredentials*'
 
   StackModifyCrossAccountUserCredentials:
     Type: AWS::IAM::AccessKey
