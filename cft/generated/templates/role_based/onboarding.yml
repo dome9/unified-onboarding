@@ -447,8 +447,25 @@ Resources:
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: !Sub CloudGuard-Onboarding-Orchestrator-helper-policy${UniqueSuffix}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CreateLogGroup
+                Effect: Allow
+                Resource:
+                  - '*'
+                Action:
+                  - logs:CreateLogGroup
+              - Sid: LoggingLogs
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardOnboardingOrchestrator-Helper${UniqueSuffix}:*
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
       Tags:
         - Key: ConditionalDependsOn
           Value: !If 
