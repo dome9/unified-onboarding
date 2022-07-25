@@ -52,7 +52,6 @@ Resources:
                   - lambda:GetFunction
                   - lambda:GetLayerVersion
                   - lambda:UpdateFunctionConfiguration
-                  - lambda:TagResource
                   - lambda:ListTags
                   - lambda:UntagResource
 
@@ -67,6 +66,7 @@ Resources:
                 Action:
                   - lambda:UpdateFunctionCode
                   - lambda:UpdateFunctionConfiguration
+                  - lambda:TagResource
                 Resource:
                   - !Join [ ":", [ !GetAtt ProtegoNode14CodeAnalysisFunction.Arn,"*"]]
                   - !Join [ ":", [ !GetAtt ProtegoJavaCodeAnalysisFunction.Arn ,"*"]]
@@ -93,16 +93,11 @@ Resources:
                   - iam:SimulatePrincipalPolicy
                   - cloudwatch:GetMetricData
                   - cloudwatch:GetMetricStatistics
-                  - dynamodb:ListTables
-                  - kinesis:ListStreams
                   - events:ListRuleNamesByTarget
-                  - apigateway:GET
                   - s3:GetBucketNotification
-                  - s3:ListAllMyBuckets
                   - s3:GetBucketLocation
                   - s3:GetBucketAcl
                   - s3:GetBucketPolicy
-                  - cloudformation:GetTemplate
                   - lambda:ListEventSourceMappings
                   - lambda:ListFunctions
                   - lambda:GetFunction
@@ -239,7 +234,14 @@ Resources:
                   - 'lambda:ListLayerVersions'
                   - 'lambda:UpdateFunctionConfiguration'
                   - 'lambda:UpdateFunctionCode'
+                  # Permission required in order to get the query results from lambda "logs:StartQuery"
+                  - 'logs:GetQueryResults'
                 Resource: '*'
+              # Permission required in order to query the lambda logs and check the max memory usage before adding fsp
+              - Effect: Allow
+                Action:
+                  - 'logs:StartQuery'
+                Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*'
 
   ProtegoPython3CodeAnalysisFunction:
     Type: 'AWS::Lambda::Function'
@@ -284,7 +286,8 @@ Resources:
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: !Sub code_analysis_functions/${ServerlessStage}_function_code_analysis_node.zip
-      MemorySize: 4096
+      # will be upgraded to 4096 during activate account process (in order to support accounts with low reputation)
+      MemorySize: 3008
       Description: 'Statically analyze NodeJs code'
       Runtime: nodejs14.x
       Timeout: 860
@@ -484,7 +487,7 @@ Resources:
       ServiceToken: !Sub "arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 24
+      CFTemplateVersion: 25
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -501,7 +504,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 24
+      CFTemplateVersion: 25
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:

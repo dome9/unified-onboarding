@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a cross account role that authorizes access for Cloudguard BE.
 Metadata:
-  Version: 3.6.0
+  Version: 4.5.0
 Parameters:
   CloudGuardAwsAccountId:
     Description: CloudGuard instance AWS AccountId that is requiring external trust
@@ -47,7 +47,6 @@ Resources:
                   - lambda:GetFunction
                   - lambda:GetLayerVersion
                   - lambda:UpdateFunctionConfiguration
-                  - lambda:TagResource
                   - lambda:ListTags
                   - lambda:UntagResource
                 Resource:
@@ -60,6 +59,7 @@ Resources:
                 Action:
                   - lambda:UpdateFunctionCode
                   - lambda:UpdateFunctionConfiguration
+                  - lambda:TagResource
                 Resource:
                   - !Join 
                     - ':'
@@ -100,16 +100,11 @@ Resources:
                   - iam:SimulatePrincipalPolicy
                   - cloudwatch:GetMetricData
                   - cloudwatch:GetMetricStatistics
-                  - dynamodb:ListTables
-                  - kinesis:ListStreams
                   - events:ListRuleNamesByTarget
-                  - apigateway:GET
                   - s3:GetBucketNotification
-                  - s3:ListAllMyBuckets
                   - s3:GetBucketLocation
                   - s3:GetBucketAcl
                   - s3:GetBucketPolicy
-                  - cloudformation:GetTemplate
                   - lambda:ListEventSourceMappings
                   - lambda:ListFunctions
                   - lambda:GetFunction
@@ -226,7 +221,12 @@ Resources:
                   - lambda:ListLayerVersions
                   - lambda:UpdateFunctionConfiguration
                   - lambda:UpdateFunctionCode
+                  - logs:GetQueryResults
                 Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:StartQuery
+                Resource: !Sub arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*
   ProtegoPython3CodeAnalysisFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -274,7 +274,7 @@ Resources:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: !Sub >-
           code_analysis_functions/${ServerlessStage}_function_code_analysis_node.zip
-      MemorySize: 4096
+      MemorySize: 3008
       Description: Statically analyze NodeJs code
       Runtime: nodejs14.x
       Timeout: 860
@@ -476,7 +476,7 @@ Resources:
         arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 24
+      CFTemplateVersion: 25
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
     Version: '1.0'
@@ -492,7 +492,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 24
+      CFTemplateVersion: 25
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
       Features:
         ProtegoBase: true
