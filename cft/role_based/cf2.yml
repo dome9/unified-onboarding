@@ -1,0 +1,422 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Check Point CloudGuard Dome9 Registry Image Scanner
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "CloudGuard"
+        Parameters:
+          - ClusterId
+          - Username
+          - Password
+          - ReleaseName
+          - CloudGuardRegion
+      - Label:
+          default: "AWS"
+        Parameters:
+          - Subnet
+          - RegSecretArn
+          - ReplicaCount
+      - Label:
+          default: "Quay"
+        Parameters:
+          - QuayUser
+          - QuayPassword
+    ParameterLabels:
+      CloudGuardRegion:
+        default: CloudGuard Data Center
+      ReleaseName:
+        default: Release Name
+      ClusterId:
+        default: Environment ID
+      RegSecretArn:
+        default: Registry Secret Arn
+      QuayPassword:
+        default: Quay Key Secret
+      QuayUser:
+        default: Quay Key Id
+      Username:
+        default: API Key Id
+      Password:
+        default: API Key Secret
+      ReplicaCount:
+        default: Replica Count
+Parameters:
+  CloudGuardRegion:
+    Type: String
+    Default: us
+    Description: The CloudGuard Data Center
+    AllowedValues:
+      - us
+      - us9
+      - eu1
+      - ap1
+      - ap2
+      - ap3
+      - cace1
+  Subnet:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: The public subnet of the cluster. The cluster's public IPs will be generated from this subnet. The subnet's route table must have 0.0.0.0/0 route to Internet Gateway
+    MinLength: 1
+  ReleaseName:
+    Type: String
+    Default: consec
+    Description: The Release name
+  ClusterId:
+    Type: String
+    Description: The CloudGuard environment id
+  Username:
+    Type: String
+    Description: The CloudGuard service account API Key id
+  Password:
+    Type: String
+    Description: The CloudGuard service account API Key secret
+    NoEcho: true
+  RegSecretArn:
+    Type: String
+    Description: ARN for registries credentials
+    AllowedPattern: '^arn:aws:secretsmanager:[A-Za-z0-9-:]+$'
+  ReplicaCount:
+    Type: Number
+    Default: 1
+    Description: Number of replicas
+  QuayPassword:
+    Type: String
+    Description: Checkpoit's Quay Registry Key secret
+    NoEcho: true
+  QuayUser:
+    Type: String
+    Description: Checkpoit's Quay Registry Key id
+Conditions:
+  IsUs: !Or 
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - us
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - us1
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - usea1
+  IsEu1: !Or 
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - eu
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - eu1
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - euwe1
+  IsAp1: !Or 
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - ap
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - ap1
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - apse1
+  IsAp2: !Or 
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - ap2
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - apse2
+  IsAp3: !Or 
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - ap3
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - apso1
+  IsCace1: !Or 
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - ca
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - ca1
+    - !Equals 
+      - !Ref CloudGuardRegion
+      - cace1
+  IsUs9: !Equals 
+         - !Ref CloudGuardRegion
+         - us9
+Resources:
+  ConsecEcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${ReleaseName}-imagescan-cluster'
+  ConsecEcsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub '${ReleaseName}-imagescan-policy'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - secretsmanager:*
+                Effect: Allow
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource:
+                  - arn:aws:logs:*:*:*
+  ConsecEcsTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ExecutionRoleArn: !GetAtt 
+        - ConsecEcsRole
+        - Arn
+      ContainerDefinitions:
+        - EntryPoint:
+            - /central_agent
+          PortMappings: []
+          Command: []
+          Cpu: 0
+          Environment:
+            - Name: CLOUDGUARD_REGION
+              Value: !If 
+                - IsEu1
+                - eu1
+                - !If 
+                  - IsAp1
+                  - ap1
+                  - !If 
+                    - IsAp2
+                    - ap2
+                    - !If 
+                      - IsAp3
+                      - ap3
+                      - !If 
+                        - IsCace1
+                        - cace1
+                        - !If
+                          - IsUs9
+                          - us9
+                          - ''
+            - Name: CP_KUBERNETES_CLUSTER_ID
+              Value: !Ref ClusterId
+            - Name: REGISTRY_AGENT_MODE
+              Value: scan
+            - Name: DOME9_URL
+              Value: !If 
+                - IsEu1
+                - https://api-cpx.eu1.dome9.com
+                - !If 
+                  - IsAp1
+                  - https://api-cpx.ap1.dome9.com
+                  - !If 
+                    - IsAp2
+                    - https://api-cpx.ap2.dome9.com
+                    - !If 
+                      - IsAp3
+                      - https://api-cpx.ap3.dome9.com
+                      - !If 
+                        - IsCace1
+                        - https://api-cpx.cace1.dome9.com
+                        - !If 
+                          - IsUs9
+                          - https://api-cpx.us9.falconetix.com
+                          - https://api-cpx.dome9.com
+            - Name: NAMESPACE_NAME
+              Value: checkpoint
+            - Name: NODE_NAME
+              Value: ecs
+            - Name: RELEASE_NAME
+              Value: !Ref ReleaseName
+            - Name: REGISTRY_ONLY
+              Value: true
+          Secrets:
+            - Name: REG_SECRET
+              ValueFrom: !Ref RegSecretArn
+            - Name: CHKP_CLOUDGUARD_SECRET
+              ValueFrom: !Ref Dome9PasswordSecret
+            - Name: CHKP_CLOUDGUARD_ID
+              ValueFrom: !Ref Dome9UsernameSecret
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'ec2/${ReleaseName}'
+              awslogs-region: !Sub '${AWS::Region}'
+              awslogs-stream-prefix: ecs
+              awslogs-create-group: 'true'
+          RepositoryCredentials:
+            CredentialsParameter: !Ref QuaySecret
+          MountPoints: []
+          MemoryReservation: 1000
+          VolumesFrom: []
+          Image: !If 
+                 - IsUs9
+                 - quay.io/checkpoint/consec-imagescan-engine:ecs-poc-staging
+                 - quay.io/checkpoint/consec-imagescan-engine:ecs-poc
+          Name: !Sub '${ReleaseName}-imagescan-container'
+      PlacementConstraints: []
+      Memory: '2048'
+      Family: !Sub '${ReleaseName}-imagescan-task-definition'
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '1024'
+      Volumes: []
+    DependsOn:
+      - ConsecEcsRole
+      - QuaySecret
+  ConsecEcsService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ConsecEcsCluster
+      DesiredCount: !Ref ReplicaCount
+      TaskDefinition: !Ref ConsecEcsTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref Subnet
+      LaunchType: FARGATE
+    Metadata: {}
+    DependsOn:
+      - ConsecEcsCluster
+      - ConsecEcsTaskDefinition
+  ConsecListEcsTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ExecutionRoleArn: !GetAtt 
+        - ConsecEcsRole
+        - Arn
+      ContainerDefinitions:
+        - EntryPoint:
+            - /central_agent
+          PortMappings: []
+          Command: []
+          Cpu: 0
+          Environment:
+            - Name: CLOUDGUARD_REGION
+              Value: !If 
+                - IsEu1
+                - eu1
+                - !If 
+                  - IsAp1
+                  - ap1
+                  - !If 
+                    - IsAp2
+                    - ap2
+                    - !If 
+                      - IsAp3
+                      - ap3
+                      - !If 
+                        - IsCace1
+                        - cace1
+                        - !If
+                          - IsUs9
+                          - us9
+                          - ''
+            - Name: CP_KUBERNETES_CLUSTER_ID
+              Value: !Ref ClusterId
+            - Name: REGISTRY_AGENT_MODE
+              Value: list
+            - Name: DOME9_URL
+              Value: !If 
+                - IsEu1
+                - https://api-cpx.eu1.dome9.com
+                - !If 
+                  - IsAp1
+                  - https://api-cpx.ap1.dome9.com
+                  - !If 
+                    - IsAp2
+                    - https://api-cpx.ap2.dome9.com
+                    - !If 
+                      - IsAp3
+                      - https://api-cpx.ap3.dome9.com
+                      - !If 
+                        - IsCace1
+                        - https://api-cpx.cace1.dome9.com
+                        - !If 
+                          - IsUs9
+                          - https://api-cpx.us9.falconetix.com
+                          - https://api-cpx.dome9.com
+            - Name: NAMESPACE_NAME
+              Value: checkpoint
+            - Name: NODE_NAME
+              Value: ecs
+            - Name: RELEASE_NAME
+              Value: !Ref ReleaseName
+            - Name: REGISTRY_ONLY
+              Value: true
+          Secrets:
+            - Name: REG_SECRET
+              ValueFrom: !Ref RegSecretArn
+            - Name: PASSWORD
+              ValueFrom: !Ref Dome9PasswordSecret
+            - Name: USERNAME
+              ValueFrom: !Ref Dome9UsernameSecret
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'ec2/${ReleaseName}'
+              awslogs-region: !Sub '${AWS::Region}'
+              awslogs-stream-prefix: ecs
+              awslogs-create-group: 'true'
+          RepositoryCredentials:
+            CredentialsParameter: !Ref QuaySecret
+          MountPoints: []
+          MemoryReservation: 1000
+          VolumesFrom: []
+          Image: !If 
+                 - IsUs9
+                 - quay.io/checkpoint/consec-imagescan-engine:ecs-poc-staging
+                 - quay.io/checkpoint/consec-imagescan-engine:ecs-poc
+          Name: !Sub '${ReleaseName}-imagescan-container'
+      PlacementConstraints: []
+      Memory: '2048'
+      Family: !Sub '${ReleaseName}-imagescan-task-definition'
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '1024'
+      Volumes: []
+    DependsOn:
+      - ConsecEcsRole
+      - QuaySecret
+  ConsecListEcsService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ConsecEcsCluster
+      DesiredCount: 1
+      TaskDefinition: !Ref ConsecListEcsTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref Subnet
+      LaunchType: FARGATE
+    Metadata: {}
+    DependsOn:
+      - ConsecEcsCluster
+      - ConsecListEcsTaskDefinition
+  QuaySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${ReleaseName}-cloudguard-quay-pull-secret'
+      SecretString: !Sub '{"username":"${QuayUser}","password":"${QuayPassword}"}'
+  Dome9UsernameSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${ReleaseName}-dome9-username'
+      SecretString: !Ref Username
+  Dome9PasswordSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${ReleaseName}-dome9-password'
+      SecretString: !Ref Password
