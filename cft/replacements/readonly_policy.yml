@@ -25,6 +25,8 @@ Statement:
       - 'glue:GetSecurityConfigurations'
       - 'inspector2:ListFindings'
       - 'inspector2:BatchGetAccountStatus'
+      - 'inspector2:ListFindingAggregations'
+      - 'inspector2:ListCoverage'
       - 'kafka:ListClusters'
       - 'kinesis:List*'
       - 'kinesis:Describe*'
