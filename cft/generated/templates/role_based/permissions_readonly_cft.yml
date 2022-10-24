@@ -84,6 +84,7 @@ Resources:
               - network-firewall:DescribeFirewallPolicy
               - personalize:DescribeDatasetGroup
               - personalize:ListDatasetGroups
+              - personalize:ListTagsForResource
               - s3:List*
               - secretsmanager:DescribeSecret
               - sns:ListSubscriptions
