@@ -34,7 +34,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
         public static async Task PutIntelligenceSubscriptionInBucket(AwsCloudTrail chosenCloudTrail, string topicArn, string s3IntelligenceBucketTopicPrefix, string suffix)
         {
             var bucketClient = new AmazonS3Client(RegionEndpoint.GetBySystemName(chosenCloudTrail.BucketRegion));
-            var currentRule = new List<AwsS3FilterRule> { new AwsS3FilterRule("prefix", s3IntelligenceBucketTopicPrefix) };
+            var chosenPerfix = ChooseOptimizedPrefix(chosenCloudTrail, s3IntelligenceBucketTopicPrefix);
+            var currentRule = new List<AwsS3FilterRule> { new AwsS3FilterRule("prefix", chosenPerfix) };
             var topicConfiguration = new List<TopicConfiguration> { GenerateS3BucketFiltersList($"cloudtrail_{chosenCloudTrail.ExternalId}_{suffix}", topicArn, currentRule) };
             if (chosenCloudTrail.BucketTopicConfiguration.Any())
             {
@@ -59,48 +60,26 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
         {
             try
             {
-                List<AwsCloudTrail> withoutSubscription = new List<AwsCloudTrail>();
-                foreach (var trail in trailDetails)
-                {
-                    var addTrailToWithoutSubscription = true;
-                    foreach (var notification in trail.BucketEventNotification)
-                    {
-                        if (notification.EventTypes.Any(eventType => eventType == new EventType("s3:ObjectCreated:Put") || eventType == new EventType("s3:ObjectCreated:*")))
-                        {
-                            // if we have put or * with same prefix we cant create what we need for intelligence in this bucket
-                            var notificationWithIntelligencePrefix = notification.FilterRules.Any(filterRule => filterRule.Name.ToLower() == "prefix" && (filterRule.Value == "" || filterRule.Value.StartsWith(s3IntelligenceBucketTopicPrefix) || s3IntelligenceBucketTopicPrefix.StartsWith(filterRule.Value)));
-                            if (notificationWithIntelligencePrefix)
-                            {
-                                addTrailToWithoutSubscription = false;
-                            }
-                        }
-                    }
-                    if (addTrailToWithoutSubscription)
-                    {
-                        withoutSubscription.Add(trail);
-                    }
-                }
+                List<AwsCloudTrail> availableCloudTrailBucketsForOnboarding = GetAvailableCloudTrailBucketsForOnboarding(trailDetails, s3IntelligenceBucketTopicPrefix);
 
-                if (!withoutSubscription.Any())
+                if (!availableCloudTrailBucketsForOnboarding.Any())
                 {
                     Console.WriteLine($"[ERROR] [{nameof(ChoseBucketDetails)}] Failed. Event Notification is already configured on S3 Bucket(s) with CloudTrail.");
                     throw new OnboardingException("Event Notification is already configured on S3 Bucket(s) with CloudTrail, cannot configure new notification.", Enums.Feature.Intelligence);
                 }
 
-                var onlyGlobals = withoutSubscription.Where(c => c.IsMultiRegionTrail);
+                var onlyGlobals = availableCloudTrailBucketsForOnboarding.Where(c => c.IsMultiRegionTrail);
                 if (onlyGlobals.Any())
                 {
                     return onlyGlobals.First();
                 }
 
-                if (withoutSubscription.Count > 1)
+                if (availableCloudTrailBucketsForOnboarding.Count > 1)
                 {
-                    // TODO: Does this message need to get posted to the CG onboarding status api?
-                    // If so, we must add more data to the return value of the above public SubscribeBucket method
-                    Console.WriteLine($"[WARN] [{nameof(ChoseBucketDetails)}] Bucket '{withoutSubscription.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found.");
-                    await StatusHelper.UpdateStatusAsync(new StatusModel(onboardingId, Enums.Feature.Intelligence, Enums.Status.WARNING, $"[WARN] [{nameof(ChoseBucketDetails)}] Bucket '{withoutSubscription.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found."));
+                    Console.WriteLine($"[WARN] [{nameof(ChoseBucketDetails)}] Bucket '{availableCloudTrailBucketsForOnboarding.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found.");
+                    await StatusHelper.UpdateStatusAsync(new StatusModel(onboardingId, Enums.Feature.Intelligence, Enums.Status.WARNING, $"[WARN] [{nameof(ChoseBucketDetails)}] Bucket '{availableCloudTrailBucketsForOnboarding.First()?.S3BucketName}' was onboarded. Additional S3 Bucket(s) with CloudTrail were found."));
                 }
-                return withoutSubscription[0];
+                return availableCloudTrailBucketsForOnboarding[0];
             }
             catch (Exception ex)
             {
@@ -231,6 +210,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
             }
             return trails;
         }
+        
         private static TopicConfiguration GenerateS3BucketFiltersList(string id, string topic, List<AwsS3FilterRule> ruleList)
         {
             return new TopicConfiguration()
@@ -242,5 +222,60 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Intelligence
             };
         }
 
+        private static List<AwsCloudTrail> GetAvailableCloudTrailBucketsForOnboarding(List<AwsCloudTrail> trailDetails, string s3IntelligenceBucketTopicPrefix)
+        {
+            List<AwsCloudTrail> withoutSubscription = new List<AwsCloudTrail>();
+            foreach (var trail in trailDetails)
+            {
+                var isEmptyPrefixSubscriptionTaken = true;
+                var isCloudtrailPrefixSubscriptionTaken = true;
+
+                // check if the cloudtrail bucket is available for intelligence onboarding.
+                // available means - not have notification of s3:ObjectCreated:Put | s3:ObjectCreated:* with empty prefix or minimum the specific prefix of the cloudtrail logs of the account
+                foreach (var notification in trail.BucketEventNotification)
+                {
+                    if (notification.EventTypes.Any(eventType => eventType == new EventType("s3:ObjectCreated:Put") || eventType == new EventType("s3:ObjectCreated:*")))
+                    {
+                        if (notification.FilterRules.Any(filterRule => filterRule.Name.ToLower() == "prefix" && (filterRule.Value == "")))
+                        {
+                            isEmptyPrefixSubscriptionTaken = false;
+                        }
+                        else if (notification.FilterRules.Any(filterRule => filterRule.Name.ToLower() == "prefix" && 
+                        (filterRule.Value.StartsWith(s3IntelligenceBucketTopicPrefix) || s3IntelligenceBucketTopicPrefix.StartsWith(filterRule.Value))))
+                        {
+                            isCloudtrailPrefixSubscriptionTaken = false;
+                        }        
+                    }
+                }
+                
+                // order the buckets from the empty prefixed to the specific ones (if there is at all)
+                if (isEmptyPrefixSubscriptionTaken)
+                {
+                    withoutSubscription.Insert(0, trail);
+                }
+                else if (isCloudtrailPrefixSubscriptionTaken)
+                {
+                    withoutSubscription.Add(trail);
+                }
+            }
+            return withoutSubscription;
+        }
+
+        private static string ChooseOptimizedPrefix(AwsCloudTrail chosenCloudTrail, string s3IntelligenceBucketTopicPrefix)
+        {
+            foreach (var notification in chosenCloudTrail.BucketEventNotification)
+            {
+                if (notification.EventTypes.Any(eventType => eventType == new EventType("s3:ObjectCreated:Put") || eventType == new EventType("s3:ObjectCreated:*")))
+                {
+                    // if we have put or * with same prefix we cant create what we need for intelligence in this bucket
+                    var notificationWithIntelligencePrefix = notification.FilterRules.Any(filterRule => filterRule.Name.ToLower() == "prefix" && (filterRule.Value == ""));
+                    if (notificationWithIntelligencePrefix)
+                    {
+                        return s3IntelligenceBucketTopicPrefix;
+                    }
+                }
+            }
+            return "";
+        }
     }
 }

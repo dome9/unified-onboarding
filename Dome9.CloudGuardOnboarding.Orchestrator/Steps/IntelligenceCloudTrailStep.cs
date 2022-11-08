@@ -65,30 +65,43 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             Console.WriteLine($"[INFO] [{nameof(IntelligenceCloudTrailStep)}.{nameof(Execute)}] Starting Intelligence step.");
             await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Adding Intelligence"));
             
-            // choose cloud trail from account (if exist and free)
-            var chosenCloudTrail = await IntelligenceBucketHelper.ChooseCloudTrailToOnboaredIntelligence(_awsAccountId, _awsS3, _s3IntelligenceBucketTopicPrefix,_onboardingId);
+            var alredySubscribedViaCentrallizedBucket = await _retryAndBackoffService.RunAsync(() => _apiProvider.IsDome9AccountAlreadySubscribedToCloudtrail( new AwsGetLogDestinationModel(
+                _awsAccountId)));
+            if (!alredySubscribedViaCentrallizedBucket)
+            {
+                // choose cloud trail from account (if exist and free)
+                var chosenCloudTrail = await IntelligenceBucketHelper.ChooseCloudTrailToOnboaredIntelligence(_awsAccountId, _awsS3, _s3IntelligenceBucketTopicPrefix,_onboardingId);
 
-            // create Intelligence policy and attached to dome9 role, sns topic and sns subscription                                  
-            _stackConfig.CloudtrailS3BucketName = chosenCloudTrail.S3BucketName;
-            _stackConfig.CloudTrailKmsArn = chosenCloudTrail.KmsKeyArn;
-            _bucketRegion = chosenCloudTrail.BucketRegion; // case we have error next - rollback delete on relevant region
-            var awsStackWrapper = new IntelligenceStackWrapper(StackOperation.Create, _bucketRegion);
-            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Creating Intelligence stack"));
-            await awsStackWrapper.RunStackAsync(_stackConfig);
-            await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Created Intelligence stack successfully"));
+                // create Intelligence policy and attached to CloudGuard role, sns topic and sns subscription                                  
+                _stackConfig.CloudtrailS3BucketName = chosenCloudTrail.S3BucketName;
+                _stackConfig.CloudTrailKmsArn = chosenCloudTrail.KmsKeyArn;
+                _bucketRegion = chosenCloudTrail.BucketRegion; // case we have error next - rollback delete on relevant region
+                var awsStackWrapper = new IntelligenceStackWrapper(StackOperation.Create, _bucketRegion);
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Creating Intelligence stack"));
+                await awsStackWrapper.RunStackAsync(_stackConfig);
+                await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.PENDING, "Created Intelligence stack successfully"));
             
-            // adding event notification to bucket
-            var topicArn = $"arn:aws:sns:{chosenCloudTrail.BucketRegion}:{_awsAccountId}:{_snsTopicName}";
-            await IntelligenceBucketHelper.PutIntelligenceSubscriptionInBucket(chosenCloudTrail, topicArn, _s3IntelligenceBucketTopicPrefix, _uniqueSuffix);
+                // adding event notification to bucket
             
-            // enable Intelligence account in Dome9
-            await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new IntelligenceOnboardingModel
-                (chosenCloudTrail.S3BucketName, _awsAccountId, topicArn, new List<string>{_awsAccountId},
-                    "CloudTrail",true, _rulesetsIds)
-            ));
+                    var topicArn = $"arn:aws:sns:{chosenCloudTrail.BucketRegion}:{_awsAccountId}:{_snsTopicName}";
+                    await IntelligenceBucketHelper.PutIntelligenceSubscriptionInBucket(chosenCloudTrail, topicArn, _s3IntelligenceBucketTopicPrefix, _uniqueSuffix);
             
-            // update intelligence region stack (maybe will be use on delete/update in the future)
-            await _retryAndBackoffService.RunAsync(()=> _apiProvider.UpdateIntelligenceRegion(_onboardingId, _bucketRegion));
+
+                // enable Intelligence account in CloudGuard
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new IntelligenceOnboardingModel
+                    (chosenCloudTrail.S3BucketName, _awsAccountId, topicArn, new List<string>{_awsAccountId},
+                        "CloudTrail",true, _rulesetsIds)
+                ));
+            
+                // update intelligence region stack (maybe will be use on delete/update in the future)
+                await _retryAndBackoffService.RunAsync(()=> _apiProvider.UpdateIntelligenceRegion(_onboardingId, _bucketRegion));
+            }
+            else
+            {
+                // enable Intelligence to subscribed account in CloudGuard
+                await _retryAndBackoffService.RunAsync(() => _apiProvider.OnboardIntelligence(new IntelligenceOnboardingModel
+                    (_awsAccountId, "CloudTrail", true, _rulesetsIds, alredySubscribedViaCentrallizedBucket)));
+            }
 
             Console.WriteLine($"[INFO] [{nameof(IntelligenceCloudTrailStep)}.{nameof(Execute)}] Finished Intelligence step.");
             await StatusHelper.UpdateStatusAsync(new StatusModel(_onboardingId, Enums.Feature.Intelligence, Enums.Status.ACTIVE, "Added Intelligence successfully"));

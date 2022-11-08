@@ -32,6 +32,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
         {
             throw new NotImplementedException();
         }
+        
+        public Task<bool> IsDome9AccountAlreadySubscribedToCloudtrail(AwsGetLogDestinationModel data)
+        {
+            throw new NotImplementedException();
+        }
 
         public Task<ServiceAccount> ReplaceServiceAccount(CredentialsModel model)
         {

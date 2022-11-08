@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -18,6 +19,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
         protected static StatusModel _lastStatus = new StatusModel();
         protected static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         protected const string INTELLIGENCE_ENABLE_ACCOUNT_IN_BACKEND = "/v2/view/magellan/magellan-custom-onboarding";
+        protected const string INTELLIGENCE_GET_LOG_DESTINATION_IN_BACKEND = "/v2/view/magellan/get-log-destination-async";
 
         public void SetLocalCredentials(ServiceAccount cloudGuardServiceAccount)
         {
@@ -270,6 +272,33 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi
             catch (Exception ex)
             {
                 Console.WriteLine($"[Error] [{nameof(OnboardAccount)} failed. ex={ex}]");
+                throw;
+            }
+        }
+        
+        public async Task<bool> IsDome9AccountAlreadySubscribedToCloudtrail (AwsGetLogDestinationModel data)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync(INTELLIGENCE_GET_LOG_DESTINATION_IN_BACKEND, HttpClientUtils.GetContent(data, HttpClientUtils.SerializationOptionsType.CamelCase));
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Post request to Intelligence API {INTELLIGENCE_GET_LOG_DESTINATION_IN_BACKEND} failed. Could not receive trail information from account: '{data.CloudAccountId}'. Response StatusCode:'{response?.StatusCode}'.");
+                }
+                var jsonString = await response.Content?.ReadAsStringAsync();
+                var userBuckets = JsonSerializer.Deserialize<List<AwsLogDestination>>(jsonString, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                foreach (var bucket in userBuckets)
+                {
+                    if(bucket.IsOnboarded && bucket.IsCentralized)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] [{nameof(IsDome9AccountAlreadySubscribedToCloudtrail)}] failed. ex={ex}");
                 throw;
             }
         }
