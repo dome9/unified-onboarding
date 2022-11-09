@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a cross account role that authorizes access for Cloudguard BE.
 Metadata:
-  Version: 4.5.0
+  Version: 4.8.0
 Parameters:
   CloudGuardAwsAccountId:
     Description: CloudGuard instance AWS AccountId that is requiring external trust
@@ -87,6 +87,31 @@ Resources:
                     arn:aws:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*
               - Effect: Allow
                 Action:
+                  - logs:DescribeLogStreams
+                  - logs:FilterLogEvents
+                Resource:
+                  - !Join 
+                    - ':'
+                    - - !GetAtt ProtegoPython3CodeAnalysisLogGroup.Arn
+                      - '*'
+                  - !Join 
+                    - ':'
+                    - - !GetAtt ProtegoJavaCodeAnalysisLogGroup.Arn
+                      - '*'
+                  - !Join 
+                    - ':'
+                    - - !GetAtt ProtegoNode14CodeAnalysisLogGroup.Arn
+                      - '*'
+                  - !Join 
+                    - ':'
+                    - - !GetAtt ProtegoCSharpCodeAnalysisLogGroup.Arn
+                      - '*'
+                  - !Join 
+                    - ':'
+                    - - !GetAtt ProtegoFSPInjectorLogGroup.Arn
+                      - '*'
+              - Effect: Allow
+                Action:
                   - s3:GetObject
                 Resource: !Sub arn:aws:s3:::${ServerlessStage}-protego/*
               - Effect: Allow
@@ -114,6 +139,7 @@ Resources:
                   - lambda:ListTags
                   - lambda:ListVersionsByFunction
                   - lambda:GetLayerVersion
+                  - lambda:GetFunctionUrlConfig
                   - sns:ListSubscriptionsByTopic
                   - ec2:DescribeRegions
                 Resource: '*'
@@ -476,7 +502,7 @@ Resources:
         arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 25
+      CFTemplateVersion: 26
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
     Version: '1.0'
@@ -492,7 +518,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 25
+      CFTemplateVersion: 26
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
       Features:
         ProtegoBase: true

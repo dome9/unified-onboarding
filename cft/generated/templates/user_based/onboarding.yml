@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Check Point CloudGuard Dome9 unified onboarding
 Metadata:
-  Version: 4.5.0
+  Version: 4.8.0
 Parameters:
   OnboardingId:
     Description: The id of the onboarding process

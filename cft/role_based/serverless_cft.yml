@@ -78,6 +78,17 @@ Resources:
 
               - Effect: Allow
                 Action:
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:FilterLogEvents'
+                Resource:
+                  - !Join [ ":", [ !GetAtt ProtegoPython3CodeAnalysisLogGroup.Arn,"*" ] ]
+                  - !Join [ ":", [ !GetAtt ProtegoJavaCodeAnalysisLogGroup.Arn,"*" ] ]
+                  - !Join [ ":", [ !GetAtt ProtegoNode14CodeAnalysisLogGroup.Arn,"*" ] ]
+                  - !Join [ ":", [ !GetAtt ProtegoCSharpCodeAnalysisLogGroup.Arn,"*" ] ]
+                  - !Join [ ":", [ !GetAtt ProtegoFSPInjectorLogGroup.Arn,"*" ] ]
+
+              - Effect: Allow
+                Action:
                   - s3:GetObject
                 Resource: !Sub 'arn:aws:s3:::${ServerlessStage}-protego/*'
 
@@ -107,6 +118,7 @@ Resources:
                   - lambda:ListTags
                   - lambda:ListVersionsByFunction
                   - lambda:GetLayerVersion
+                  - lambda:GetFunctionUrlConfig
                   - sns:ListSubscriptionsByTopic
                   - ec2:DescribeRegions
                 Resource: '*'
@@ -487,7 +499,7 @@ Resources:
       ServiceToken: !Sub "arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 25
+      CFTemplateVersion: 26
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -504,7 +516,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 25
+      CFTemplateVersion: 26
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:
