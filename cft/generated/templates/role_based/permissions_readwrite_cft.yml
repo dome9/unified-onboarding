@@ -98,6 +98,8 @@ Resources:
               - wafv2:ListResourcesForWebACL
               - eks:ListFargateProfiles
               - eks:DescribeFargateProfile
+              - ecr:GetRegistryScanningConfiguration
+              - ecr:DescribeRegistry
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
