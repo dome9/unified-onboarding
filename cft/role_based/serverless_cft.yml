@@ -169,12 +169,12 @@ Resources:
       - PreDeployPhoneHomeCustomResource
 
   ##
-  # The Execution Role for these Code Analysis Lambdas
+  # The Execution Role for python Code Analysis Lambda
   #
-  CodeAnalysisLambdaExecutionRole:
+  CodeAnalysisPython3LambdaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: 'CloudGuardServerlessCodeAnalysisLambdaExecutionRole'
+      RoleName: 'CloudGuardServerlessCodeAnalysisPython3LambdaExecutionRole'
       Path: /
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -186,7 +186,7 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Policies:
-        - PolicyName: CodeAnalysisLambdaExecutionPolicy
+        - PolicyName: CodeAnalysisPython3LambdaExecutionPolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -197,8 +197,116 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource:
                   - !GetAtt ProtegoPython3CodeAnalysisLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - 'lambda:GetFunction'
+                  - 'lambda:ListLayers'
+                  - 'lambda:GetLayerVersion'
+                  - 'lambda:ListLayerVersions'
+                Resource: '*'
+
+  ##
+  # The Execution Role for Java Code Analysis Lambda
+  #
+  CodeAnalysisJavaLambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'CloudGuardServerlessCodeAnalysisJavaLambdaExecutionRole'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CodeAnalysisJavaLambdaExecutionPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
                   - !GetAtt ProtegoJavaCodeAnalysisLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - 'lambda:GetFunction'
+                  - 'lambda:ListLayers'
+                  - 'lambda:GetLayerVersion'
+                  - 'lambda:ListLayerVersions'
+                Resource: '*'
+
+  ##
+  # The Execution Role for Node Code Analysis Lambda
+  #
+  CodeAnalysisNode14LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'CloudGuardServerlessCodeAnalysisNode14LambdaExecutionRole'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CodeAnalysisNode14LambdaExecutionPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
                   - !GetAtt ProtegoNode14CodeAnalysisLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - 'lambda:GetFunction'
+                  - 'lambda:ListLayers'
+                  - 'lambda:GetLayerVersion'
+                  - 'lambda:ListLayerVersions'
+                Resource: '*'
+
+  ##
+  # The Execution Role for CSharp Code Analysis Lambda
+  #
+  CodeAnalysisCSharpLambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'CloudGuardServerlessCodeAnalysisCSharpLambdaExecutionRole'
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CodeAnalysisCSharpLambdaExecutionPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
                   - !GetAtt ProtegoCSharpCodeAnalysisLogGroup.Arn
               - Effect: Allow
                 Action:
@@ -245,7 +353,6 @@ Resources:
                   - 'lambda:GetLayerVersion'
                   - 'lambda:ListLayerVersions'
                   - 'lambda:UpdateFunctionConfiguration'
-                  - 'lambda:UpdateFunctionCode'
                   # Permission required in order to get the query results from lambda "logs:StartQuery"
                   - 'logs:GetQueryResults'
                 Resource: '*'
@@ -260,7 +367,7 @@ Resources:
     Properties:
       Handler: function_code_analysis_python.lambda_handler
       FunctionName: 'CloudGuardPy3CodeAnalysis'
-      Role: !GetAtt CodeAnalysisLambdaExecutionRole.Arn
+      Role: !GetAtt CodeAnalysisPython3LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: !Sub code_analysis_functions/${ServerlessStage}_function_code_analysis_python3.zip
@@ -270,14 +377,14 @@ Resources:
       Timeout: 860
       Tags: [{"Key": "Owner", "Value": "Cloudguard Serverless Security"}]
     DependsOn:
-      - CodeAnalysisLambdaExecutionRole
+      - CodeAnalysisPython3LambdaExecutionRole
 
   ProtegoJavaCodeAnalysisFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: io.protego.lambda.Handler
       FunctionName: 'CloudGuardJavaCodeAnalysis'
-      Role: !GetAtt CodeAnalysisLambdaExecutionRole.Arn
+      Role: !GetAtt CodeAnalysisJavaLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: code_analysis_functions/function_api_usage_java-1.0.jar
@@ -287,14 +394,14 @@ Resources:
       Timeout: 860
       Tags: [{"Key": "Owner", "Value": "Cloudguard Serverless Security"}]
     DependsOn:
-      - CodeAnalysisLambdaExecutionRole
+      - CodeAnalysisJavaLambdaExecutionRole
 
   ProtegoNode14CodeAnalysisFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: index.handler
       FunctionName: 'CloudGuardNode14CodeAnalysis'
-      Role: !GetAtt CodeAnalysisLambdaExecutionRole.Arn
+      Role: !GetAtt CodeAnalysisNode14LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: !Sub code_analysis_functions/${ServerlessStage}_function_code_analysis_node.zip
@@ -307,14 +414,14 @@ Resources:
       Layers:
         - !Sub 'arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-java:1'
     DependsOn:
-      - CodeAnalysisLambdaExecutionRole
+      - CodeAnalysisNode14LambdaExecutionRole
 
   ProtegoCSharpCodeAnalysisFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: function_api_usage_c_sharp::function_api_usage_c_sharp.Handler::HandleRequest
       FunctionName: 'CloudGuardCsCodeAnalysis'
-      Role: !GetAtt CodeAnalysisLambdaExecutionRole.Arn
+      Role: !GetAtt CodeAnalysisCSharpLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: code_analysis_functions/function_api_usage_c_sharp.zip
@@ -324,7 +431,7 @@ Resources:
       Timeout: 860
       Tags: [{"Key": "Owner", "Value": "Cloudguard Serverless Security"}]
     DependsOn:
-      - CodeAnalysisLambdaExecutionRole
+      - CodeAnalysisCSharpLambdaExecutionRole
 
   ProtegoFSPInjectorFunction:
     Type: 'AWS::Lambda::Function'
@@ -357,7 +464,8 @@ Resources:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: 'alias/CloudGuardServerlessAgentBucketKey'
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -366,6 +474,77 @@ Resources:
     DependsOn:
       - PreDeployPhoneHomeCustomResource
 
+  CloudGuardServerlessAgentBucketKey:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      Description: 'Key for encryption of serverless agent bucket'
+      MultiRegion: false
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: cloud-guard-serverless-agent-bucket-key
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow access for Key Administrators
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - 'kms:ReplicateKey'
+              - 'kms:Create*'
+              - 'kms:Describe*'
+              - 'kms:Enable*'
+              - 'kms:List*'
+              - 'kms:Put*'
+              - 'kms:Update*'
+              - 'kms:Revoke*'
+              - 'kms:Disable*'
+              - 'kms:Get*'
+              - 'kms:Delete*'
+              - 'kms:ScheduleKeyDeletion'
+              - 'kms:CancelKeyDeletion'
+            Resource: '*'
+          - Sid: Allow usage of the key
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 'kms:DescribeKey'
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+              - 'kms:PutKeyPolicy'
+              - 'kms:ScheduleKeyDeletion'
+              - 'kms:CancelKeyDeletion'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                aws:PrincipalAccount: !Ref AWS::AccountId
+          - Sid: Allow attachment of persistent resources
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - 'kms:CreateGrant'
+              - 'kms:ListGrants'
+              - 'kms:RevokeGrant'
+            Resource: '*'
+            Condition:
+              Bool:
+                kms:GrantIsForAWSResource: true
+    DependsOn:
+      - PreDeployPhoneHomeCustomResource
+
+  CloudGuardServerlessAgentBucketKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: 'alias/CloudGuardServerlessAgentBucketKey'
+      TargetKeyId: !GetAtt CloudGuardServerlessAgentBucketKey.Arn
 
 
 
@@ -499,7 +678,7 @@ Resources:
       ServiceToken: !Sub "arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 26
+      CFTemplateVersion: 27
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -516,7 +695,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 26
+      CFTemplateVersion: 27
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:
@@ -539,6 +718,3 @@ Outputs:
   FSPInjectorLambdaRoleARN:
     Description: The ARN of the role that is used by fsp injector lambda in customer account.
     Value: !GetAtt FSPInjectorLambdaExecutionRole.Arn
-  CodeAnalysisLambdaRoleARN:
-    Description: The ARN of the role that is used by all code analysis lambdas in customer account.
-    Value: !GetAtt CodeAnalysisLambdaExecutionRole.Arn

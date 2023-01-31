@@ -19,7 +19,10 @@
     - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuard-Connect-RW-role${UniqueSuffix}'
     - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardFSPLogsSenderRole'
     - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCrossAccountRole'
-    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCodeAnalysisLambdaExecutionRole'
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCodeAnalysisPython3LambdaExecutionRole'
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCodeAnalysisJavaLambdaExecutionRole'
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCodeAnalysisNode14LambdaExecutionRole'
+    - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessCodeAnalysisCSharpLambdaExecutionRole'
     - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudGuardServerlessFSPInjectorLambdaExecutionRole'
 - Sid: CloudGuardOnboardingOrchestratorIntelligenceCloudtrail
   Action:
@@ -99,6 +102,13 @@
   Resource:
     - !Sub 'arn:aws:s3:::protego-fsp-${AWS::AccountId}'
     - !Sub 'arn:aws:s3:::protego-fsp-${AWS::AccountId}/*'
+- Sid: CloudGuardOnboardingOrchestratorServelessKms
+  Action:
+    - "kms:CreateKey"
+    - "kms:CreateAlias"
+    - "kms:DeleteAlias"
+  Effect: Allow
+  Resource: '*'
 - Sid: CloudGuardOnboardingOrchestratorServelessSns
   Action:
     - sns:Publish
