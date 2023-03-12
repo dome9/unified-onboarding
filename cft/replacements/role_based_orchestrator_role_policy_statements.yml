@@ -107,6 +107,7 @@
     - "kms:CreateKey"
     - "kms:CreateAlias"
     - "kms:DeleteAlias"
+    - "kms:PutKeyPolicy"
   Effect: Allow
   Resource: '*'
 - Sid: CloudGuardOnboardingOrchestratorServelessSns
