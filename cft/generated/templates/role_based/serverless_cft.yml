@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a cross account role that authorizes access for Cloudguard BE.
 Metadata:
-  Version: 4.9.0
+  Version: 4.9.1
 Parameters:
   CloudGuardAwsAccountId:
     Description: CloudGuard instance AWS AccountId that is requiring external trust
@@ -416,7 +416,7 @@ Resources:
         S3Key: code_analysis_functions/function_api_usage_c_sharp.zip
       MemorySize: 1024
       Description: Statically analyze C# code
-      Runtime: dotnetcore3.1
+      Runtime: dotnet6
       Timeout: 860
       Tags:
         - Key: Owner
@@ -665,7 +665,7 @@ Resources:
         arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 27
+      CFTemplateVersion: 28
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
     Version: '1.0'
@@ -681,7 +681,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 27
+      CFTemplateVersion: 28
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
       Features:
         ProtegoBase: true
