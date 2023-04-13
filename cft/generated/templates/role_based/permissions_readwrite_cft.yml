@@ -61,6 +61,11 @@ Resources:
               - eks:ListNodegroups
               - glue:GetConnections
               - glue:GetSecurityConfigurations
+              - glue:GetMLTransforms
+              - glue:GetCrawlers
+              - glue:GetDevEndpoints
+              - glue:GetJobs
+              - glue:GetDataCatalogEncryptionSettings
               - inspector2:ListFindings
               - inspector2:BatchGetAccountStatus
               - inspector2:ListFindingAggregations
