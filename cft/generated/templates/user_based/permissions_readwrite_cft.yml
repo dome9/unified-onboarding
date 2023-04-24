@@ -54,6 +54,7 @@ Resources:
               - es:ListTags
               - eks:DescribeNodegroup
               - eks:ListNodegroups
+              - glacier:ListTagsForVault
               - glue:GetConnections
               - glue:GetSecurityConfigurations
               - glue:GetMLTransforms
