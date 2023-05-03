@@ -1,9 +1,9 @@
 const fs = require('fs');
 const {yamlParse, yamlDump} = require('yaml-cfn');
 const {argv} = require('process');
+const isDebug = process.env.isDebug || false
 let bucketSuffix = '';
 let outputDir = '';
-let isDebug = process.env.isDebug || false
 
 argv.forEach((val, index) => {
     let split = val.split('=');
@@ -19,13 +19,13 @@ argv.forEach((val, index) => {
 
 if (isDebug) {
     if (!fs.existsSync(__dirname + './../generated/templates/policies/')) {
-        fs.mkdirSync(__dirname + './../generated/templates/policies/', { recursive: true })
+        fs.mkdirSync(__dirname + './../generated/templates/policies/', {recursive: true})
     }
     if (!fs.existsSync(__dirname + './../generated/templates/role_based/')) {
-        fs.mkdirSync(__dirname + './../generated/templates/role_based/', { recursive: true })
+        fs.mkdirSync(__dirname + './../generated/templates/role_based/', {recursive: true})
     }
     if (!fs.existsSync(__dirname + './../generated/templates/user_based/')) {
-        fs.mkdirSync(__dirname + './../generated/templates/user_based/', { recursive: true })
+        fs.mkdirSync(__dirname + './../generated/templates/user_based/', {recursive: true})
     }
     outputDir = __dirname + './..'
 }
@@ -208,8 +208,7 @@ function replaceObjectByPlaceholder(element, replacementKey, replacementValue) {
                 element[key] = value.replace(replacementKey, replacementValue)
             } else if (Array.isArray(element)) {
                 element.splice(Number(key), 1);
-                if (replacementValue == null)
-                {
+                if (replacementValue == null) {
                     continue;
                 }
                 if (Array.isArray(replacementValue)) {
