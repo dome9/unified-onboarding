@@ -9,6 +9,7 @@ Statement:
       - 'backup:ListBackupVaults'
       - 'backup:ListTags'
       - 'cognito-identity:DescribeIdentityPool'
+      - 'codebuild:GetResourcePolicy'
       - 'cognito-idp:DescribeUserPool'
       - 'cognito-idp:DescribeRiskConfiguration'
       - 'macie2:DescribeBuckets'
