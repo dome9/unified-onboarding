@@ -87,6 +87,11 @@ Resources:
               - logs:Get*
               - logs:FilterLogEvents
               - logs:ListLogDeliveries
+              - memorydb:DescribeACLs
+              - memorydb:DescribeParameters
+              - memorydb:DescribeSnapshots
+              - memorydb:DescribeUsers
+              - memorydb:ListTags
               - mq:DescribeBroker
               - mq:ListBrokers
               - network-firewall:DescribeFirewall
