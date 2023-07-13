@@ -83,6 +83,9 @@ Statement:
       - 'eks:DescribeFargateProfile'
       - 'ecr:GetRegistryScanningConfiguration'
       - 'ecr:DescribeRegistry'
+      - 'aps:ListWorkspaces'
+      - 'aps:DescribeWorkspace'
+      - 'aps:DescribeLoggingConfiguration'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

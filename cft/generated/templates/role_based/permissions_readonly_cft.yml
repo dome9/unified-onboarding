@@ -123,6 +123,9 @@ Resources:
               - eks:DescribeFargateProfile
               - ecr:GetRegistryScanningConfiguration
               - ecr:DescribeRegistry
+              - aps:ListWorkspaces
+              - aps:DescribeWorkspace
+              - aps:DescribeLoggingConfiguration
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
