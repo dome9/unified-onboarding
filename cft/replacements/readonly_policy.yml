@@ -86,6 +86,9 @@ Statement:
       - 'aps:ListWorkspaces'
       - 'aps:DescribeWorkspace'
       - 'aps:DescribeLoggingConfiguration'
+      - 'cloudformation:ListTypes'
+      - 'cloudformation:DescribeType'
+      - 'cloudformation:BatchDescribeTypeConfigurations'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
