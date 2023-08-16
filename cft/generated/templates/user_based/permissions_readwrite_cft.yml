@@ -35,6 +35,7 @@ Resources:
         Statement:
           - Sid: CloudGuardReadOnly
             Action:
+              - appflow:ListConnectors
               - account:GetAlternateContact
               - apigateway:GET
               - athena:GetQueryExecution
