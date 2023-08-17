@@ -91,7 +91,8 @@
                 "aps:DescribeLoggingConfiguration",
                 "cloudformation:ListTypes",
                 "cloudformation:DescribeType",
-                "cloudformation:BatchDescribeTypeConfigurations"
+                "cloudformation:BatchDescribeTypeConfigurations",
+                "amplify:ListApps"
             ],
             "Effect": "Allow",
             "Resource": "*"

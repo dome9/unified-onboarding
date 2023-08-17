@@ -123,6 +123,7 @@ Resources:
               - cloudformation:ListTypes
               - cloudformation:DescribeType
               - cloudformation:BatchDescribeTypeConfigurations
+              - amplify:ListApps
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission

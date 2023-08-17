@@ -90,6 +90,7 @@ Statement:
       - 'cloudformation:ListTypes'
       - 'cloudformation:DescribeType'
       - 'cloudformation:BatchDescribeTypeConfigurations'
+      - 'amplify:ListApps'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
