@@ -91,12 +91,13 @@
                 "aps:DescribeLoggingConfiguration",
                 "cloudformation:ListTypes",
                 "cloudformation:DescribeType",
-                "amplify:ListApps",
-                "serverlessrepo:GetApplication"
                 "cloudformation:BatchDescribeTypeConfigurations",
+                "amplify:ListApps",
+                "serverlessrepo:GetApplication",
                 "simspaceweaver:ListSimulations",
                 "simspaceweaver:ListTagsForResource",
-                "simspaceweaver:DescribeSimulation"
+                "simspaceweaver:DescribeSimulation",
+                "grafana:DescribeWorkspace"
             ],
             "Effect": "Allow",
             "Resource": "*"

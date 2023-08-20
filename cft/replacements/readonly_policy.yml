@@ -95,6 +95,7 @@ Statement:
       - 'simspaceweaver:ListSimulations'
       - 'simspaceweaver:ListTagsForResource'
       - 'simspaceweaver:DescribeSimulation'
+      - 'grafana:DescribeWorkspace'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

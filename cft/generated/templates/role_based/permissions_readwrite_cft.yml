@@ -133,6 +133,7 @@ Resources:
               - simspaceweaver:ListSimulations
               - simspaceweaver:ListTagsForResource
               - simspaceweaver:DescribeSimulation
+              - grafana:DescribeWorkspace
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
