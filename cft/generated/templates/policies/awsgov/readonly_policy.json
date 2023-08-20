@@ -91,9 +91,12 @@
                 "aps:DescribeLoggingConfiguration",
                 "cloudformation:ListTypes",
                 "cloudformation:DescribeType",
-                "cloudformation:BatchDescribeTypeConfigurations",
                 "amplify:ListApps",
                 "serverlessrepo:GetApplication"
+                "cloudformation:BatchDescribeTypeConfigurations",
+                "simspaceweaver:ListSimulations",
+                "simspaceweaver:ListTagsForResource",
+                "simspaceweaver:DescribeSimulation"
             ],
             "Effect": "Allow",
             "Resource": "*"

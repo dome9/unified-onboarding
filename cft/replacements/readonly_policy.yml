@@ -92,6 +92,9 @@ Statement:
       - 'cloudformation:BatchDescribeTypeConfigurations'
       - 'amplify:ListApps'
       - 'serverlessrepo:GetApplication'
+      - 'simspaceweaver:ListSimulations'
+      - 'simspaceweaver:ListTagsForResource'
+      - 'simspaceweaver:DescribeSimulation'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
