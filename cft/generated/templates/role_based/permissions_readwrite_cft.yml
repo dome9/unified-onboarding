@@ -129,6 +129,7 @@ Resources:
               - cloudformation:DescribeType
               - cloudformation:BatchDescribeTypeConfigurations
               - amplify:ListApps
+              - serverlessrepo:GetApplication
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission

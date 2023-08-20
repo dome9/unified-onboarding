@@ -92,7 +92,8 @@
                 "cloudformation:ListTypes",
                 "cloudformation:DescribeType",
                 "cloudformation:BatchDescribeTypeConfigurations",
-                "amplify:ListApps"
+                "amplify:ListApps",
+                "serverlessrepo:GetApplication"
             ],
             "Effect": "Allow",
             "Resource": "*"

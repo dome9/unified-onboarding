@@ -91,6 +91,7 @@ Statement:
       - 'cloudformation:DescribeType'
       - 'cloudformation:BatchDescribeTypeConfigurations'
       - 'amplify:ListApps'
+      - 'serverlessrepo:GetApplication'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
