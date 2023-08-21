@@ -42,6 +42,7 @@ Resources:
         Statement:
           - Sid: CloudGuardReadOnly
             Action:
+              - ram:GetResourceShares
               - appflow:ListConnectors
               - account:GetAlternateContact
               - apigateway:GET
