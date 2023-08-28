@@ -97,6 +97,8 @@ Statement:
       - 'simspaceweaver:ListTagsForResource'
       - 'simspaceweaver:DescribeSimulation'
       - 'grafana:DescribeWorkspace'
+      - 'mediapackage:ListChannels'
+      - 'mediapackage:ListHarvestJobs'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

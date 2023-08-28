@@ -130,6 +130,8 @@ Resources:
               - simspaceweaver:ListTagsForResource
               - simspaceweaver:DescribeSimulation
               - grafana:DescribeWorkspace
+              - mediapackage:ListChannels
+              - mediapackage:ListHarvestJobs
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission

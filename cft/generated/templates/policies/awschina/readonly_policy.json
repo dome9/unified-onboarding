@@ -98,7 +98,9 @@
                 "simspaceweaver:ListSimulations",
                 "simspaceweaver:ListTagsForResource",
                 "simspaceweaver:DescribeSimulation",
-                "grafana:DescribeWorkspace"
+                "grafana:DescribeWorkspace",
+                "mediapackage:ListChannels",
+                "mediapackage:ListHarvestJobs"
             ],
             "Effect": "Allow",
             "Resource": "*"
