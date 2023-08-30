@@ -99,6 +99,15 @@ Statement:
       - 'grafana:DescribeWorkspace'
       - 'mediapackage:ListChannels'
       - 'mediapackage:ListHarvestJobs'
+      - 'drs:DescribeJobs'
+      - 'drs:DescribeJobLogItems'
+      - 'drs:DescribeSourceServers'
+      - 'drs:DescribeRecoverySnapshots'
+      - 'drs:DescribeSourceNetworks'
+      - 'drs:DescribeRecoveryInstances'
+      - 'drs:GetFailbackReplicationConfiguration'
+      - 'drs:DescribeReplicationConfigurationTemplates'
+      - 'drs:DescribeLaunchConfigurationTemplates'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

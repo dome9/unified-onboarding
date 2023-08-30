@@ -100,7 +100,16 @@
                 "simspaceweaver:DescribeSimulation",
                 "grafana:DescribeWorkspace",
                 "mediapackage:ListChannels",
-                "mediapackage:ListHarvestJobs"
+                "mediapackage:ListHarvestJobs",
+                "drs:DescribeJobs",
+                "drs:DescribeJobLogItems",
+                "drs:DescribeSourceServers",
+                "drs:DescribeRecoverySnapshots",
+                "drs:DescribeSourceNetworks",
+                "drs:DescribeRecoveryInstances",
+                "drs:GetFailbackReplicationConfiguration",
+                "drs:DescribeReplicationConfigurationTemplates",
+                "drs:DescribeLaunchConfigurationTemplates"
             ],
             "Effect": "Allow",
             "Resource": "*"
