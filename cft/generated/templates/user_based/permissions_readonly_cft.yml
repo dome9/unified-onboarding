@@ -132,6 +132,9 @@ Resources:
               - grafana:DescribeWorkspace
               - mediapackage:ListChannels
               - mediapackage:ListHarvestJobs
+              - dataexchange:ListTagsForResource
+              - dataexchange:ListEventActions
+              - dataexchange:ListJobs
               - drs:DescribeJobs
               - drs:DescribeJobLogItems
               - drs:DescribeSourceServers
