@@ -77,6 +77,8 @@ Resources:
               - glue:GetDevEndpoints
               - glue:GetJobs
               - glue:GetDataCatalogEncryptionSettings
+              - healthlake:ListFHIRDatastores
+              - healthlake:ListTagsForResource
               - inspector2:ListFindings
               - inspector2:BatchGetAccountStatus
               - inspector2:ListFindingAggregations
@@ -138,6 +140,7 @@ Resources:
               - simspaceweaver:DescribeSimulation
               - grafana:DescribeWorkspace
               - mediapackage:ListChannels
+              - mediastore:ListTagsForResource
               - mediapackage:ListHarvestJobs
               - dataexchange:ListTagsForResource
               - dataexchange:ListEventActions
