@@ -139,6 +139,10 @@ Resources:
               - simspaceweaver:ListTagsForResource
               - simspaceweaver:DescribeSimulation
               - grafana:DescribeWorkspace
+              - mediaconvert:ListJobs
+              - mediaconvert:ListPresets
+              - mediaconvert:ListQueues
+              - mediaconvert:ListTagsForResource
               - mediapackage:ListChannels
               - mediastore:ListTagsForResource
               - mediapackage:ListHarvestJobs
