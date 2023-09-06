@@ -115,7 +115,11 @@
                 "drs:DescribeRecoveryInstances",
                 "drs:GetFailbackReplicationConfiguration",
                 "drs:DescribeReplicationConfigurationTemplates",
-                "drs:DescribeLaunchConfigurationTemplates"
+                "drs:DescribeLaunchConfigurationTemplates",
+                "timestream:ListBatchLoadTasks",
+                "timestream:ListDatabases",
+                "timestream:ListTables",
+                "timestream:ListTagsForResource"
             ],
             "Effect": "Allow",
             "Resource": "*"
