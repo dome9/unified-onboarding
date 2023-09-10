@@ -155,6 +155,7 @@ Resources:
               - timestream:ListDatabases
               - timestream:ListTables
               - timestream:ListTagsForResource
+              - timestream:DescribeEndpoints
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission

@@ -122,6 +122,7 @@ Statement:
       - 'timestream:ListDatabases'
       - 'timestream:ListTables'
       - 'timestream:ListTagsForResource'
+      - 'timestream:DescribeEndpoints'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

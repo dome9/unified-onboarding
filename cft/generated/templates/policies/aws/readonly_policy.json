@@ -123,7 +123,8 @@
                 "timestream:ListBatchLoadTasks",
                 "timestream:ListDatabases",
                 "timestream:ListTables",
-                "timestream:ListTagsForResource"
+                "timestream:ListTagsForResource",
+                "timestream:DescribeEndpoints"
             ],
             "Effect": "Allow",
             "Resource": "*"
