@@ -123,6 +123,10 @@ Statement:
       - 'timestream:ListTables'
       - 'timestream:ListTagsForResource'
       - 'timestream:DescribeEndpoints'
+      - 'signer:ListTagsForResource'
+      - 'signer:ListSigningJobs'
+      - 'signer:ListSigningPlatforms'
+      - 'signer:ListSigningProfiles'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

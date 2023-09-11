@@ -124,7 +124,11 @@
                 "timestream:ListDatabases",
                 "timestream:ListTables",
                 "timestream:ListTagsForResource",
-                "timestream:DescribeEndpoints"
+                "timestream:DescribeEndpoints",
+                "signer:ListTagsForResource",
+                "signer:ListSigningJobs",
+                "signer:ListSigningPlatforms",
+                "signer:ListSigningProfiles"
             ],
             "Effect": "Allow",
             "Resource": "*"
