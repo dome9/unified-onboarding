@@ -111,6 +111,7 @@
                 "dataexchange:ListTagsForResource",
                 "dataexchange:ListEventActions",
                 "dataexchange:ListJobs",
+                "elastictranscoder:ListPresets",
                 "drs:DescribeJobs",
                 "drs:DescribeJobLogItems",
                 "drs:DescribeSourceServers",
