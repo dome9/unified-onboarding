@@ -125,6 +125,7 @@ Resources:
               - eks:DescribeFargateProfile
               - ecr:GetRegistryScanningConfiguration
               - ecr:DescribeRegistry
+              - appstream:DescribeUsageReportSubscriptions
               - aps:ListWorkspaces
               - aps:DescribeWorkspace
               - aps:DescribeLoggingConfiguration
