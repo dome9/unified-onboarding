@@ -53,6 +53,8 @@
                 "logs:Get*",
                 "logs:FilterLogEvents",
                 "logs:ListLogDeliveries",
+                "codebuild:ListBuilds",
+                "codebuild:BatchGetBuilds",
                 "memorydb:DescribeACLs",
                 "memorydb:DescribeParameters",
                 "memorydb:DescribeSnapshots",
