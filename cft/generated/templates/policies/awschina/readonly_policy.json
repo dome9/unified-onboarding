@@ -115,6 +115,10 @@
                 "dataexchange:ListEventActions",
                 "dataexchange:ListJobs",
                 "elastictranscoder:ListPresets",
+                "medialive:ListInputs",
+                "medialive:ListMultiplexes",
+                "medialive:ListReservations",
+                "medialive:ListInputSecurityGroups",
                 "drs:DescribeJobs",
                 "drs:DescribeJobLogItems",
                 "drs:DescribeSourceServers",
@@ -132,7 +136,8 @@
                 "signer:ListTagsForResource",
                 "signer:ListSigningJobs",
                 "signer:ListSigningPlatforms",
-                "signer:ListSigningProfiles"
+                "signer:ListSigningProfiles",
+                "storagegateway:DescribeSMBFileShares"
             ],
             "Effect": "Allow",
             "Resource": "*"

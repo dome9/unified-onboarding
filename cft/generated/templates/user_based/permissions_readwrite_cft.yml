@@ -146,6 +146,10 @@ Resources:
               - dataexchange:ListEventActions
               - dataexchange:ListJobs
               - elastictranscoder:ListPresets
+              - medialive:ListInputs
+              - medialive:ListMultiplexes
+              - medialive:ListReservations
+              - medialive:ListInputSecurityGroups
               - drs:DescribeJobs
               - drs:DescribeJobLogItems
               - drs:DescribeSourceServers
@@ -164,6 +168,7 @@ Resources:
               - signer:ListSigningJobs
               - signer:ListSigningPlatforms
               - signer:ListSigningProfiles
+              - storagegateway:DescribeSMBFileShares
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
