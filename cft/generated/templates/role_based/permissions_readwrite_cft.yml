@@ -57,6 +57,7 @@ Resources:
               - codebuild:GetResourcePolicy
               - cognito-idp:DescribeUserPool
               - cognito-idp:DescribeRiskConfiguration
+              - compute-optimizer:GetRecommendationSummaries
               - macie2:DescribeBuckets
               - macie2:GetMacieSession
               - macie2:GetFindingStatistics
@@ -82,6 +83,7 @@ Resources:
               - inspector2:ListFindingAggregations
               - inspector2:ListCoverage
               - kafka:ListClusters
+              - kendra:ListTagsForResource
               - kinesis:List*
               - kinesis:Describe*
               - kinesisvideo:Describe*
@@ -91,6 +93,7 @@ Resources:
               - logs:ListLogDeliveries
               - codebuild:ListBuilds
               - codebuild:BatchGetBuilds
+              - codepipeline:ListWebhooks
               - memorydb:DescribeACLs
               - memorydb:DescribeParameters
               - memorydb:DescribeSnapshots
@@ -174,6 +177,7 @@ Resources:
               - signer:ListSigningPlatforms
               - signer:ListSigningProfiles
               - storagegateway:DescribeSMBFileShares
+              - nimble:ListStudios
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
