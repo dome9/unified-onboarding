@@ -80,8 +80,6 @@ Resources:
               - inspector2:ListCoverage
               - kafka:ListClusters
               - kendra:ListTagsForResource
-              - keyspaces:ListTagsForResource
-              - keyspaces:ListKeyspaces
               - kinesis:List*
               - kinesis:Describe*
               - kinesisvideo:Describe*
