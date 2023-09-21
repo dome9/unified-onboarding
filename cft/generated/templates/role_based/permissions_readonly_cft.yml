@@ -87,6 +87,7 @@ Resources:
               - inspector2:ListCoverage
               - kafka:ListClusters
               - kendra:ListTagsForResource
+              - devops-guru:DescribeServiceIntegration
               - kinesis:List*
               - kinesis:Describe*
               - kinesisvideo:Describe*
