@@ -42,8 +42,13 @@ Resources:
         Statement:
           - Sid: CloudGuardReadOnly
             Action:
+              - batch:ListSchedulingPolicies
+              - batch:DescribeSchedulingPolicies
+              - batch:DescribeJobQueues
+              - kinesisanalytics:ListTagsForResource
               - ram:GetResourceShares
               - appflow:ListConnectors
+              - airflow:GetEnvironment
               - account:GetAlternateContact
               - apigateway:GET
               - athena:GetQueryExecution
@@ -153,6 +158,10 @@ Resources:
               - mediaconvert:ListTagsForResource
               - mediapackage:ListChannels
               - mediastore:ListTagsForResource
+              - mediatailor:ListChannels
+              - mediatailor:GetChannelPolicy
+              - mediatailor:ListPlaybackConfigurations
+              - mediatailor:ListSourceLocations
               - mediapackage:ListHarvestJobs
               - dataexchange:ListTagsForResource
               - dataexchange:ListEventActions
