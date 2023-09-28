@@ -4,8 +4,6 @@
         {
             "Sid": "CloudGuardReadOnly",
             "Action": [
-                "batch:ListSchedulingPolicies",
-                "batch:DescribeSchedulingPolicies",
                 "batch:DescribeJobQueues",
                 "kinesisanalytics:ListTagsForResource",
                 "ram:GetResourceShares",
