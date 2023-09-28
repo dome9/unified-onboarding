@@ -182,6 +182,7 @@ Resources:
               - signer:ListSigningProfiles
               - storagegateway:DescribeSMBFileShares
               - nimble:ListStudios
+              - ds:ListTagsForResource
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission

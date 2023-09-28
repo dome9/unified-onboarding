@@ -149,6 +149,7 @@ Statement:
       - 'signer:ListSigningProfiles'
       - 'storagegateway:DescribeSMBFileShares'
       - 'nimble:ListStudios'
+      - 'ds:ListTagsForResource'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

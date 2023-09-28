@@ -150,7 +150,8 @@
                 "signer:ListSigningPlatforms",
                 "signer:ListSigningProfiles",
                 "storagegateway:DescribeSMBFileShares",
-                "nimble:ListStudios"
+                "nimble:ListStudios",
+                "ds:ListTagsForResource"
             ],
             "Effect": "Allow",
             "Resource": "*"
