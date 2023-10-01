@@ -35,6 +35,11 @@ Resources:
         Statement:
           - Sid: CloudGuardReadOnly
             Action:
+              - lightsail:GetRelationalDatabases
+              - lightsail:GetRelationalDatabaseParameters
+              - lightsail:GetLoadBalancerTlsCertificates
+              - lightsail:GetDomains
+              - lightsail:GetDistributions
               - batch:DescribeJobQueues
               - kinesisanalytics:ListTagsForResource
               - ram:GetResourceShares

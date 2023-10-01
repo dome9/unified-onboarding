@@ -2,6 +2,11 @@ Version: 2012-10-17
 Statement:
   - Sid: CloudGuardReadOnly
     Action:
+      - 'lightsail:GetRelationalDatabases'
+      - 'lightsail:GetRelationalDatabaseParameters'
+      - 'lightsail:GetLoadBalancerTlsCertificates'
+      - 'lightsail:GetDomains'
+      - 'lightsail:GetDistributions'
       - 'batch:DescribeJobQueues'
       - 'kinesisanalytics:ListTagsForResource'
       - 'ram:GetResourceShares'
