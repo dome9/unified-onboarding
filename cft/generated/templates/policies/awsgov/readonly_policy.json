@@ -156,7 +156,9 @@
                 "signer:ListSigningProfiles",
                 "storagegateway:DescribeSMBFileShares",
                 "nimble:ListStudios",
-                "ds:ListTagsForResource"
+                "ds:ListTagsForResource",
+                "support:DescribeCases",
+                "support:DescribeSeverityLevels"
             ],
             "Effect": "Allow",
             "Resource": "*"

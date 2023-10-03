@@ -155,6 +155,8 @@ Statement:
       - 'storagegateway:DescribeSMBFileShares'
       - 'nimble:ListStudios'
       - 'ds:ListTagsForResource'
+      - 'support:DescribeCases'
+      - 'support:DescribeSeverityLevels'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
