@@ -157,6 +157,7 @@ Statement:
       - 'ds:ListTagsForResource'
       - 'support:DescribeCases'
       - 'support:DescribeSeverityLevels'
+      - 'outposts:ListOutposts'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

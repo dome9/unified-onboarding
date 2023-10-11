@@ -158,7 +158,8 @@
                 "nimble:ListStudios",
                 "ds:ListTagsForResource",
                 "support:DescribeCases",
-                "support:DescribeSeverityLevels"
+                "support:DescribeSeverityLevels",
+                "outposts:ListOutposts"
             ],
             "Effect": "Allow",
             "Resource": "*"

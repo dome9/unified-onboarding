@@ -195,6 +195,7 @@ Resources:
               - ds:ListTagsForResource
               - support:DescribeCases
               - support:DescribeSeverityLevels
+              - outposts:ListOutposts
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
