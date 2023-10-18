@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Check Point CloudGuard Dome9 unified onboarding
 Metadata:
-  Version: 4.9.1
+  Version: 4.9.2
 Parameters:
   OnboardingId:
     Description: The id of the onboarding process
@@ -324,14 +324,10 @@ Resources:
                   - lambda:GetLayerVersion
                 Effect: Allow
                 Resource:
-                  - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:nodejs12:21
                   - !Sub >-
-                    arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-csharp:*
-                  - !Sub >-
-                    arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-java:*
+                    arn:aws:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:*
               - Sid: CloudGuardOnboardingOrchestratorServelessLogs
                 Action:
-                  - logs:DescribeLogGroups
                   - logs:CreateLogGroup
                   - logs:DeleteLogGroup
                   - logs:CreateLogStream
@@ -352,7 +348,7 @@ Resources:
                 Action:
                   - logs:DescribeLogGroups
                 Effect: Allow
-                Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*:'
+                Resource: '*'
               - Sid: CloudGuardOnboardingOrchestratorServelessProtegoS3
                 Action:
                   - s3:GetObject

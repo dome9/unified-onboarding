@@ -59,12 +59,9 @@
     - lambda:GetLayerVersion
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:lambda:${AWS::Region}:553035198032:layer:nodejs12:21'
-    - !Sub 'arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-csharp:*'
-    - !Sub 'arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-java:*'
+    - !Sub 'arn:aws:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:*'
 - Sid: CloudGuardOnboardingOrchestratorServelessLogs
   Action:
-    - logs:DescribeLogGroups
     - logs:CreateLogGroup
     - logs:DeleteLogGroup
     - logs:CreateLogStream
@@ -80,7 +77,7 @@
   Action:
     - logs:DescribeLogGroups
   Effect: Allow
-  Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*:'
+  Resource: '*'
 - Sid: CloudGuardOnboardingOrchestratorServelessProtegoS3
   Action:
     - s3:GetObject

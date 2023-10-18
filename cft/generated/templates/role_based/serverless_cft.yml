@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a cross account role that authorizes access for Cloudguard BE.
 Metadata:
-  Version: 4.9.1
+  Version: 4.9.2
 Parameters:
   CloudGuardAwsAccountId:
     Description: CloudGuard instance AWS AccountId that is requiring external trust
@@ -142,6 +142,7 @@ Resources:
                   - lambda:GetFunctionUrlConfig
                   - sns:ListSubscriptionsByTopic
                   - ec2:DescribeRegions
+                  - logs:DescribeLogGroups
                 Resource: '*'
   ProtegoPython3CodeAnalysisLogGroup:
     Type: AWS::Logs::LogGroup
@@ -394,14 +395,14 @@ Resources:
           code_analysis_functions/${ServerlessStage}_function_code_analysis_node.zip
       MemorySize: 3008
       Description: Statically analyze NodeJs code
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       Timeout: 860
       Tags:
         - Key: Owner
           Value: Cloudguard Serverless Security
       Layers:
         - !Sub >-
-          arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-java:1
+          arn:aws:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:1
     DependsOn:
       - CodeAnalysisNode14LambdaExecutionRole
   ProtegoCSharpCodeAnalysisFunction:
@@ -426,20 +427,17 @@ Resources:
   ProtegoFSPInjectorFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: cloudguard.fspinjector.Handler::handleRequest
+      Handler: fsp_injector.lambda_handler
       FunctionName: CloudGuardFSPInjector
       Role: !GetAtt FSPInjectorLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: !Sub >-
-          code_analysis_functions/${ServerlessStage}_fsp_injector_min_template_v9.zip
+          code_analysis_functions/${ServerlessStage}_fsp_injector_min_template_v10.zip
       MemorySize: 3008
       Description: FSP injector, add FSP runtime protection to functions
-      Runtime: java11
-      Layers:
-        - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:nodejs12:21
-        - !Sub >-
-          arn:aws:lambda:${AWS::Region}:985618988812:layer:aws-lambda-layer-csharp:1
+      Runtime: python3.9
+      Layers: []
       Timeout: 860
       Tags:
         - Key: Owner
@@ -584,7 +582,6 @@ Resources:
               - logs:PutSubscriptionFilter
               - logs:DeleteSubscriptionFilter
               - logs:DescribeSubscriptionFilters
-              - logs:DescribeLogGroups
             Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*:'
       Roles:
         - !Ref CrossAccountRole
@@ -665,7 +662,7 @@ Resources:
         arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 28
+      CFTemplateVersion: 29
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
     Version: '1.0'
@@ -681,7 +678,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 28
+      CFTemplateVersion: 29
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
       Features:
         ProtegoBase: true
