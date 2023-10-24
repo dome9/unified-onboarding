@@ -2,6 +2,9 @@ Version: 2012-10-17
 Statement:
   - Sid: CloudGuardReadOnly
     Action:
+      - 'appfabric:ListAppBundles'
+      - 'appfabric:GetAppBundle'
+      - 'appfabric:ListTagsForResource'
       - 'lightsail:GetRelationalDatabases'
       - 'lightsail:GetRelationalDatabaseParameters'
       - 'lightsail:GetLoadBalancerTlsCertificates'

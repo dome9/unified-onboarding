@@ -35,6 +35,9 @@ Resources:
         Statement:
           - Sid: CloudGuardReadOnly
             Action:
+              - appfabric:ListAppBundles
+              - appfabric:GetAppBundle
+              - appfabric:ListTagsForResource
               - lightsail:GetRelationalDatabases
               - lightsail:GetRelationalDatabaseParameters
               - lightsail:GetLoadBalancerTlsCertificates
