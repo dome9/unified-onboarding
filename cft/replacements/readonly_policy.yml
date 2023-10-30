@@ -161,6 +161,8 @@ Statement:
       - 'support:DescribeCases'
       - 'support:DescribeSeverityLevels'
       - 'outposts:ListOutposts'
+      - 'waf-regional:ListLoggingConfigurations'
+      - 'wafv2:GetIPSet'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

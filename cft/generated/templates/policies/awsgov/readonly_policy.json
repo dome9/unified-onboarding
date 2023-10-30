@@ -162,7 +162,9 @@
                 "ds:ListTagsForResource",
                 "support:DescribeCases",
                 "support:DescribeSeverityLevels",
-                "outposts:ListOutposts"
+                "outposts:ListOutposts",
+                "waf-regional:ListLoggingConfigurations",
+                "wafv2:GetIPSet"
             ],
             "Effect": "Allow",
             "Resource": "*"

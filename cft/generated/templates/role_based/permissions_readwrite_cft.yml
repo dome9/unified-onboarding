@@ -199,6 +199,8 @@ Resources:
               - support:DescribeCases
               - support:DescribeSeverityLevels
               - outposts:ListOutposts
+              - waf-regional:ListLoggingConfigurations
+              - wafv2:GetIPSet
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
