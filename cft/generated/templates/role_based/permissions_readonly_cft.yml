@@ -80,6 +80,8 @@ Resources:
               - elasticfilesystem:Describe*
               - elasticache:ListTagsForResource
               - es:ListTags
+              - cloudhsm:DescribeClusters
+              - cloudhsm:DescribeBackups
               - eks:DescribeNodegroup
               - eks:ListNodegroups
               - glacier:ListTagsForVault
