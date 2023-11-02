@@ -165,6 +165,7 @@ Statement:
       - 'outposts:ListOutposts'
       - 'waf-regional:ListLoggingConfigurations'
       - 'wafv2:GetIPSet'
+      - 'finspace:ListTagsForResource'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

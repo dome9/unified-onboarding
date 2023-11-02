@@ -92,7 +92,8 @@
                 "support:DescribeCases",
                 "support:DescribeSeverityLevels",
                 "waf-regional:ListLoggingConfigurations",
-                "wafv2:GetIPSet"
+                "wafv2:GetIPSet",
+                "finspace:ListTagsForResource"
             ],
             "Effect": "Allow",
             "Resource": "*"

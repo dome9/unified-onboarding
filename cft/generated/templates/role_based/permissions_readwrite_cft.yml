@@ -203,6 +203,7 @@ Resources:
               - outposts:ListOutposts
               - waf-regional:ListLoggingConfigurations
               - wafv2:GetIPSet
+              - finspace:ListTagsForResource
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
