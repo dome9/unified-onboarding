@@ -199,6 +199,7 @@ Resources:
               - waf-regional:ListLoggingConfigurations
               - wafv2:GetIPSet
               - finspace:ListTagsForResource
+              - lakeformation:GetDataLakeSettings
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission

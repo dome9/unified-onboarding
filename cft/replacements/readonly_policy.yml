@@ -166,6 +166,7 @@ Statement:
       - 'waf-regional:ListLoggingConfigurations'
       - 'wafv2:GetIPSet'
       - 'finspace:ListTagsForResource'
+      - 'lakeformation:GetDataLakeSettings'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS

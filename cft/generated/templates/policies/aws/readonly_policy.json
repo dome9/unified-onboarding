@@ -167,7 +167,8 @@
                 "outposts:ListOutposts",
                 "waf-regional:ListLoggingConfigurations",
                 "wafv2:GetIPSet",
-                "finspace:ListTagsForResource"
+                "finspace:ListTagsForResource",
+                "lakeformation:GetDataLakeSettings"
             ],
             "Effect": "Allow",
             "Resource": "*"
