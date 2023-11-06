@@ -2,6 +2,8 @@ Version: 2012-10-17
 Statement:
   - Sid: CloudGuardReadOnly
     Action:
+      - 'comprehend:ListEndpoints'
+      - 'comprehend:ListFlywheels'
       - 'batch:DescribeJobQueues'
       - 'kinesisanalytics:ListTagsForResource'
       - 'ram:GetResourceShares'

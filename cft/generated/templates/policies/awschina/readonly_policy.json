@@ -4,6 +4,8 @@
         {
             "Sid": "CloudGuardReadOnly",
             "Action": [
+                "comprehend:ListEndpoints",
+                "comprehend:ListFlywheels",
                 "batch:DescribeJobQueues",
                 "kinesisanalytics:ListTagsForResource",
                 "ram:GetResourceShares",

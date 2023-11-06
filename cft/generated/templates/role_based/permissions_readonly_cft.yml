@@ -42,6 +42,8 @@ Resources:
         Statement:
           - Sid: CloudGuardReadOnly
             Action:
+              - comprehend:ListEndpoints
+              - comprehend:ListFlywheels
               - appfabric:ListAppBundles
               - appfabric:GetAppBundle
               - appfabric:ListTagsForResource
