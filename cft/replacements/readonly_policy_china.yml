@@ -91,6 +91,7 @@ Statement:
       - 'support:DescribeSeverityLevels'
       - 'waf-regional:ListLoggingConfigurations'
       - 'wafv2:GetIPSet'
+      - 'lakeformation:GetDataLakeSettings'
     Effect: Allow
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
