@@ -37,6 +37,8 @@ Statement:
       - 'macie2:DescribeBuckets'
       - 'macie2:GetMacieSession'
       - 'macie2:GetFindingStatistics'
+      - 'verifiedpermissions:ListPolicyStores'
+      - 'verifiedpermissions:GetPolicyStore'
       - 'dynamodb:ListTagsOfResource'
       - 'ec2:SearchTransitGatewayRoutes'
       - 'elasticfilesystem:Describe*'
