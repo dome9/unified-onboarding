@@ -4,6 +4,15 @@
         {
             "Sid": "CloudGuardReadOnly",
             "Action": [
+                "forecast:DescribeDataset",
+                "forecast:DescribeAutoPredictor",
+                "forecast:DescribePredictor",
+                "forecast:ListDatasetGroups",
+                "forecast:ListExplainabilities",
+                "forecast:ListForecasts",
+                "forecast:ListMonitors",
+                "forecast:ListPredictors",
+                "forecast:ListTagsForResource",
                 "comprehend:ListEndpoints",
                 "comprehend:ListFlywheels",
                 "appfabric:ListAppBundles",
