@@ -45,6 +45,8 @@ let replacer = function () {
         const sns = yamlParse(fs.readFileSync(__dirname + '/../replacements/sns.yml', 'utf8'))
         const helperLambda = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestrator_helper.yml', 'utf8'))
         const conditions = yamlParse(fs.readFileSync(__dirname + '/../replacements/conditions.yml', 'utf8'))
+        const roleBasedOnboarding = 'Role';
+        const userBasedOnboarding = 'User';
 
         replaceObjectByPlaceholders(readonlyPolicy, [
             {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatements},
@@ -65,6 +67,7 @@ let replacer = function () {
             {key: 'REPLACEMENT_ORCHESTRATOR_HELPER', value: helperLambda},
             {key: 'REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES', value: orchestratorInvokeProperties},
             {key: 'REPLACEMENT_BUCKET_SUFFIX', value: bucketSuffix},
+            {key: 'REPLACEMENT_ONBOARDING_TYPE', value: roleBasedOnboarding},
         ]);
         let onboardingYml = yamlDump(onboardingJson)
         writToFile('/generated/templates/role_based/onboarding.yml', onboardingYml)
@@ -114,6 +117,7 @@ let replacer = function () {
             {key: 'REPLACEMENT_ORCHESTRATOR_HELPER', value: helperLambda},
             {key: 'REPLACEMENT_ORCHESTRATOR_INVOKE_PROPERTIES', value: orchestratorInvokeProperties},
             {key: 'REPLACEMENT_BUCKET_SUFFIX', value: bucketSuffix},
+            {key: 'REPLACEMENT_ONBOARDING_TYPE', value: userBasedOnboarding},
         ]);
         onboardingYml = yamlDump(onboardingJson)
         writToFile('/generated/templates/user_based/onboarding.yml', onboardingYml)

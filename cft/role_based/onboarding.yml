@@ -28,7 +28,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-                AWS: !Sub 'arn:aws:iam::${CloudGuardAwsAccountNumber}:root'
+                AWS: !Sub 'arn:${AWS::Partition}:iam::${CloudGuardAwsAccountNumber}:root'
             Action: sts:AssumeRole
             Condition:
               StringEquals:

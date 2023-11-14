@@ -58,7 +58,7 @@ Resources:
                 - s3.amazonaws.com
             Condition:
               ArnLike:
-                aws:SourceArn: !Sub 'arn:aws:s3:::${CloudtrailS3BucketName}'
+                aws:SourceArn: !Sub 'arn:${AWS::Partition}:s3:::${CloudtrailS3BucketName}'
               StringEquals:
                 aws:SourceAccount: !Sub '${AWS::AccountId}'
           - Sid: AllowOnlyIntelligenceSubscription
@@ -91,8 +91,8 @@ Resources:
               - 's3:GetBucketNotification'
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}"
-              - !Sub "arn:aws:s3:::${CloudtrailS3BucketName}/*"
+              - !Sub "arn:${AWS::Partition}:s3:::${CloudtrailS3BucketName}"
+              - !Sub "arn:${AWS::Partition}:s3:::${CloudtrailS3BucketName}/*"
           - Sid: IntelligenceUsageEnforcementRequiredSnsPermissions
             Action:
               - sns:Subscribe

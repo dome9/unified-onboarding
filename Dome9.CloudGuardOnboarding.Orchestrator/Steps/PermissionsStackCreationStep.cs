@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
 {
@@ -22,10 +23,11 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string cloudGuardExternalTrustId,
             string onboardingId,
             string uniqueSuffix,
+            string awsPartition,
             int stackExecutionTimeoutMinutes = 35)
         {
             _awsStackWrapper = new PermissionsStackWrapper(StackOperation.Create);
-            var s3Url = $"https://{cftS3Buckets}.s3.{region}.amazonaws.com/{templateS3Path}";
+            var s3Url = GetS3Url(cftS3Buckets, region, templateS3Path, awsPartition);
             _stackConfig = new PermissionsStackConfig(
                 s3Url, 
                 stackName, 
@@ -34,6 +36,12 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 cloudGuardExternalTrustId,
                 uniqueSuffix,
                 stackExecutionTimeoutMinutes);
+        }
+
+        private string GetS3Url(string cftS3Buckets, string region, string templateS3Path, string awsPartitionName)
+        {
+            var awsPartition = AwsPartition.GetPartition(awsPartitionName);
+            return $"https://{cftS3Buckets}.s3.{region}.{awsPartition.Domain}/{templateS3Path}";
         }
 
         public override async Task Execute()

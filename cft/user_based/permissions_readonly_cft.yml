@@ -29,7 +29,7 @@ Resources:
       UserName: !Sub 'CloudGuard-Connect-RO-user${UniqueSuffix}'
      
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/SecurityAudit
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/SecurityAudit
 
   CrossAccountReadOnlyPolicy:
     Type: 'AWS::IAM::ManagedPolicy'

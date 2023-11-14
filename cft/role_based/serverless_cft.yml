@@ -73,8 +73,8 @@ Resources:
                   - !Join [ ":", [ !GetAtt ProtegoPython3CodeAnalysisFunction.Arn,"*"]]
                   - !Join [ ":", [ !GetAtt ProtegoCSharpCodeAnalysisFunction.Arn,"*"]]
                   - !Join [ ":", [ !GetAtt ProtegoFSPInjectorFunction.Arn,"*"]]
-                  - !Sub 'arn:aws:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
-                  - !Sub 'arn:aws:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
+                  - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
+                  - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
 
               - Effect: Allow
                 Action:
@@ -90,7 +90,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !Sub 'arn:aws:s3:::${ServerlessStage}-protego/*'
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${ServerlessStage}-protego/*'
 
 
               - Effect: Allow
@@ -361,7 +361,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - 'logs:StartQuery'
-                Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*'
+                Resource: !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*'
 
   ProtegoPython3CodeAnalysisFunction:
     Type: 'AWS::Lambda::Function'
@@ -413,7 +413,7 @@ Resources:
       Timeout: 860
       Tags: [{"Key": "Owner", "Value": "Cloudguard Serverless Security"}]
       Layers:
-        - !Sub 'arn:aws:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:1'
+        - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:1'
     DependsOn:
       - CodeAnalysisNode14LambdaExecutionRole
 
@@ -486,13 +486,13 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
             Action: 'kms:*'
             Resource: '*'
           - Sid: Allow access for Key Administrators
             Effect: Allow
             Principal:
-              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
             Action:
               - 'kms:ReplicateKey'
               - 'kms:Create*'
@@ -527,7 +527,7 @@ Resources:
           - Sid: Allow attachment of persistent resources
             Effect: Allow
             Principal:
-              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
             Action:
               - 'kms:CreateGrant'
               - 'kms:ListGrants'
@@ -557,7 +557,7 @@ Resources:
             Effect: Deny
             Principal: "*"
             Action: "*"
-            Resource: !Sub 'arn:aws:s3:::${ProtegoAgentBucket}/*'
+            Resource: !Sub 'arn:${AWS::Partition}:s3:::${ProtegoAgentBucket}/*'
             Condition:
               Bool:
                 aws:SecureTransport: "false"
@@ -568,8 +568,8 @@ Resources:
               - "s3:ListBucket"
               - "s3:GetObject"
             Resource:
-              - !Sub 'arn:aws:s3:::${ProtegoAgentBucket}'
-              - !Sub 'arn:aws:s3:::${ProtegoAgentBucket}/*'
+              - !Sub 'arn:${AWS::Partition}:s3:::${ProtegoAgentBucket}'
+              - !Sub 'arn:${AWS::Partition}:s3:::${ProtegoAgentBucket}/*'
             Condition:
               StringEquals:
                 aws:PrincipalAccount: !Ref AWS::AccountId
@@ -588,20 +588,20 @@ Resources:
               # this permissions are here only to support older accounts. will not be used for new accounts
               - s3:PutBucketPolicy
               - s3:DeleteBucketPolicy
-            Resource: !Sub 'arn:aws:s3:::${ProtegoAgentBucket}'
+            Resource: !Sub 'arn:${AWS::Partition}:s3:::${ProtegoAgentBucket}'
 
           - Effect: Allow
             Action:
               - s3:DeleteObject
               - s3:GetObject
               - s3:PutObject
-            Resource: !Sub 'arn:aws:s3:::${ProtegoAgentBucket}/*'
+            Resource: !Sub 'arn:${AWS::Partition}:s3:::${ProtegoAgentBucket}/*'
           - Effect: Allow
             Action:
               - logs:PutSubscriptionFilter
               - logs:DeleteSubscriptionFilter
               - logs:DescribeSubscriptionFilters
-            Resource: !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*:'
+            Resource: !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:*:'
       Roles:
         - !Ref CrossAccountRole
 
@@ -618,16 +618,16 @@ Resources:
               - lambda:DeleteFunction
               - lambda:AddPermission
             Resource:
-              - !Sub 'arn:aws:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
-              - !Sub 'arn:aws:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
+              - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
+              - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
           - Effect: Allow
             Action:
               - logs:CreateLogGroup
               - logs:PutRetentionPolicy
               - logs:DeleteLogGroup
             Resource:
-              - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPLogsSender*:*'
-              - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/ProtegoFSPLogsSender*:*'
+              - !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPLogsSender*:*'
+              - !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/ProtegoFSPLogsSender*:*'
           - Effect: Allow
             Action:
               - iam:PassRole
@@ -658,13 +658,13 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource:
-                  - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPLogsSender*:*'
-                  - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/ProtegoFSPLogsSender*:*'
+                  - !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPLogsSender*:*'
+                  - !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/ProtegoFSPLogsSender*:*'
               - Effect: "Allow"
                 Action:
                   - sqs:GetQueueUrl
                   - sqs:SendMessage
-                Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}_customer_fsp_logs_queue*'
+                Resource: !Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}_customer_fsp_logs_queue*'
     DependsOn:
       - PreDeployPhoneHomeCustomResource
 
@@ -673,7 +673,7 @@ Resources:
     Condition: IsProtegoRegionCondition
     Version: '1.0'
     Properties:
-      ServiceToken: !Sub "arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
+      ServiceToken: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
       CFTemplateVersion: 29
@@ -689,7 +689,7 @@ Resources:
       - ProtegoAgentBucketPolicy
 
     Properties:
-      ServiceToken: !Sub "arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
+      ServiceToken: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp

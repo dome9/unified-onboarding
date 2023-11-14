@@ -68,7 +68,7 @@ CloudGuardOrchestratorRole:
             - REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS
 
     ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
     Tags:
       - Key: ConditionalDependsOn
         Value: !If [ RemoteStackModifyEnabled, !Ref CloudGuardOnboardingStackModifyPermissions, Ignored ]

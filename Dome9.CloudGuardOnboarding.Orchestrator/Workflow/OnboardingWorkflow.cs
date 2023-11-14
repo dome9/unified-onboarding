@@ -46,7 +46,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 configuration.SetStackNameSuffix(request.UniqueSuffix);
 
                 // 4. run the Permissions stack (create cross account role for CloudGuard)
-                var permissionsStackStep = new PermissionsStackCreationStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix);
+                var permissionsStackStep = new PermissionsStackCreationStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix, request.AwsPartition);
                 await ExecuteStep(permissionsStackStep);
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected

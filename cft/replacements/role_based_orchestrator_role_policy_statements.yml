@@ -49,17 +49,17 @@
     - 'lambda:GetFunctionConfiguration'
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardNode14CodeAnalysis'
-    - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardJavaCodeAnalysis'
-    - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardPy3CodeAnalysis'
-    - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardCsCodeAnalysis'
-    - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardFSPInjector'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardNode14CodeAnalysis'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardJavaCodeAnalysis'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardPy3CodeAnalysis'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardCsCodeAnalysis'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardFSPInjector'
 - Sid: CloudGuardOnboardingOrchestratorServelessLambdaTp
   Action:
     - lambda:GetLayerVersion
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:*'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:317307795746:layer:aws-lambda-layer-java:*'
 - Sid: CloudGuardOnboardingOrchestratorServelessLogs
   Action:
     - logs:CreateLogGroup
@@ -68,11 +68,11 @@
     - logs:PutRetentionPolicy
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardNode14CodeAnalysis:log-stream:*'
-    - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardJavaCodeAnalysis:log-stream:*'
-    - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardPy3CodeAnalysis:log-stream:*'
-    - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardCsCodeAnalysis:log-stream:*'
-    - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPInjector:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardNode14CodeAnalysis:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardJavaCodeAnalysis:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardPy3CodeAnalysis:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardCsCodeAnalysis:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPInjector:log-stream:*'
 - Sid: CloudGuardOnboardingOrchestratorLogsDescribe
   Action:
     - logs:DescribeLogGroups
@@ -83,7 +83,7 @@
     - s3:GetObject
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:s3:::${ServerlessStage}-protego/code_analysis_functions/*'
+    - !Sub 'arn:${AWS::Partition}:s3:::${ServerlessStage}-protego/code_analysis_functions/*'
 - Sid: CloudGuardOnboardingOrchestratorServelessS3
   Action:
     - s3:GetBucketPolicy
@@ -97,8 +97,8 @@
     - s3:PutBucketPublicAccessBlock
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:s3:::protego-fsp-${AWS::AccountId}'
-    - !Sub 'arn:aws:s3:::protego-fsp-${AWS::AccountId}/*'
+    - !Sub 'arn:${AWS::Partition}:s3:::protego-fsp-${AWS::AccountId}'
+    - !Sub 'arn:${AWS::Partition}:s3:::protego-fsp-${AWS::AccountId}/*'
 - Sid: CloudGuardOnboardingOrchestratorServelessKms
   Action:
     - "kms:CreateKey"
@@ -112,7 +112,7 @@
     - sns:Publish
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:sns:${AWS::Region}:${CloudGuardAwsAccountNumber}:${ServerlessStage}-${AWS::AccountId}-notifications'
+    - !Sub 'arn:${AWS::Partition}:sns:${AWS::Region}:${CloudGuardAwsAccountNumber}:${ServerlessStage}-${AWS::AccountId}-notifications'
 - Sid: CloudGuardOnboardingOrchestratorIntelligenceSns
   Action:
     - sns:GetTopicAttributes
@@ -124,4 +124,4 @@
     - sns:DeleteTopic
   Effect: Allow
   Resource:
-    - !Sub 'arn:aws:sns:*:${AWS::AccountId}:Intelligence-Log-Delivery${UniqueSuffix}'
+    - !Sub 'arn:${AWS::Partition}:sns:*:${AWS::AccountId}:Intelligence-Log-Delivery${UniqueSuffix}'
