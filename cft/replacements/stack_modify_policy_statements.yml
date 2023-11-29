@@ -16,6 +16,7 @@
     - lambda:CreateFunction
     - lambda:RemovePermission
     - lambda:AddPermission
+    - lambda:UpdateFunctionConfiguration
   Resource:
     - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardOnboardingOrchestrator*'
 - Sid: ModifyRole

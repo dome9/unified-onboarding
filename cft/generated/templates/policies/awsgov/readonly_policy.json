@@ -4,6 +4,7 @@
         {
             "Sid": "CloudGuardReadOnly",
             "Action": [
+                "fms:ListTagsForResource",
                 "fms:GetAdminScope",
                 "fms:GetPolicy",
                 "fms:ListAdminAccountsForOrganization",
