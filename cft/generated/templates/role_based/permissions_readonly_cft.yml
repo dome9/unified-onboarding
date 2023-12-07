@@ -224,6 +224,21 @@ Resources:
               - wafv2:GetIPSet
               - finspace:ListTagsForResource
               - lakeformation:GetDataLakeSettings
+              - sagemaker:DescribeTrainingJob
+              - sagemaker:ListTags
+              - sagemaker:DescribeNotebookInstance
+              - sagemaker:ListTrainingJobs
+              - sagemaker:ListNotebookInstances
+              - applicationAutoScaling:DescribeScalingPolicies
+              - autoScalingGroup:DescribeAutoScalingGroups
+              - codebuild:ListProject
+              - efs:DescribeEfs
+              - elasticsearch:ListDomainNames
+              - eventsRule:DescribeRules
+              - guard-duty:DetectorsList
+              - vpc:Describe
+              - vpcFlowLog:Describe
+              - vpcPeeringConnections:Describe
             Effect: Allow
             Resource: '*'
           - Sid: ElasticbeanstalkConfigurationSettingsPermission
