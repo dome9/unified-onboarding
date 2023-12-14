@@ -170,6 +170,7 @@ Statement:
       - 'timestream:ListTables'
       - 'timestream:ListTagsForResource'
       - 'timestream:DescribeEndpoints'
+      - 'timestream:ListScheduledQueries'
       - 'signer:ListTagsForResource'
       - 'signer:ListSigningJobs'
       - 'signer:ListSigningPlatforms'
