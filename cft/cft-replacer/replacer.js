@@ -152,8 +152,9 @@ let replacer = function () {
             {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
             {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws"}
         ]);
-        writToFile('/generated/templates/policies/aws/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
-        writToFile('/generated/templates/policies/aws/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+        writToFile('/generated/templates/policies/aws/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4));
+        writToFile('/generated/templates/policies/aws/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4));
+        writToFile('/generated/templates/policies/aws/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws'));
 
         // aws-cn
         readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
@@ -164,6 +165,7 @@ let replacer = function () {
         ]);
         writToFile('/generated/templates/policies/awschina/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
         writToFile('/generated/templates/policies/awschina/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+        writToFile('/generated/templates/policies/awschina/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws-cn'))
 
         // aws-us-gov
         readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
@@ -174,6 +176,8 @@ let replacer = function () {
         ]);
         writToFile('/generated/templates/policies/awsgov/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
         writToFile('/generated/templates/policies/awsgov/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+        writToFile('/generated/templates/policies/awsgov/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws-us-gov'))
+
     } catch (e) {
         console.log(e);
         throw e;
