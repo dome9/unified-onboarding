@@ -5,3 +5,6 @@ Conditions:
   DeleteEvent: !Equals
     - !Ref DeleteInnerResources
     - true
+  UseReadOnlyPolicy: !Equals
+    - !Ref UseAwsReadOnlyPolicy
+    - Enable

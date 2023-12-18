@@ -14,4 +14,5 @@ UniqueSuffix: !Ref UniqueSuffix
 Self: !GetAtt CloudGuardOnboardingOrchestrator.Arn
 Subscription: !Ref OrchestratorSubscription
 DeleteInnerResources: !Ref DeleteInnerResources
+UseAwsReadOnlyPolicy: !Ref UseAwsReadOnlyPolicy
 OnboardingType: REPLACEMENT_ONBOARDING_TYPE

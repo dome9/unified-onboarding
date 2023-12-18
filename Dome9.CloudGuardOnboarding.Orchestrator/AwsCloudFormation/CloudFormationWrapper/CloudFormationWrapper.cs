@@ -302,7 +302,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] [{nameof(GetChangeSetStatusAsync)}] Failed to get changset description for changeset '{changeSetName}'. Error={ex}");
-                throw new OnboardingException(ex.Message, feature); ;
+                throw new OnboardingException(ex.Message, feature);
             }
         }
 
@@ -586,7 +586,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 if (await IsStackExist(feature, stackName))
                 {
-                    throw ex;
+                    throw;
                 }
             }
             statusUpdate("DELETE_COMPLETE", stackStatusReason);

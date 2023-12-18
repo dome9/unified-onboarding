@@ -1,7 +1,4 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
@@ -16,25 +13,19 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
         public ApiCredentials StackModifyUserCredentials { get; private set; }
 
         public PermissionsUserBasedStackCreationStep(
-            string stackName,
-            string region,
-            string cftS3BucketName,
-            string templateS3Path,
-            string onboardingId,
-            string awsPartition,
-            string enableRemoteStackModify,
-            string uniqueSuffix,
+            ConfigurationResponseModel configuration,
+            OnboardingRequest request,
             int stackExecutionTimeoutMinutes = 35)
         {
-            var s3Url = $"https://{cftS3BucketName}.s3.{region}.{GetDomain(awsPartition)}/{templateS3Path}";
+            var s3Url = $"https://{request.S3BucketName}.s3.{request.AwsAccountRegion}.{GetDomain(request.AwsPartition)}/{configuration.PermissionsTemplateS3Path}";
             _awsStackWrapper = new PermissionsUserBasedStackWrapper(StackOperation.Create);
             _stackConfig = new PermissionsUserBasedStackConfig(
                 s3Url, 
-                stackName, 
-                onboardingId,       
-                uniqueSuffix,
+                configuration.PermissionsStackName, 
+                request.OnboardingId,       
+                request.UniqueSuffix,
                 stackExecutionTimeoutMinutes);
-            bool.TryParse(enableRemoteStackModify, out _enableRemoteStackModify);
+            bool.TryParse(request.EnableRemoteStackModify, out _enableRemoteStackModify);
         }
 
         public override async Task Execute()

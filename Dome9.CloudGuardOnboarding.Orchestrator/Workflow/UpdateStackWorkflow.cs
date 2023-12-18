@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Dome9.CloudGuardOnboarding.Orchestrator.Steps;
-using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsSecretsManager;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -26,7 +24,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 case Enums.Feature.Permissions:
                     if (_onboardingType == OnboardingType.RoleBased)
                     {
-                        return new PermissionsStackUpdateStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix);
+                        return new PermissionsStackUpdateStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix, request.UseAwsReadOnlyPolicy);
 
                     }
                     else if (_onboardingType == OnboardingType.UserBased)

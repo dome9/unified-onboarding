@@ -1,7 +1,4 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Dome9.CloudGuardOnboarding.Orchestrator.AwsCloudFormation;
@@ -24,6 +21,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string onboardingId,
             string uniqueSuffix,
             string awsPartition,
+            string useAwsReadOnlyPolicy,
             int stackExecutionTimeoutMinutes = 35)
         {
             _awsStackWrapper = new PermissionsStackWrapper(StackOperation.Create);
@@ -35,6 +33,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
                 cloudGuardAwsAccountId, 
                 cloudGuardExternalTrustId,
                 uniqueSuffix,
+                useAwsReadOnlyPolicy,
                 stackExecutionTimeoutMinutes);
         }
 

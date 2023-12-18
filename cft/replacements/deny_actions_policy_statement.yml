@@ -1,0 +1,20 @@
+Version: '2012-10-17'
+Statement:
+  - Effect: 'Deny'
+    Action:
+      - 'glacier:GetJobOutput'
+      - 's3:GetObjectTorrent'
+      - 'dynamodb:BatchGet*'
+      - 'dynamodb:PartiQLSelect'
+      - 'dynamodb:Query'
+      - 'dynamodb:Scan'
+      - 'dynamodb:Get*'
+      - 'qldb:GetBlock'
+      - 'qldb:GetDigest'
+      - 'qldb:GetRevision'
+      - 'sdb:Select*'
+    Resource: '*'
+  - Effect: 'Deny'
+    Action:
+      - 's3:GetObject'
+    NotResource: !Sub arn:${AWS::Partition}:s3:::elasticbeanstalk-env-resources-??*?/*

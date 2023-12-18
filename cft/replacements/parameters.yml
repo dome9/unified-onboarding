@@ -32,3 +32,10 @@ DeleteInnerResources:
   AllowedValues:
     - true
     - false
+UseAwsReadOnlyPolicy:
+  Description: When enabled, CloudGuard uses the AWS ReadOnlyAccess policy that grants CloudGuard permissions to support new services in the future
+  Type: String
+  AllowedValues:
+    - Enable
+    - Disable
+  Default: Enable

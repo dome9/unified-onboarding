@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class ServerlessStackConfig : OnboardingStackConfig

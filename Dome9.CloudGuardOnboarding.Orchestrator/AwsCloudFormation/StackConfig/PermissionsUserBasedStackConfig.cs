@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class PermissionsUserBasedStackConfig : OnboardingStackConfig
@@ -18,7 +15,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
 
         public override string ToString()
         {
-            return base.ToString();
+            return $"{base.ToString()}";
         }
     }
 }

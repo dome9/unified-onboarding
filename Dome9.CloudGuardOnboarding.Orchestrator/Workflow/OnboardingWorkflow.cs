@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using Dome9.CloudGuardOnboarding.Orchestrator.Steps;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -46,7 +44,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 configuration.SetStackNameSuffix(request.UniqueSuffix);
 
                 // 4. run the Permissions stack (create cross account role for CloudGuard)
-                var permissionsStackStep = new PermissionsStackCreationStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix, request.AwsPartition);
+                var permissionsStackStep = new PermissionsStackCreationStep(request.S3BucketName, request.AwsAccountRegion, configuration.PermissionsStackName, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId, configuration.RoleExternalTrustSecret, request.OnboardingId, request.UniqueSuffix, request.AwsPartition, request.UseAwsReadOnlyPolicy);
                 await ExecuteStep(permissionsStackStep);
 
                 // 5. complete onboarding - create cloud account, rulesets, serverless account if selected
@@ -93,7 +91,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                     {
                         await ExecuteStep(new IntelligenceCloudTrailStep(request.S3BucketName, request.AwsAccountRegion,
                         request.AwsAccountId, request.OnboardingId, configuration.PermissionsTemplateS3Path, configuration.CloudGuardAwsAccountId,
-                        configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn, configuration.IntelligenceRulesetsIds, request.UniqueSuffix));
+                        configuration.IntelligenceTemplateS3Path, configuration.IntelligenceStackName, configuration.IntelligenceSnsTopicArn, configuration.IntelligenceRulesetsIds, request.UniqueSuffix, request.UseAwsReadOnlyPolicy));
                     }
                     else
                     {

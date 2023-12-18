@@ -15,6 +15,18 @@ Parameters:
     Type: String
     Default: ''
     MaxLength: 19
+  UseAwsReadOnlyPolicy:
+    Description: When enabled, CloudGuard uses the AWS ReadOnlyAccess policy that grants CloudGuard permissions to support new services in the future
+    Type: String
+    AllowedValues:
+      - Enable
+      - Disable
+    Default: Enable
+
+  Conditions:
+    UseReadOnlyPolicy: !Equals
+      - !Ref UseAwsReadOnlyPolicy
+      - Enable
 
 Resources:
   CrossAccountRole:
@@ -32,7 +44,12 @@ Resources:
               StringEquals:
                 sts:ExternalId: !Ref RoleExternalTrustSecret
       ManagedPolicyArns:
-        - !Sub arn:${AWS::Partition}:iam::aws:policy/SecurityAudit
+        - !Ref DenySpecificActionsCloudGuardPolicy
+        - arn:aws:iam::aws:policy/SecurityAudit
+        - !If
+          - UseReadOnlyPolicy
+          - arn:aws:iam::aws:policy/ReadOnlyAccess
+          - !Ref AWS::NoValue
 
   CrossAccountReadOnlyPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
@@ -49,6 +66,14 @@ Resources:
       PolicyDocument: REPLACEMENT_READWRITE_POLICY
       Roles:
         - !Ref CrossAccountRole
+
+  DenySpecificActionsCloudGuardPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: !Sub 'CloudGuard-Connect-Deny-policy${UniqueSuffix}'
+      Description: 'Policy to deny access to specific actions for CloudGuard'
+      PolicyDocument:
+        REPLACEMENT_ACTIONS_POLICY_STATEMENT
 
 Outputs:
   CrossAccountRoleArn:

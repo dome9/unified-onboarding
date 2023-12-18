@@ -1,6 +1,4 @@
-﻿using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -25,7 +23,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             {
                 { "CloudGuardAwsAccountId",  permissionsStackConfig.CloudGuardAwsAccountId },
                 { "RoleExternalTrustSecret", permissionsStackConfig.RoleExternalTrustSecret },           
-                { "UniqueSuffix", permissionsStackConfig.UniqueSuffix }             
+                { "UniqueSuffix", permissionsStackConfig.UniqueSuffix },             
+                { "UseAwsReadOnlyPolicy", permissionsStackConfig.UseAwsReadOnlyPolicy }             
             };
         }
     }

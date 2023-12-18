@@ -39,6 +39,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator.Steps
             string snsTopicArn, 
             List<long> rulesetsIds, 
             string uniqueSuffix,
+            string useAwsReadOnlyPolicy,
             StackOperation stackOperation = StackOperation.Create)
         {
             _apiProvider = CloudGuardApiWrapperFactory.Get();

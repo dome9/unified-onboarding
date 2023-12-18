@@ -1,6 +1,4 @@
 ﻿using Dome9.CloudGuardOnboarding.Orchestrator.AwsSecretsManager;
-using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,7 +26,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             var permissionsStackConfig = onboardingStackConfig as PermissionsUserBasedStackConfig;
             return new Dictionary<string, string>
             {
-                { "UniqueSuffix", permissionsStackConfig.UniqueSuffix }
+                { "UniqueSuffix", permissionsStackConfig.UniqueSuffix },
             };
         }
 

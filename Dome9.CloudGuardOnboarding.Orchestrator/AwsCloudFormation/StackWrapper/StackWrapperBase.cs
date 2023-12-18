@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Amazon.CloudFormation;
 using Amazon.CloudFormation.Model;
@@ -50,7 +51,8 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         /// <returns></returns>
         public async Task RunStackAsync(OnboardingStackConfig stackConfig)
         {
-            Dictionary<string, string> parameters = GetParameters(stackConfig);
+            var parameters = GetParameters(stackConfig);
+            Console.WriteLine($"[INFO] [{nameof(RunStackAsync)}] StackName={stackConfig.StackName}, Parameters=[{string.Join(", ", parameters.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}].");
 
             switch (_stackOperation)
             {

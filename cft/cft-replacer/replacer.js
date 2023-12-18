@@ -45,6 +45,7 @@ let replacer = function () {
         const sns = yamlParse(fs.readFileSync(__dirname + '/../replacements/sns.yml', 'utf8'))
         const helperLambda = yamlParse(fs.readFileSync(__dirname + '/../replacements/orchestrator_helper.yml', 'utf8'))
         const conditions = yamlParse(fs.readFileSync(__dirname + '/../replacements/conditions.yml', 'utf8'))
+        const denyActionsPolicyStatement = yamlParse(fs.readFileSync(__dirname + '/../replacements/deny_actions_policy_statement.yml', 'utf8'))
         const roleBasedOnboarding = 'Role';
         const userBasedOnboarding = 'User';
 
@@ -76,6 +77,7 @@ let replacer = function () {
         let permissionsReadOnlyJson = yamlParse(fs.readFileSync(__dirname + '/../role_based/permissions_readonly_cft.yml', 'utf8'))
         replaceObjectByPlaceholders(permissionsReadOnlyJson, [
             {key: 'REPLACEMENT_READONLY_POLICY', value: readonlyPolicy},
+            {key: 'REPLACEMENT_ACTIONS_POLICY_STATEMENT', value: denyActionsPolicyStatement},
         ]);
         let permissionsReadOnlyYml = yamlDump(permissionsReadOnlyJson)
         writToFile('/generated/templates/role_based/permissions_readonly_cft.yml', permissionsReadOnlyYml)
@@ -85,6 +87,7 @@ let replacer = function () {
         replaceObjectByPlaceholders(permissionsReadwriteJson, [
             {key: 'REPLACEMENT_READONLY_POLICY', value: readonlyPolicy},
             {key: 'REPLACEMENT_READWRITE_POLICY', value: readwritePolicy},
+            {key: 'REPLACEMENT_ACTIONS_POLICY_STATEMENT', value: denyActionsPolicyStatement},
         ]);
         let permissionsReadwriteYml = yamlDump(permissionsReadwriteJson)
         writToFile('/generated/templates/role_based/permissions_readwrite_cft.yml', permissionsReadwriteYml)
@@ -122,19 +125,21 @@ let replacer = function () {
         onboardingYml = yamlDump(onboardingJson)
         writToFile('/generated/templates/user_based/onboarding.yml', onboardingYml)
 
-        // role based readonly
+        // user based readonly
         permissionsReadOnlyJson = yamlParse(fs.readFileSync(__dirname + '/../user_based/permissions_readonly_cft.yml', 'utf8'))
         replaceObjectByPlaceholders(permissionsReadOnlyJson, [
             {key: 'REPLACEMENT_READONLY_POLICY', value: readonlyPolicy},
+            {key: 'REPLACEMENT_ACTIONS_POLICY_STATEMENT', value: denyActionsPolicyStatement},
         ]);
         permissionsReadOnlyYml = yamlDump(permissionsReadOnlyJson)
         writToFile('/generated/templates/user_based/permissions_readonly_cft.yml', permissionsReadOnlyYml)
 
-        // role based readwrite
+        // user based readwrite
         permissionsReadwriteJson = yamlParse(fs.readFileSync(__dirname + '/../user_based/permissions_readwrite_cft.yml', 'utf8'))
         replaceObjectByPlaceholders(permissionsReadwriteJson, [
             {key: 'REPLACEMENT_READONLY_POLICY', value: readonlyPolicy},
             {key: 'REPLACEMENT_READWRITE_POLICY', value: readwritePolicy},
+            {key: 'REPLACEMENT_ACTIONS_POLICY_STATEMENT', value: denyActionsPolicyStatement},
         ]);
         permissionsReadwriteYml = yamlDump(permissionsReadwriteJson)
         writToFile('/generated/templates/user_based/permissions_readwrite_cft.yml', permissionsReadwriteYml)

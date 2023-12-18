@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Dome9.CloudGuardOnboarding.Orchestrator.CloudGuardApi;
-using Dome9.CloudGuardOnboarding.Orchestrator.Retry;
 using Dome9.CloudGuardOnboarding.Orchestrator.Steps;
 
 namespace Dome9.CloudGuardOnboarding.Orchestrator
@@ -45,7 +44,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                 configuration.SetStackNameSuffix(request.UniqueSuffix);
 
                 // 4. run the Permissions stack (create cross account user for CloudGuard)
-                var userBasedPermissionsStep = new PermissionsUserBasedStackCreationStep(configuration.PermissionsStackName, request.AwsAccountRegion, request.S3BucketName, configuration.PermissionsTemplateS3Path, request.OnboardingId, request.AwsPartition, request.EnableRemoteStackModify, request.UniqueSuffix);
+                var userBasedPermissionsStep = new PermissionsUserBasedStackCreationStep(configuration, request);
                 await ExecuteStep(userBasedPermissionsStep);
                 Console.WriteLine($"[INFO] userBasedPermissionsStep.AwsUserCredentials ApiKeyId='{userBasedPermissionsStep.AwsUserCredentials?.ApiKeyId?.MaskChars(4)}', ApiKeySecret='{userBasedPermissionsStep.AwsUserCredentials?.ApiKeySecret?.MaskChars(0)}'");
                 Console.WriteLine($"[INFO] userBasedPermissionsStep.LambdaUserCredentials ApiKeyId='{userBasedPermissionsStep.StackModifyUserCredentials?.ApiKeyId?.MaskChars(4)}', ApiKeySecret='{userBasedPermissionsStep.StackModifyUserCredentials?.ApiKeySecret?.MaskChars(0)}'");

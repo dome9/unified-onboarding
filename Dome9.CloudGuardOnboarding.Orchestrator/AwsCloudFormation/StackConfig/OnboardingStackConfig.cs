@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     public class OnboardingStackConfig : StackConfig
-    { 
+    {         
+        public string OnboardingId { get; set; }
+        
         public OnboardingStackConfig(
             string onboardingId, 
             string templateS3Url, 
@@ -14,8 +15,6 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
         {
             OnboardingId = onboardingId;
         }
-
-        public string OnboardingId { get; set; }
 
         public override string ToString()
         {

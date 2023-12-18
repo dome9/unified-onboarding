@@ -20,6 +20,7 @@
         public string Subscription { get; set; }
         public string DeleteInnerResources { get; set; }
         public string OnboardingType { get; set; }
+        public string UseAwsReadOnlyPolicy { get; set; }
 
         public override string ToString()
         {
@@ -28,7 +29,7 @@
                 $"[S3BucketName={S3BucketName}], [AwsAccountRegion={AwsAccountRegion}], [AwsPartition={AwsPartition}]" +
                 $"[OnboardingStackModifyRoleArn={OnboardingStackModifyRoleArn}], [EnableRemoteStackModify={EnableRemoteStackModify}]" +
                 $"[RootStackId={RootStackId}, Version={Version}, UniqueSuffix={UniqueSuffix}, Self={Self}, Subscription={Subscription}, " +
-                $"DeleteInnerResources={DeleteInnerResources}, OnboardingType={OnboardingType}]";
+                $"DeleteInnerResources={DeleteInnerResources}, OnboardingType={OnboardingType}, UseAwsReadOnlyPolicy={UseAwsReadOnlyPolicy}]";
         }
     }
 

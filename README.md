@@ -1,4 +1,4 @@
-# Unified Onboarding -
+# Unified Onboarding
 
 ### this repository contains code for the CloudGuard Aws (for now) Unified Onboarding
 
@@ -17,7 +17,8 @@ The CFT will create a lambda that will onboard all the selected modules into Clo
 
 **NOTE:** Lambda is deleted once the CFT deployment completes.
 
-
+## WIKI:
+https://wiki.checkpoint.com/confluence/display/GlobalPO/CloudGuard+-+Unified+Onboarding
 
 
 
