@@ -18,8 +18,14 @@ argv.forEach((val, index) => {
 });
 
 if (isDebug) {
-    if (!fs.existsSync(__dirname + './../generated/templates/policies/')) {
-        fs.mkdirSync(__dirname + './../generated/templates/policies/', {recursive: true})
+    if (!fs.existsSync(__dirname + './../generated/templates/policies/aws/')) {
+        fs.mkdirSync(__dirname + './../generated/templates/policies/aws/', {recursive: true})
+    }
+    if (!fs.existsSync(__dirname + './../generated/templates/policies/awschina/')) {
+        fs.mkdirSync(__dirname + './../generated/templates/policies/awschina/', {recursive: true})
+    }
+    if (!fs.existsSync(__dirname + './../generated/templates/policies/awsgov/')) {
+        fs.mkdirSync(__dirname + './../generated/templates/policies/awsgov/', {recursive: true})
     }
     if (!fs.existsSync(__dirname + './../generated/templates/role_based/')) {
         fs.mkdirSync(__dirname + './../generated/templates/role_based/', {recursive: true})
