@@ -64,8 +64,8 @@ CloudGuardOrchestratorRole:
               Effect: Allow
               Resource:
                 - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RO-policy${UniqueSuffix}'
+                - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RO-Extended-policy-${UniqueSuffix}'
                 - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-RW-policy${UniqueSuffix}'
-                - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/CloudGuard-Connect-Deny-policy-${UniqueSuffix}'
             - REPLACEMENT_ORCHESTRATOR_ROLE_POLICY_STATEMENTS
 
     ManagedPolicyArns:

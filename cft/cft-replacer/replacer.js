@@ -5,7 +5,7 @@ const isDebug = process.env.isDebug || false
 let bucketSuffix = '';
 let outputDir = '';
 
-argv.forEach((val, index) => {
+argv.forEach((val, _) => {
     let split = val.split('=');
     if (split.length === 2) {
         if (split[0] === 'bucket_suffix') {
@@ -147,42 +147,25 @@ let replacer = function () {
             {key: 'REPLACEMENT_READWRITE_POLICY', value: readwritePolicy},
             {key: 'REPLACEMENT_ACTIONS_POLICY_STATEMENT', value: denyActionsPolicyStatement},
         ]);
-        permissionsReadwriteYml = yamlDump(permissionsReadwriteJson)
-        writToFile('/generated/templates/user_based/permissions_readwrite_cft.yml', permissionsReadwriteYml)
+        permissionsReadwriteYml = yamlDump(permissionsReadwriteJson);
+        writToFile('/generated/templates/user_based/permissions_readwrite_cft.yml', permissionsReadwriteYml);
 
         // create policy json files
         // aws
-        let readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
-        let readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
-        replaceObjectByPlaceholders(readonlyPolicyJson, [
-            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
-            {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws"}
-        ]);
-        writToFile('/generated/templates/policies/aws/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4));
-        writToFile('/generated/templates/policies/aws/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4));
-        writToFile('/generated/templates/policies/aws/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws'));
+        let readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'));
+        let readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'));
+        let denyActionsPolicyStatementForPolicyJson = removeFnSub(denyActionsPolicyStatement);
+        createPolicyJsonFilesAws(readonlyPolicyJson, readonlyPolicyStatementsJson, readwritePolicy, denyActionsPolicyStatementForPolicyJson);
 
         // aws-cn
-        readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
-        readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_china.yml', 'utf8'))
-        replaceObjectByPlaceholders(readonlyPolicyJson, [
-            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
-            {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws-cn"}
-        ]);
-        writToFile('/generated/templates/policies/awschina/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
-        writToFile('/generated/templates/policies/awschina/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
-        writToFile('/generated/templates/policies/awschina/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws-cn'))
+        readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'));
+        readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_china.yml', 'utf8'));
+        createPolicyJsonFilesAwsChina(readonlyPolicyJson, readonlyPolicyStatementsJson, readwritePolicy, denyActionsPolicyStatementForPolicyJson);
 
         // aws-us-gov
-        readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'))
-        readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'))
-        replaceObjectByPlaceholders(readonlyPolicyJson, [
-            {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
-            {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws-us-gov"}
-        ]);
-        writToFile('/generated/templates/policies/awsgov/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
-        writToFile('/generated/templates/policies/awsgov/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
-        writToFile('/generated/templates/policies/awsgov/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws-us-gov'))
+        readonlyPolicyStatementsJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy_statements.yml', 'utf8'));
+        readonlyPolicyJson = yamlParse(fs.readFileSync(__dirname + '/../replacements/readonly_policy.yml', 'utf8'));
+        createPolicyJsonFilesAwsGov(readonlyPolicyJson, readonlyPolicyStatementsJson, readwritePolicy, denyActionsPolicyStatementForPolicyJson);
 
     } catch (e) {
         console.log(e);
@@ -190,9 +173,22 @@ let replacer = function () {
     }
 }
 
+function removeFnSub(element) {
+    if (element == null) {
+        throw new Error('element is null');
+    }
+
+    for (const value of element?.Statement) {
+        if (value?.NotResource){
+            value.NotResource = value.NotResource["Fn::Sub"];
+        }
+    }
+    return element;
+}
+
 function replaceObjectByPlaceholders(element, replacements) { // replacementKey, replacementValue){
     for (let replacement of replacements) {
-        replaceObjectByPlaceholder(element, replacement.key, replacement.value)
+        replaceObjectByPlaceholder(element, replacement.key, replacement.value);
     }
 }
 
@@ -243,6 +239,36 @@ function replaceObjectByPlaceholder(element, replacementKey, replacementValue) {
             }
         }
     }
+}
+
+function createPolicyJsonFilesAws(readonlyPolicyJson, readonlyPolicyStatementsJson, readwritePolicy, denyActionsPolicyStatement) {
+    replaceObjectByPlaceholders(readonlyPolicyJson, [
+        {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
+        {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws"}
+    ]);
+    writToFile('/generated/templates/policies/aws/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4));
+    writToFile('/generated/templates/policies/aws/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4));
+    writToFile('/generated/templates/policies/aws/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws'));
+}
+
+function createPolicyJsonFilesAwsChina(readonlyPolicyJson, readonlyPolicyStatementsJson, readwritePolicy, denyActionsPolicyStatement) {
+    replaceObjectByPlaceholders(readonlyPolicyJson, [
+        {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
+        {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws-cn"}
+    ]);
+    writToFile('/generated/templates/policies/awschina/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
+    writToFile('/generated/templates/policies/awschina/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+    writToFile('/generated/templates/policies/awschina/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws-cn'))
+}
+
+function createPolicyJsonFilesAwsGov(readonlyPolicyJson, readonlyPolicyStatementsJson, readwritePolicy, denyActionsPolicyStatement) {
+    replaceObjectByPlaceholders(readonlyPolicyJson, [
+        {key: 'REPLACEMENT_READONLY_POLICY_STATEMENTS', value: readonlyPolicyStatementsJson},
+        {key: 'REPLACEMENT_POLICY_PARTITION', value: "aws-us-gov"}
+    ]);
+    writToFile('/generated/templates/policies/awsgov/readonly_policy.json', JSON.stringify(readonlyPolicyJson, null, 4))
+    writToFile('/generated/templates/policies/awsgov/readwrite_policy.json', JSON.stringify(readwritePolicy, null, 4))
+    writToFile('/generated/templates/policies/awsgov/deny_policy.json', JSON.stringify(denyActionsPolicyStatement, null, 4).replace('${AWS::Partition}', 'aws-us-gov'))
 }
 
 function writToFile(path, content) {

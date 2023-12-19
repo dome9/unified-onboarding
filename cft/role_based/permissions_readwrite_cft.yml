@@ -44,7 +44,7 @@ Resources:
               StringEquals:
                 sts:ExternalId: !Ref RoleExternalTrustSecret
       ManagedPolicyArns:
-        - !Ref DenySpecificActionsCloudGuardPolicy
+        - !Ref CrossAccountReadOnlyPolicyExtended
         - arn:aws:iam::aws:policy/SecurityAudit
         - !If
           - UseReadOnlyPolicy
@@ -67,11 +67,10 @@ Resources:
       Roles:
         - !Ref CrossAccountRole
 
-  DenySpecificActionsCloudGuardPolicy:
+  CrossAccountReadOnlyPolicyExtended:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
-      ManagedPolicyName: !Sub 'CloudGuard-Connect-Deny-policy${UniqueSuffix}'
-      Description: 'Policy to deny access to specific actions for CloudGuard'
+      ManagedPolicyName: !Sub 'CloudGuard-Connect-RO-Extended-policy-${UniqueSuffix}'
       PolicyDocument:
         REPLACEMENT_ACTIONS_POLICY_STATEMENT
 
