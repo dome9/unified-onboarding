@@ -44,7 +44,6 @@ Resources:
               StringEquals:
                 sts:ExternalId: !Ref RoleExternalTrustSecret
       ManagedPolicyArns:
-        - !Ref CrossAccountReadOnlyPolicyExtended
         - arn:aws:iam::aws:policy/SecurityAudit
         - !If
           - UseReadOnlyPolicy
@@ -58,13 +57,6 @@ Resources:
       PolicyDocument: REPLACEMENT_READONLY_POLICY
       Roles:
         - !Ref CrossAccountRole
-
-  CrossAccountReadOnlyPolicyExtended:
-    Type: 'AWS::IAM::ManagedPolicy'
-    Properties:
-      ManagedPolicyName: !Sub 'CloudGuard-Connect-RO-Extended-policy-${UniqueSuffix}'
-      PolicyDocument:
-        REPLACEMENT_ACTIONS_POLICY_STATEMENT
 
 Outputs:
   CrossAccountRoleArn:

@@ -41,7 +41,6 @@ Resources:
       UserName: !Sub 'CloudGuard-Connect-RW-user${UniqueSuffix}'
 
       ManagedPolicyArns:
-        - !Ref CrossAccountReadOnlyPolicyExtended
         - arn:aws:iam::aws:policy/SecurityAudit
         - !If
           - UseReadOnlyPolicy
@@ -63,10 +62,3 @@ Resources:
       PolicyDocument: REPLACEMENT_READWRITE_POLICY
       Users:
         - !Ref CrossAccountUser
-
-  CrossAccountReadOnlyPolicyExtended:
-    Type: 'AWS::IAM::ManagedPolicy'
-    Properties:
-      ManagedPolicyName: !Sub 'CloudGuard-Connect-RO-Extended-policy-${UniqueSuffix}'
-      PolicyDocument:
-        REPLACEMENT_ACTIONS_POLICY_STATEMENT
