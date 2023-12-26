@@ -23,10 +23,10 @@ Parameters:
       - Disable
     Default: Enable
 
-  Conditions:
-    UseReadOnlyPolicy: !Equals
-      - !Ref UseAwsReadOnlyPolicy
-      - Enable
+Conditions:
+  UseReadOnlyPolicy: !Equals
+    - !Ref UseAwsReadOnlyPolicy
+    - Enable
 
 Resources:
   CrossAccountRole:
