@@ -17,10 +17,26 @@ The CFT will create a lambda that will onboard all the selected modules into Clo
 
 **NOTE:** Lambda is deleted once the CFT deployment completes.
 
+## Policies:
+**AWS**: <br>
+https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/aws/readonly_policy.json
+<br>
+https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/aws/readwrite_policy.json
+
+**AWS-China**: <br>
+https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/awschina/readonly_policy.json
+<br>
+https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/awschina/readwrite_policy.json
+
+**AWS-Gov**: <br>
+https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/awsgov/readonly_policy.json
+<br>
+https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/awsgov/readwrite_policy.json
+
 ## WIKI:
 https://wiki.checkpoint.com/confluence/display/GlobalPO/CloudGuard+-+Unified+Onboarding
 
-Testing:
+Testing: <br>
 https://wiki.checkpoint.com/confluence/pages/viewpage.action?spaceKey=GlobalPO&title=Testing+-+CloudGuard+-+Unified+Onboarding
 
 
