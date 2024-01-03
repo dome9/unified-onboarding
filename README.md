@@ -20,6 +20,8 @@ The CFT will create a lambda that will onboard all the selected modules into Clo
 ## WIKI:
 https://wiki.checkpoint.com/confluence/display/GlobalPO/CloudGuard+-+Unified+Onboarding
 
+Testing:
+https://wiki.checkpoint.com/confluence/pages/viewpage.action?spaceKey=GlobalPO&title=Testing+-+CloudGuard+-+Unified+Onboarding
 
 
 
