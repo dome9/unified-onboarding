@@ -43,6 +43,21 @@ The CFT will create a lambda that will onboard all the selected modules into Clo
 [CloudGuard-readonly-policy](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/awsgov/readonly_policy.json) - Mandatory - An extension to the SecurityAudit policy, contains minimum required actions  <br>
 [CloudGuard-write-policy](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/policies/awsgov/readwrite_policy.json) - Optional - Required for network security management actions.  <br>
 
+
+## CloudFormation Templates (CFT)
+#### **Role-Based** <br>
+[onboarding.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/role_based/onboarding.yml) <br>
+[permissions_readonly_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/role_based/permissions_readonly_cft.yml) <br>
+[permissions_readwrite_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/role_based/permissions_readwrite_cft.yml) <br>
+[serverless_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/role_based/serverless_cft.yml) <br>
+[intelligence_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/role_based/intelligence_cft.yml) <br>
+
+#### **User-Based** <br>
+[onboarding.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/user_based/onboarding.yml) <br>
+[permissions_readonly_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/user_based/permissions_readonly_cft.yml) <br>
+[permissions_readwrite_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/user_based/permissions_readwrite_cft.yml) <br>
+
+
 ## WIKI:
 https://wiki.checkpoint.com/confluence/display/GlobalPO/CloudGuard+-+Unified+Onboarding
 
