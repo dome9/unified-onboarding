@@ -139,6 +139,8 @@ Statement:
       - 'sagemaker:DescribeNotebookInstance'
       - 'sagemaker:ListTrainingJobs'
       - 'sagemaker:ListNotebookInstances'
+      - 'cognito-idp:ListResourcesForWebACL'
+      - 'apprunner:ListAssociatedServicesForWebAcl'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
