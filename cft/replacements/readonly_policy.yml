@@ -158,9 +158,4 @@ Statement:
       - 'qldb:GetRevision'
       - 'sdb:Select*'
     Resource: '*'
-  - Sid: 'CloudGuardDenyS3'
-    Effect: 'Deny'
-    Action:
-      - 's3:GetObject'
-    NotResource: !Sub arn:${AWS::Partition}:s3:::elasticbeanstalk-env-resources-??*?/*
   - REPLACEMENT_READONLY_POLICY_STATEMENTS
