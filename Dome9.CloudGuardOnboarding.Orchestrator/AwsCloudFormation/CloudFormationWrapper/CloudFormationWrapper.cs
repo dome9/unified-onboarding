@@ -2,14 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.CloudFormation;
 using Amazon.CloudFormation.Model;
-using Amazon.SecretsManager;
-using Amazon.SecretsManager.Model;
-
 namespace Dome9.CloudGuardOnboarding.Orchestrator
 {
     /// <summary>
@@ -249,7 +245,7 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
                         NextToken = string.IsNullOrWhiteSpace(nextToken) ? null : nextToken
                     };
 
-                    var response = await _client.ListStacksAsync(listRequest);
+                    var response = await TryListStacks(feature, listRequest);
 
                     var stack = response.StackSummaries.FirstOrDefault(s => s.StackName == stackName && s.StackStatus != "DELETE_COMPLETE");
                     if (stack != null)
@@ -265,7 +261,21 @@ namespace Dome9.CloudGuardOnboarding.Orchestrator
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] [{nameof(IsStackExist)}] Failed to check if stach '{stackName}' exist. Error={ex}");
-                throw new OnboardingException($"Failed to check if stack '{stackName}' exist", feature); ;
+                throw new OnboardingException($"Failed to check if stack '{stackName}' exist. Error={ex}", feature);
+            }
+        }
+
+        private async Task<ListStacksResponse> TryListStacks(Enums.Feature feature, ListStacksRequest listRequest)
+        {
+            try
+            {
+                var response = await _client.ListStacksAsync(listRequest);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] [{nameof(TryListStacks)}] Failed to list stacks. Feature={feature}, Error={ex}");
+                throw new OnboardingException($"Failed to list stacks. Error={ex}", feature);
             }
         }
 
