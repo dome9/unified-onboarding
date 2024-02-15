@@ -508,22 +508,28 @@ Resources:
               - 'kms:ScheduleKeyDeletion'
               - 'kms:CancelKeyDeletion'
             Resource: '*'
-          - Sid: Allow usage of the key
+          - Sid: Allow key to decrypt
             Effect: Allow
             Principal: '*'
             Action:
               - 'kms:DescribeKey'
-              - 'kms:Encrypt'
               - 'kms:Decrypt'
-              - 'kms:ReEncrypt*'
-              - 'kms:GenerateDataKey*'
-              - 'kms:PutKeyPolicy'
               - 'kms:ScheduleKeyDeletion'
               - 'kms:CancelKeyDeletion'
             Resource: '*'
             Condition:
-              StringEquals:
-                aws:PrincipalAccount: !Ref AWS::AccountId
+                StringEquals:
+                    aws:PrincipalAccount: !Ref AWS::AccountId
+          - Sid: Allow usage of the key
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:role/CloudGuardServerlessCrossAccountRole'
+            Action:
+              - 'kms:Encrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+              - 'kms:PutKeyPolicy'
+            Resource: '*'
           - Sid: Allow attachment of persistent resources
             Effect: Allow
             Principal:
@@ -538,6 +544,7 @@ Resources:
                 kms:GrantIsForAWSResource: true
     DependsOn:
       - PreDeployPhoneHomeCustomResource
+      - CrossAccountRole
 
   CloudGuardServerlessAgentBucketKeyAlias:
     Type: AWS::KMS::Alias
@@ -676,7 +683,7 @@ Resources:
       ServiceToken: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 29
+      CFTemplateVersion: 30
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -693,7 +700,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 29
+      CFTemplateVersion: 30
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:
