@@ -64,6 +64,7 @@ Statement:
       - 'sagemaker:ListTrainingJobs'
       - 'sagemaker:ListNotebookInstances'
       - 'apprunner:ListAssociatedServicesForWebAcl'
+      - 'account:GetContactInformation'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'

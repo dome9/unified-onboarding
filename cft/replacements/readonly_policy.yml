@@ -141,6 +141,7 @@ Statement:
       - 'sagemaker:ListNotebookInstances'
       - 'cognito-idp:ListResourcesForWebACL'
       - 'apprunner:ListAssociatedServicesForWebAcl'
+      - 'account:GetContactInformation'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
