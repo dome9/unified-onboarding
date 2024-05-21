@@ -58,6 +58,7 @@ Statement:
       - 'waf-regional:ListLoggingConfigurations'
       - 'wafv2:GetIPSet'
       - 'lakeformation:GetDataLakeSettings'
+      - 'lakeformation:ListResources'
       - 'sagemaker:DescribeTrainingJob'
       - 'sagemaker:ListTags'
       - 'sagemaker:DescribeNotebookInstance'
@@ -65,6 +66,7 @@ Statement:
       - 'sagemaker:ListNotebookInstances'
       - 'apprunner:ListAssociatedServicesForWebAcl'
       - 'account:GetContactInformation'
+      - 'ce:GetAnomalyMonitors'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'

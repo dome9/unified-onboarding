@@ -56,11 +56,11 @@ Resources:
                   - lambda:UntagResource
 
                 Resource:
-                  - !GetAtt ProtegoNode14CodeAnalysisFunction.Arn
-                  - !GetAtt ProtegoJavaCodeAnalysisFunction.Arn
-                  - !GetAtt ProtegoPython3CodeAnalysisFunction.Arn
-                  - !GetAtt ProtegoCSharpCodeAnalysisFunction.Arn
-                  - !GetAtt ProtegoFSPInjectorFunction.Arn
+                  - !GetAtt CloudGuardNodeCodeAnalysisV31.Arn
+                  - !GetAtt CloudGuardJavaCodeAnalysisV31.Arn
+                  - !GetAtt CloudGuardPythonCodeAnalysisV31.Arn
+                  - !GetAtt CloudGuardDotnetCodeAnalysisV31.Arn
+                  - !GetAtt CloudGuardFSPInjectorV31.Arn
 
               - Effect: Allow
                 Action:
@@ -68,11 +68,11 @@ Resources:
                   - lambda:UpdateFunctionConfiguration
                   - lambda:TagResource
                 Resource:
-                  - !Join [ ":", [ !GetAtt ProtegoNode14CodeAnalysisFunction.Arn,"*"]]
-                  - !Join [ ":", [ !GetAtt ProtegoJavaCodeAnalysisFunction.Arn ,"*"]]
-                  - !Join [ ":", [ !GetAtt ProtegoPython3CodeAnalysisFunction.Arn,"*"]]
-                  - !Join [ ":", [ !GetAtt ProtegoCSharpCodeAnalysisFunction.Arn,"*"]]
-                  - !Join [ ":", [ !GetAtt ProtegoFSPInjectorFunction.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardNodeCodeAnalysisV31.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardJavaCodeAnalysisV31.Arn ,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardPythonCodeAnalysisV31.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardDotnetCodeAnalysisV31.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardFSPInjectorV31.Arn,"*"]]
                   - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
                   - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
 
@@ -132,7 +132,7 @@ Resources:
   ProtegoPython3CodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardPy3CodeAnalysis'
+      LogGroupName: '/aws/lambda/CloudGuardPythonCodeAnalysisV31'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -140,7 +140,7 @@ Resources:
   ProtegoJavaCodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardJavaCodeAnalysis'
+      LogGroupName: '/aws/lambda/CloudGuardJavaCodeAnalysisV31'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -148,7 +148,7 @@ Resources:
   ProtegoNode14CodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardNode14CodeAnalysis'
+      LogGroupName: '/aws/lambda/CloudGuardNodeCodeAnalysisV31'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -156,7 +156,7 @@ Resources:
   ProtegoCSharpCodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardCsCodeAnalysis'
+      LogGroupName: '/aws/lambda/CloudGuardDotnetCodeAnalysisV31'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -164,7 +164,7 @@ Resources:
   ProtegoFSPInjectorLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardFSPInjector'
+      LogGroupName: '/aws/lambda/CloudGuardFSPInjectorV31'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -363,11 +363,11 @@ Resources:
                   - 'logs:StartQuery'
                 Resource: !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*'
 
-  ProtegoPython3CodeAnalysisFunction:
+  CloudGuardPythonCodeAnalysisV31:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: function_code_analysis_python.lambda_handler
-      FunctionName: 'CloudGuardPy3CodeAnalysis'
+      FunctionName: 'CloudGuardPythonCodeAnalysisV31'
       Role: !GetAtt CodeAnalysisPython3LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -380,11 +380,11 @@ Resources:
     DependsOn:
       - CodeAnalysisPython3LambdaExecutionRole
 
-  ProtegoJavaCodeAnalysisFunction:
+  CloudGuardJavaCodeAnalysisV31:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: io.protego.lambda.Handler
-      FunctionName: 'CloudGuardJavaCodeAnalysis'
+      FunctionName: 'CloudGuardJavaCodeAnalysisV31'
       Role: !GetAtt CodeAnalysisJavaLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -397,11 +397,11 @@ Resources:
     DependsOn:
       - CodeAnalysisJavaLambdaExecutionRole
 
-  ProtegoNode14CodeAnalysisFunction:
+  CloudGuardNodeCodeAnalysisV31:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: index.handler
-      FunctionName: 'CloudGuardNode14CodeAnalysis'
+      FunctionName: 'CloudGuardNodeCodeAnalysisV31'
       Role: !GetAtt CodeAnalysisNode14LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -417,11 +417,11 @@ Resources:
     DependsOn:
       - CodeAnalysisNode14LambdaExecutionRole
 
-  ProtegoCSharpCodeAnalysisFunction:
+  CloudGuardDotnetCodeAnalysisV31:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: function_api_usage_c_sharp::function_api_usage_c_sharp.Handler::HandleRequest
-      FunctionName: 'CloudGuardCsCodeAnalysis'
+      FunctionName: 'CloudGuardDotnetCodeAnalysisV31'
       Role: !GetAtt CodeAnalysisCSharpLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -434,11 +434,11 @@ Resources:
     DependsOn:
       - CodeAnalysisCSharpLambdaExecutionRole
 
-  ProtegoFSPInjectorFunction:
+  CloudGuardFSPInjectorV31:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: fsp_injector.lambda_handler
-      FunctionName: 'CloudGuardFSPInjector'
+      FunctionName: 'CloudGuardFSPInjectorV31'
       Role: !GetAtt FSPInjectorLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -465,11 +465,6 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: aws:kms
               KMSMasterKeyID: 'alias/CloudGuardServerlessAgentBucketKey'
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        RestrictPublicBuckets: true
-        IgnorePublicAcls: true
     DependsOn:
       - PreDeployPhoneHomeCustomResource
 
@@ -683,7 +678,7 @@ Resources:
       ServiceToken: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 30
+      CFTemplateVersion: 31
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -700,7 +695,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 30
+      CFTemplateVersion: 31
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:
@@ -708,11 +703,11 @@ Resources:
         ProtegoFSP: true
         ProtegoFSPInjector: true
 
-      Python3CodeAnalysisFunc: !GetAtt ProtegoPython3CodeAnalysisFunction.Arn
-      JavaCodeAnalysisFunc: !GetAtt ProtegoJavaCodeAnalysisFunction.Arn
-      NodeCodeAnalysisFunc: !GetAtt ProtegoNode14CodeAnalysisFunction.Arn
-      CSharpCodeAnalysisFunc: !GetAtt ProtegoCSharpCodeAnalysisFunction.Arn
-      FSPInjectorFunc: !GetAtt ProtegoFSPInjectorFunction.Arn
+      Python3CodeAnalysisFunc: !GetAtt CloudGuardPythonCodeAnalysisV31.Arn
+      JavaCodeAnalysisFunc: !GetAtt CloudGuardJavaCodeAnalysisV31.Arn
+      NodeCodeAnalysisFunc: !GetAtt CloudGuardNodeCodeAnalysisV31.Arn
+      CSharpCodeAnalysisFunc: !GetAtt CloudGuardDotnetCodeAnalysisV31.Arn
+      FSPInjectorFunc: !GetAtt CloudGuardFSPInjectorV31.Arn
 Outputs:
   RoleARN:
     Description: The ARN of the role that can be assumed by the other account.
