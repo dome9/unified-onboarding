@@ -12,6 +12,7 @@ Statement:
       - 'apigateway:GET'
       - 'athena:GetQueryExecution'
       - 'backup:ListTags'
+      - 'budgets:ViewBudget'
       - 'codebuild:GetResourcePolicy'
       - 'compute-optimizer:GetRecommendationSummaries'
       - 'elasticfilesystem:Describe*'
