@@ -151,6 +151,8 @@ Statement:
       - 'apprunner:ListAssociatedServicesForWebAcl'
       - 'ce:GetAnomalyMonitors'
       - 'account:GetContactInformation'
+      - 'wellarchitected:ListWorkloads'
+      - 'wellarchitected:GetWorkload'
       - 'polly:ListSpeechSynthesisTasks'
     Effect: Allow
     Resource: '*'
