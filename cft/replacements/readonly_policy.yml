@@ -151,6 +151,7 @@ Statement:
       - 'apprunner:ListAssociatedServicesForWebAcl'
       - 'ce:GetAnomalyMonitors'
       - 'account:GetContactInformation'
+      - 'polly:ListSpeechSynthesisTasks'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
