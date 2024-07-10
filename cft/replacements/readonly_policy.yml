@@ -154,6 +154,7 @@ Statement:
       - 'wellarchitected:ListWorkloads'
       - 'wellarchitected:GetWorkload'
       - 'polly:ListSpeechSynthesisTasks'
+      - 'macie2:GetAutomatedDiscoveryConfiguration'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
