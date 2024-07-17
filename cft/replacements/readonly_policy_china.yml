@@ -68,6 +68,7 @@ Statement:
       - 'apprunner:ListAssociatedServicesForWebAcl'
       - 'account:GetContactInformation'
       - 'ce:GetAnomalyMonitors'
+      - 'redshift-serverless:ListNamespaces'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'

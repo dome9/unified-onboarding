@@ -155,6 +155,7 @@ Statement:
       - 'wellarchitected:GetWorkload'
       - 'polly:ListSpeechSynthesisTasks'
       - 'macie2:GetAutomatedDiscoveryConfiguration'
+      - 'redshift-serverless:ListNamespaces'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
