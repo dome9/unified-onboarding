@@ -69,6 +69,7 @@ Statement:
       - 'account:GetContactInformation'
       - 'ce:GetAnomalyMonitors'
       - 'redshift-serverless:ListNamespaces'
+      - "auditmanager:GetAssessment"
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
