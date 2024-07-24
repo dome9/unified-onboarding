@@ -156,7 +156,9 @@ Statement:
       - 'polly:ListSpeechSynthesisTasks'
       - 'macie2:GetAutomatedDiscoveryConfiguration'
       - 'redshift-serverless:ListNamespaces'
-      - "auditmanager:GetAssessment"
+      - 'qldb:ListTagsForResource'
+      - 'auditmanager:GetAssessment'
+      - 'codecommit:GetApprovalRuleTemplate'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'

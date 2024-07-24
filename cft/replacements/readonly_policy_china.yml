@@ -69,10 +69,12 @@ Statement:
       - 'account:GetContactInformation'
       - 'ce:GetAnomalyMonitors'
       - 'redshift-serverless:ListNamespaces'
+      - 'qldb:ListTagsForResource'
       - 'auditmanager:GetAssessment'
       - 'wellarchitected:ListWorkloads'
       - 'wellarchitected:GetWorkload'
       - 'polly:ListSpeechSynthesisTasks'
+      - 'codecommit:GetApprovalRuleTemplate'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
