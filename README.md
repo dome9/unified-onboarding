@@ -63,3 +63,6 @@ https://wiki.checkpoint.com/confluence/display/GlobalPO/CloudGuard+-+Unified+Onb
 
 Testing: <br>
 https://wiki.checkpoint.com/confluence/pages/viewpage.action?spaceKey=GlobalPO&title=Testing+-+CloudGuard+-+Unified+Onboarding
+
+Flow: <br>
+https://wiki.checkpoint.com/confluence/display/GlobalPO/Unified+Onboarding+Flow
