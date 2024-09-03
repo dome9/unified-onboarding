@@ -1,0 +1,29 @@
+{
+    "run_jobs_on_pr":
+    [
+        {
+            "environment": "test-automation",
+            "job_name": "AWS_Unified_Onboarding_CFT_Test_on_PR",
+            "parameters":
+            [
+                {
+                    "name": "pull_request_action",
+                    "jq_filter": ".action"
+                },
+                {
+                    "name": "commitHash",
+                    "jq_filter": ".pull_request.head.sha"
+                },
+				{
+					"name": "branch",
+					"jq_filter": ".pull_request.head.ref"
+				}
+            ],
+            "trigger_filter":
+            {
+                "regex": "(opened)|(synchronize)",
+                "template": "$pull_request_action"
+            }
+        }
+    ]
+}

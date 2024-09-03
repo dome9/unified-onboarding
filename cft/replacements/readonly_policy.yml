@@ -159,6 +159,7 @@ Statement:
       - 'qldb:ListTagsForResource'
       - 'auditmanager:GetAssessment'
       - 'codecommit:GetApprovalRuleTemplate'
+      - 'backup:ListBackupPlans'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
@@ -176,4 +177,4 @@ Statement:
       - 'qldb:GetRevision'
       - 'sdb:Select*'
     Resource: '*'
-  - REPLACEMENT_READONLY_POLICY_STATEMENTS
+  - REPLACEMENT_READONLY_POLICY_STATEMENTS 
