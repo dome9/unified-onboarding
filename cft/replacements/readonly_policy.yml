@@ -160,6 +160,9 @@ Statement:
       - 'auditmanager:GetAssessment'
       - 'codecommit:GetApprovalRuleTemplate'
       - 'backup:ListBackupPlans'
+      - 'codeguru-security:ListTagsForResource'
+      - 'codeguru-security:ListScans'
+      - 'codeguru-security:GetScan'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
