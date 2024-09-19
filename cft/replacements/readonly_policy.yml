@@ -164,6 +164,9 @@ Statement:
       - 'codeguru-security:ListTagsForResource'
       - 'codeguru-security:ListScans'
       - 'codeguru-security:GetScan'
+      - 'route53-recovery-control-config:ListControlPanels'
+      - 'route53-recovery-control-config:ListRoutingControls'
+      - 'route53-recovery-control-config:ListTagsForResource'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
