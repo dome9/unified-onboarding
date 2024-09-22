@@ -171,6 +171,8 @@ Statement:
       - 'route53-recovery-control-config:ListControlPanels'
       - 'route53-recovery-control-config:ListRoutingControls'
       - 'route53-recovery-control-config:ListTagsForResource'
+      - 'payment-cryptography:ListKeys'
+      - 'payment-cryptography:ListTagsForResource'
       - 'servicediscovery:ListServices'
       - 'servicediscovery:ListTagsForResource'
       - 'servicediscovery:ListNamespaces'
