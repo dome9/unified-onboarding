@@ -109,6 +109,8 @@ Statement:
       - 'dataexchange:ListTagsForResource'
       - 'dataexchange:ListEventActions'
       - 'dataexchange:ListJobs'
+      - 'datazone:ListDomains'
+      - 'datazone:ListTagsForResource'
       - 'elastictranscoder:ListPresets'
       - 'medialive:ListInputs'
       - 'medialive:ListMultiplexes'

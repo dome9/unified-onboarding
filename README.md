@@ -56,13 +56,3 @@ The CFT will create a lambda that will onboard all the selected modules into Clo
 [onboarding.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/user_based/onboarding.yml) <br>
 [permissions_readonly_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/user_based/permissions_readonly_cft.yml) <br>
 [permissions_readwrite_cft.yml](https://cloudguard-unified-onboarding-us-east-1.s3.amazonaws.com/unified-onboarding/current/templates/user_based/permissions_readwrite_cft.yml) <br>
-
-
-## WIKI:
-https://wiki.checkpoint.com/confluence/display/GlobalPO/CloudGuard+-+Unified+Onboarding
-
-Testing: <br>
-https://wiki.checkpoint.com/confluence/pages/viewpage.action?spaceKey=GlobalPO&title=Testing+-+CloudGuard+-+Unified+Onboarding
-
-Flow: <br>
-https://wiki.checkpoint.com/confluence/display/GlobalPO/Unified+Onboarding+Flow
