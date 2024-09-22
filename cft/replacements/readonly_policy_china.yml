@@ -75,6 +75,8 @@ Statement:
       - 'wellarchitected:GetWorkload'
       - 'polly:ListSpeechSynthesisTasks'
       - 'codecommit:GetApprovalRuleTemplate'
+      - 'cleanrooms:ListMemberships'
+      - 'cleanrooms:ListTagsForResource'
       - 'route53-recovery-control-config:ListControlPanels'
       - 'route53-recovery-control-config:ListRoutingControls'
       - 'route53-recovery-control-config:ListTagsForResource'
