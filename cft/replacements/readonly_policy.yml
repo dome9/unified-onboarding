@@ -185,5 +185,6 @@ Statement:
       - 'qldb:GetDigest'
       - 'qldb:GetRevision'
       - 'sdb:Select*'
+      - 'kendra:DescribeDataSource'
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS 

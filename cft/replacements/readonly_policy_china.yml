@@ -86,6 +86,7 @@ Statement:
       - 'networkmanager:ListCoreNetworks'
       - 'networkmanager:ListAttachments'
       - 'networkmanager:GetCoreNetwork'
+      - 'kendra:DescribeDataSource'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
