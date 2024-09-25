@@ -83,6 +83,9 @@ Statement:
       - 'servicediscovery:ListServices'
       - 'servicediscovery:ListTagsForResource'
       - 'servicediscovery:ListNamespaces'
+      - 'networkmanager:ListCoreNetworks'
+      - 'networkmanager:ListAttachments'
+      - 'networkmanager:GetCoreNetwork'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'

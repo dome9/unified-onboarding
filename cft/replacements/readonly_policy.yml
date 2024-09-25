@@ -166,6 +166,9 @@ Statement:
       - 'servicediscovery:ListNamespaces'
       - 'artifact:ListReports'
       - 'comprehendmedical:ListEntitiesDetectionV2Jobs'
+      - 'networkmanager:ListCoreNetworks'
+      - 'networkmanager:ListAttachments'
+      - 'networkmanager:GetCoreNetwork'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
