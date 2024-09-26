@@ -169,6 +169,7 @@ Statement:
       - 'networkmanager:ListCoreNetworks'
       - 'networkmanager:ListAttachments'
       - 'networkmanager:GetCoreNetwork'
+      - 'kendra:DescribeDataSource'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
@@ -185,6 +186,5 @@ Statement:
       - 'qldb:GetDigest'
       - 'qldb:GetRevision'
       - 'sdb:Select*'
-      - 'kendra:DescribeDataSource'
     Resource: '*'
   - REPLACEMENT_READONLY_POLICY_STATEMENTS 
