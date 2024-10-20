@@ -86,6 +86,8 @@ Statement:
       - 'networkmanager:ListCoreNetworks'
       - 'networkmanager:ListAttachments'
       - 'networkmanager:GetCoreNetwork'
+      - 'eks:ListAddons'
+      - 'eks:DescribeAddon'
       - 'kendra:DescribeDataSource'
     Effect: Allow
     Resource: '*'

@@ -170,6 +170,17 @@ Statement:
       - 'networkmanager:ListAttachments'
       - 'networkmanager:GetCoreNetwork'
       - 'kendra:DescribeDataSource'
+      - 'eks:ListAddons'
+      - 'eks:DescribeAddon'
+      - 'omics:ListAnnotationStores'
+      - 'omics:ListTagsForResource'
+      - 'codedeploy:GetDeployment'
+      - 'codedeploy:ListDeployments'
+      - 'fis:ListExperiments'
+      - 'fis:GetExperiment'
+      - 'fis:ListExperimentTemplates'
+      - 'fis:GetExperimentTemplate'
+
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
