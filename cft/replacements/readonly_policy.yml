@@ -180,6 +180,9 @@ Statement:
       - 'fis:GetExperiment'
       - 'fis:ListExperimentTemplates'
       - 'fis:GetExperimentTemplate'
+      - 'directconnect:DescribeConnections'
+      - 'directconnect:DescribeDirectConnectGateways'
+      - 'directconnect:DescribeVirtualInterfaces'
 
     Effect: Allow
     Resource: '*'
