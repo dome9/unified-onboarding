@@ -1,0 +1,11 @@
+Version: 2012-10-17
+Statement:
+  - Sid: CloudGuardReadOnly
+    Action:
+      - 'm2:ListEnvironments'
+      - 'm2:GetEnvironment'
+      - 'm2:ListApplications'
+      - 'm2:GetApplication'
+
+    Effect: Allow
+    Resource: '*'

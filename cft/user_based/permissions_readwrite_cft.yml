@@ -51,7 +51,15 @@ Resources:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
       ManagedPolicyName: !Sub 'CloudGuard-Connect-RO-policy${UniqueSuffix}'
-      PolicyDocument: REPLACEMENT_READONLY_POLICY
+      PolicyDocument: REPLACEMENT_READONLY_POLICY1
+      Users:
+        - !Ref CrossAccountUser
+
+  CrossAccountReadOnlyPolicy2:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: !Sub 'CloudGuard-Connect-RO-policy-2-${UniqueSuffix}'
+      PolicyDocument: REPLACEMENT_READONLY_POLICY2
       Users:
         - !Ref CrossAccountUser
 

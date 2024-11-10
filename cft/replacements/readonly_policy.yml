@@ -178,11 +178,8 @@ Statement:
       - 'fis:GetExperiment'
       - 'fis:ListExperimentTemplates'
       - 'fis:GetExperimentTemplate'
-      - 'm2:ListEnvironments'
-      - 'm2:GetEnvironment'
-      - 'm2:ListApplications'
-      - 'm2:GetApplication'
-
+      - 'appstream:DescribeDirectoryConfigs'
+      
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
