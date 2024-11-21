@@ -70,3 +70,4 @@ Outputs:
   CrossAccountRoleArn:
     Description: The CrossAccount Role Arn
     Value: !GetAtt CrossAccountRole.Arn
+    
