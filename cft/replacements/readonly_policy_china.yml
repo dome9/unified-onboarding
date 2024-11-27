@@ -89,6 +89,11 @@ Statement:
       - 'eks:ListAddons'
       - 'eks:DescribeAddon'
       - 'kendra:DescribeDataSource'
+      - 'aoss:BatchGetCollection'
+      - 'aoss:ListSecurityPolicies'
+      - 'aoss:ListSecurityConfigs'
+      - 'aoss:ListAccessPolicies'
+      - 'aoss:ListTagsForResource'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'

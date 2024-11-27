@@ -6,6 +6,11 @@ Statement:
       - 'm2:GetEnvironment'
       - 'm2:ListApplications'
       - 'm2:GetApplication'
+      - 'aoss:BatchGetCollection'
+      - 'aoss:ListSecurityPolicies'
+      - 'aoss:ListSecurityConfigs'
+      - 'aoss:ListAccessPolicies'
+      - 'aoss:ListTagsForResource'
 
     Effect: Allow
     Resource: '*'

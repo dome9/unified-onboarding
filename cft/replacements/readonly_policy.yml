@@ -179,7 +179,14 @@ Statement:
       - 'fis:ListExperimentTemplates'
       - 'fis:GetExperimentTemplate'
       - 'appstream:DescribeDirectoryConfigs'
-      
+      - 'scn:ListInstances'
+      - 'scn:ListTagsForResource'
+      - 'support:DescribeTrustedAdvisorCheckResult'
+      - 'support:DescribeTrustedAdvisorChecks'
+      - 'textract:ListAdapters'
+      - 'textract:ListAdapterVersions'
+      - 'textract:GetAdapter'
+      - 'textract:GetAdapterVersion'
     Effect: Allow
     Resource: '*'
   - Sid: 'CloudGuardDeny'
