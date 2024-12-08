@@ -37,6 +37,7 @@ Statement:
       - 'macie2:DescribeBuckets'
       - 'macie2:GetMacieSession'
       - 'macie2:GetFindingStatistics'
+      - 'macie2:ListAutomatedDiscoveryAccounts'
       - 'verifiedpermissions:ListPolicyStores'
       - 'verifiedpermissions:GetPolicyStore'
       - 'elasticfilesystem:Describe*'

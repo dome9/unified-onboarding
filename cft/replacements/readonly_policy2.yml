@@ -11,6 +11,10 @@ Statement:
       - 'aoss:ListSecurityConfigs'
       - 'aoss:ListAccessPolicies'
       - 'aoss:ListTagsForResource'
-
+      - 'glue:GetDatabases'
+      - 'resiliencehub:ListApps'
+      - 'resiliencehub:ListTagsForResource'
+      - 'iot:DescribeInput'
+      - 'iot:ListTagsForResource'
     Effect: Allow
     Resource: '*'
