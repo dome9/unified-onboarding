@@ -16,5 +16,6 @@ Statement:
       - 'resiliencehub:ListTagsForResource'
       - 'iot:DescribeInput'
       - 'iot:ListTagsForResource'
+      - 'mgn:DescribeReplicationConfigurationTemplates'
     Effect: Allow
     Resource: '*'
