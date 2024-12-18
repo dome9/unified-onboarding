@@ -56,11 +56,11 @@ Resources:
                   - lambda:UntagResource
 
                 Resource:
-                  - !GetAtt CloudGuardNodeCodeAnalysisV33.Arn
-                  - !GetAtt CloudGuardJavaCodeAnalysisV33.Arn
-                  - !GetAtt CloudGuardPythonCodeAnalysisV33.Arn
-                  - !GetAtt CloudGuardDotnetCodeAnalysisV33.Arn
-                  - !GetAtt CloudGuardFSPInjectorV33.Arn
+                  - !GetAtt CloudGuardNodeCodeAnalysisV34.Arn
+                  - !GetAtt CloudGuardJavaCodeAnalysisV34.Arn
+                  - !GetAtt CloudGuardPythonCodeAnalysisV34.Arn
+                  - !GetAtt CloudGuardDotnetCodeAnalysisV34.Arn
+                  - !GetAtt CloudGuardFSPInjectorV34.Arn
 
               - Effect: Allow
                 Action:
@@ -68,11 +68,11 @@ Resources:
                   - lambda:UpdateFunctionConfiguration
                   - lambda:TagResource
                 Resource:
-                  - !Join [ ":", [ !GetAtt CloudGuardNodeCodeAnalysisV33.Arn,"*"]]
-                  - !Join [ ":", [ !GetAtt CloudGuardJavaCodeAnalysisV33.Arn ,"*"]]
-                  - !Join [ ":", [ !GetAtt CloudGuardPythonCodeAnalysisV33.Arn,"*"]]
-                  - !Join [ ":", [ !GetAtt CloudGuardDotnetCodeAnalysisV33.Arn,"*"]]
-                  - !Join [ ":", [ !GetAtt CloudGuardFSPInjectorV33.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardNodeCodeAnalysisV34.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardJavaCodeAnalysisV34.Arn ,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardPythonCodeAnalysisV34.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardDotnetCodeAnalysisV34.Arn,"*"]]
+                  - !Join [ ":", [ !GetAtt CloudGuardFSPInjectorV34.Arn,"*"]]
                   - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:CloudGuardFSPLogsSender*'
                   - !Sub 'arn:${AWS::Partition}:lambda:*:${AWS::AccountId}:function:ProtegoFSPLogsSender*'
 
@@ -132,7 +132,7 @@ Resources:
   ProtegoPython3CodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardPythonCodeAnalysisV33'
+      LogGroupName: '/aws/lambda/CloudGuardPythonCodeAnalysisV34'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -140,7 +140,7 @@ Resources:
   ProtegoJavaCodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardJavaCodeAnalysisV33'
+      LogGroupName: '/aws/lambda/CloudGuardJavaCodeAnalysisV34'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -148,7 +148,7 @@ Resources:
   ProtegoNode14CodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardNodeCodeAnalysisV33'
+      LogGroupName: '/aws/lambda/CloudGuardNodeCodeAnalysisV34'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -156,7 +156,7 @@ Resources:
   ProtegoCSharpCodeAnalysisLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardDotnetCodeAnalysisV33'
+      LogGroupName: '/aws/lambda/CloudGuardDotnetCodeAnalysisV34'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -164,7 +164,7 @@ Resources:
   ProtegoFSPInjectorLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: '/aws/lambda/CloudGuardFSPInjectorV33'
+      LogGroupName: '/aws/lambda/CloudGuardFSPInjectorV34'
       RetentionInDays: 30
     DependsOn:
       - PreDeployPhoneHomeCustomResource
@@ -363,11 +363,11 @@ Resources:
                   - 'logs:StartQuery'
                 Resource: !Sub 'arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*'
 
-  CloudGuardPythonCodeAnalysisV33:
+  CloudGuardPythonCodeAnalysisV34:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: function_code_analysis_python.lambda_handler
-      FunctionName: 'CloudGuardPythonCodeAnalysisV33'
+      FunctionName: 'CloudGuardPythonCodeAnalysisV34'
       Role: !GetAtt CodeAnalysisPython3LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -380,11 +380,11 @@ Resources:
     DependsOn:
       - CodeAnalysisPython3LambdaExecutionRole
 
-  CloudGuardJavaCodeAnalysisV33:
+  CloudGuardJavaCodeAnalysisV34:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: io.protego.lambda.Handler
-      FunctionName: 'CloudGuardJavaCodeAnalysisV33'
+      FunctionName: 'CloudGuardJavaCodeAnalysisV34'
       Role: !GetAtt CodeAnalysisJavaLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -397,11 +397,11 @@ Resources:
     DependsOn:
       - CodeAnalysisJavaLambdaExecutionRole
 
-  CloudGuardNodeCodeAnalysisV33:
+  CloudGuardNodeCodeAnalysisV34:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: index.handler
-      FunctionName: 'CloudGuardNodeCodeAnalysisV33'
+      FunctionName: 'CloudGuardNodeCodeAnalysisV34'
       Role: !GetAtt CodeAnalysisNode14LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -417,28 +417,28 @@ Resources:
     DependsOn:
       - CodeAnalysisNode14LambdaExecutionRole
 
-  CloudGuardDotnetCodeAnalysisV33:
+  CloudGuardDotnetCodeAnalysisV34:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: function_api_usage_c_sharp::function_api_usage_c_sharp.Handler::HandleRequest
-      FunctionName: 'CloudGuardDotnetCodeAnalysisV33'
+      FunctionName: 'CloudGuardDotnetCodeAnalysisV34'
       Role: !GetAtt CodeAnalysisCSharpLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
         S3Key: code_analysis_functions/function_api_usage_c_sharp.zip
       MemorySize: 1024
       Description: 'Statically analyze C# code'
-      Runtime: dotnet6
+      Runtime: dotnet8
       Timeout: 860
       Tags: [{"Key": "Owner", "Value": "Cloudguard Serverless Security"}]
     DependsOn:
       - CodeAnalysisCSharpLambdaExecutionRole
 
-  CloudGuardFSPInjectorV33:
+  CloudGuardFSPInjectorV34:
     Type: 'AWS::Lambda::Function'
     Properties:
       Handler: fsp_injector.lambda_handler
-      FunctionName: 'CloudGuardFSPInjectorV33'
+      FunctionName: 'CloudGuardFSPInjectorV34'
       Role: !GetAtt FSPInjectorLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub ${ServerlessStage}-protego
@@ -678,7 +678,7 @@ Resources:
       ServiceToken: !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${CloudGuardAwsAccountId}:${ServerlessStage}-${AWS::AccountId}-notifications"
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 33
+      CFTemplateVersion: 34
 
   PhoneHomeCustomResourceNew:
     Type: Custom::PhoneHomeCustomResource
@@ -695,7 +695,7 @@ Resources:
       RoleArn: !GetAtt CrossAccountRole.Arn
       AccountID: !Ref AWS::AccountId
       TimeStamp: !Ref TimeStamp
-      CFTemplateVersion: 33
+      CFTemplateVersion: 34
       ProtegoFSPLambdaRoleARN: !GetAtt ProtegoFSPLogsSenderRole.Arn
 
       Features:
@@ -703,11 +703,11 @@ Resources:
         ProtegoFSP: true
         ProtegoFSPInjector: true
 
-      Python3CodeAnalysisFunc: !GetAtt CloudGuardPythonCodeAnalysisV33.Arn
-      JavaCodeAnalysisFunc: !GetAtt CloudGuardJavaCodeAnalysisV33.Arn
-      NodeCodeAnalysisFunc: !GetAtt CloudGuardNodeCodeAnalysisV33.Arn
-      CSharpCodeAnalysisFunc: !GetAtt CloudGuardDotnetCodeAnalysisV33.Arn
-      FSPInjectorFunc: !GetAtt CloudGuardFSPInjectorV33.Arn
+      Python3CodeAnalysisFunc: !GetAtt CloudGuardPythonCodeAnalysisV34.Arn
+      JavaCodeAnalysisFunc: !GetAtt CloudGuardJavaCodeAnalysisV34.Arn
+      NodeCodeAnalysisFunc: !GetAtt CloudGuardNodeCodeAnalysisV34.Arn
+      CSharpCodeAnalysisFunc: !GetAtt CloudGuardDotnetCodeAnalysisV34.Arn
+      FSPInjectorFunc: !GetAtt CloudGuardFSPInjectorV34.Arn
 Outputs:
   RoleARN:
     Description: The ARN of the role that can be assumed by the other account.

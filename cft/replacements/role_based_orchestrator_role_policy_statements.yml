@@ -49,11 +49,11 @@
     - 'lambda:GetFunctionConfiguration'
   Effect: Allow
   Resource:
-    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardNodeCodeAnalysisV33'
-    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardJavaCodeAnalysisV33'
-    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardPythonCodeAnalysisV33'
-    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardDotnetCodeAnalysisV33'
-    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardFSPInjectorV33'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardNodeCodeAnalysisV34'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardJavaCodeAnalysisV34'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardPythonCodeAnalysisV34'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardDotnetCodeAnalysisV34'
+    - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CloudGuardFSPInjectorV34'
 - Sid: CloudGuardOnboardingOrchestratorServelessLambdaTp
   Action:
     - lambda:GetLayerVersion
@@ -68,11 +68,11 @@
     - logs:PutRetentionPolicy
   Effect: Allow
   Resource:
-    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardNodeCodeAnalysisV33:log-stream:*'
-    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardJavaCodeAnalysisV33:log-stream:*'
-    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardPythonCodeAnalysisV33:log-stream:*'
-    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardDotnetCodeAnalysisV33:log-stream:*'
-    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPInjectorV33:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardNodeCodeAnalysisV34:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardJavaCodeAnalysisV34:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardPythonCodeAnalysisV34:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardDotnetCodeAnalysisV34:log-stream:*'
+    - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/CloudGuardFSPInjectorV34:log-stream:*'
 - Sid: CloudGuardOnboardingOrchestratorLogsDescribe
   Action:
     - logs:DescribeLogGroups
