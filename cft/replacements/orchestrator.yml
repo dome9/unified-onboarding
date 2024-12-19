@@ -2,7 +2,7 @@ CloudGuardOnboardingOrchestrator:
   Type: AWS::Lambda::Function
   Properties:
     FunctionName: !Join ["-", ['CloudGuardOnboardingOrchestrator', !If [DeleteEvent, Delete, ''], !Select [3, !Split ['-', !Ref CloudGuardApiKeyId]]]]
-    Runtime: dotnet6
+    Runtime: dotnet8
     Role: !GetAtt CloudGuardOrchestratorRole.Arn
     Handler: Dome9.CloudGuardOnboarding.Orchestrator::Dome9.CloudGuardOnboarding.Orchestrator.Function::FunctionHandler
     Timeout: 900
