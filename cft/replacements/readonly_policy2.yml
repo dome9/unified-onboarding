@@ -17,5 +17,6 @@ Statement:
       - 'iot:DescribeInput'
       - 'iot:ListTagsForResource'
       - 'mgn:DescribeReplicationConfigurationTemplates'
+      - 'appflow:DescribeFlow'
     Effect: Allow
     Resource: '*'
