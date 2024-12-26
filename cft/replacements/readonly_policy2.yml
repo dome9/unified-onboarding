@@ -11,6 +11,7 @@ Statement:
       - 'aoss:ListSecurityConfigs'
       - 'aoss:ListAccessPolicies'
       - 'aoss:ListTagsForResource'
+      - 'aoss:ListCollections'
       - 'glue:GetDatabases'
       - 'resiliencehub:ListApps'
       - 'resiliencehub:ListTagsForResource'

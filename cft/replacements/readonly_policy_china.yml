@@ -94,6 +94,7 @@ Statement:
       - 'aoss:ListSecurityConfigs'
       - 'aoss:ListAccessPolicies'
       - 'aoss:ListTagsForResource'
+      - 'aoss:ListCollections'
       - 'glue:GetDatabases'
     Effect: Allow
     Resource: '*'
