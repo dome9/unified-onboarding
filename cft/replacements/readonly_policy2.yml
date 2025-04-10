@@ -24,5 +24,6 @@ Statement:
   - 'ec2:GetSnapshotBlockPublicAccessState'
   - 'ec2:GetImageBlockPublicAccessState'
   - 'ec2:GetEbsEncryptionByDefault'
+  - 'bedrock:ListModelCustomizationJobs'
   Effect: Allow
   Resource: '*'
